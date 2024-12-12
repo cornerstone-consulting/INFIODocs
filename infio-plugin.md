@@ -24,6 +24,8 @@
 
 The **Infio Plugin** simplifies migration from **SQL Server** to **PostgreSQL** using **Babelfish**. It automates the creation of essential dependency, assessor input files, helping you assess compatibility and identify issues during migration.
 
+---
+
 ### Modes of operation
 
 The INFIO Tool provides two distinct execution modes for assessments. Users can select the mode that aligns with their requirements and data collection preferences for running assessments. Below is a detailed explanation of each mode:
@@ -39,6 +41,8 @@ The INFIO Tool provides two distinct execution modes for assessments. Users can 
 #### Profiler extended events
 In both modes, **Profiler Extended Events** collection is a manual step. After the assessment, you'll receive instructions on how to capture them.
 
+---
+
 ### Features
 - **Configuration Workflow**: Simple user input configuration for easy setup.
 - **Object Dependency Analysis**: Identifies Object dependencies across SQL Server databases.
@@ -46,19 +50,56 @@ In both modes, **Profiler Extended Events** collection is a manual step. After t
 - **Schema-level Dependency Assessment**: Analyzes DDL objects and their interdependencies.
 - **Structured Output**: The outputs are saved as structured **SQL** and **HTML** files at a predefined location specified in the INFIO plugin tool, ensuring they are easy to parse and review.
 
-### Prerequisites
+---
 
-Ensure the following before using the Infio Plugin:
-- **Python installation**: To use the INFIO Plugin, ensure the following requirements are met:
+### Prerequisites for Using the INFIO Plugin  
 
-1. Python (version 3.12.7) must be installed on your machine.
-- If Python is not installed, download and install it from the official Python website:
-https://www.python.org/downloads/release/python-3127/
-- During installation, make sure to add Python to your system's environment PATH for seamless usage.
+Before using the INFIO Plugin, ensure the following requirements are met:  
 
-2. After installing Python, open a terminal or command prompt and run the following command to install the required package:
-pip install mssql-scripter
-- **SQL Server Credentials**: Ensure that you have valid access credentials for your SQL Server instance, and verify that your IP address is authorized to connect to the instance.
+#### 1. **Python Installation**  
+To use the INFIO Plugin, Python must be installed on your machine:  
+- **Version Required**: Python 3.12.7  
+- **Download Python**:  
+  If Python is not installed, download and install it from the official Python website:  
+  [Download Python 3.12.7](https://www.python.org/downloads/release/python-3127/)  
+
+- **Add Python to PATH**:  
+  During the installation, make sure to check the option to add Python to your system's environment PATH. This ensures seamless usage from the terminal or command prompt.
+
+#### 2. **Install Required Python Package**  
+After installing Python, you need to install the **mssql-scripter** package:  
+- Open a terminal or command prompt.  
+- Run the following command:  
+  ```bash
+  pip install mssql-scripter
+  ```
+  
+#### 3. **SQL Server Credentials**  
+To connect to your SQL Server instance, ensure the following:  
+
+- **Access Credentials**:  
+  - Have valid access credentials (username and password) for your SQL Server instance.  
+  - Ensure your IP address is authorized to connect to the SQL Server instance.  
+
+- **Read-Only Access**:  
+  - The SQL Server username must have **read-only access** with the `db_datareader` role.  
+  - This ensures only data retrieval operations are allowed, preventing changes to the database.  
+
+#### 4. **Server Role Permissions**  
+The following server roles are required to run the INFIO Plugin:  
+
+```plaintext
+##MS_DatabaseConnector##
+##MS_DefinitionReader##
+##MS_PerformanceDefinitionReader##
+##MS_SecurityDefinitionReader##
+##MS_ServerPerformanceStateReader##
+##MS_ServerSecurityStateReader##
+##MS_ServerStateReader##
+public
+```
+These permissions allow the INFIO Plugin to retrieve necessary information from the SQL Server without compromising security.
+
 --
 ### Infio-plugin Usage
 
@@ -111,6 +152,8 @@ Once the configuration is completed, the plugin will display updates in the term
 
 #### **Next Steps**:
 - After the tools are executed, you will receive detailed instructions for the manual step of collecting **Profiler Extended Events**.
+
+---
 
 ## Uploading Files to an S3 Bucket
 
