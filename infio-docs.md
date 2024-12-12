@@ -114,6 +114,8 @@ This section describes key concepts and defines terminology specific to this sol
 ---
 
 ### Architecture Overview
+![Screenshot_12-12-2024_131219_](https://github.com/user-attachments/assets/bc6ea1ba-24f6-4749-a692-3c6db88e469b)
+
 #### Components:
 - **AMI**: The INFIO AMI, a pre-configured, Windows-based Amazon Machine Image (AMI) available on AWS Marketplace, can be used to rapidly deploy EC2 instances equipped with the necessary tools and scripts for implementing the INFIO assessment solution.
 - **Amazon S3**: Used for storing input files prior to assessments and output files following the assessment process.
