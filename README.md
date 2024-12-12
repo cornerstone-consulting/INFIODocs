@@ -7,6 +7,6 @@ For detailed documentation, check the [Infio Docs](infio-docs.md).
 
 For detailed documentation, check the [Infio-plugin Docs](infio-plugin.md).
 
-## Unsupported functionalities in bablefish
+## Unsupported functionalities in Babelfish
 
-For detailed documentation, check the [Unsupported functionalities in bablefish](unsupported-functionalities-in-bablefish.md).
+For detailed documentation, check the [Unsupported functionalities in Babelfish](unsupported-functionalities-in-babelfish.md).
