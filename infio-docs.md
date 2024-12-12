@@ -150,7 +150,8 @@ To set up the minimum permissions for an on-premises SQL Server database:
 
 ### How to Deploy EC2 from INFIO AMI
 
-1. Navigate to the **AWS Marketplace** to download the INFIO AMI. During this process, you will be prompted to answer several necessary questions, detailed below:
+1.  Navigate to the [AWS Marketplace](https://signin.aws.amazon.com/signin?redirect_uri=https%3A%2F%2Faws.amazon.com%2Fmarketplace%3F%26isauthcode%3Dtrue&client_id=arn%3Aaws%3Aiam%3A%3A015428540659%3Auser%2Fawsmp-contessa&forceMobileApp=0) to download the INFIO AMI. During this process, you will be prompted to answer several necessary questions, detailed below:
+    - **Region**: Select the region that you want to deploy your EC2 instance. The default is `us-east-1`.
     - **Region**: Select the region that you want to deploy your EC2 instance. The default is `us-east-1`.
     - **EC2 Instance Type**: Select the instance type that you want to use for the EC2 instance. The default is `m6a.large`.
     - **Subnet ID**: Provide the ID of a subnet where the EC2 instance will be deployed.
@@ -236,6 +237,8 @@ From the AWS Console in the same account where you have deployed the **INFIO EC2
 
 **Purpose:** 
 - This deployment is necessary if your **VPC landing zone** does not support **EC2 instances hosted in a private subnet** to connect with AWS services. The provided **CloudFormation template** creates a secure environment for the INFIO assessment tool within an AWS VPC. It establishes **VPC endpoints** for **S3**, **Secrets Manager**, and **KMS** services, enabling secure access from the INFIO EC2 instance.
+
+> Note: Configuring VPC Endpoints for these services is optional. If your INFIO EC2 instance already has direct access to these services through existing network configurations, you may skip this step.
 
 **Prerequisites:**
 - Verify network connectivity or consult your **cloud network administrator** before proceeding.
