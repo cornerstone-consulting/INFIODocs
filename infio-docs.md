@@ -629,7 +629,7 @@ On the configuration page, you need to click on the `add Configurations` button,
   - In both approaches, Profiler Extended Events must be manually collected from the source SQL Server.
 
 > **Note**: Before running an assessment and generating reports, you need to run the INFIO plugin and upload the files on S3 bucket based on the selected assessment mode.  
-> For more details, refer to the [INFIO Plugin Documentation](https://github.com/AakashLimbad208/infio-docs/blob/main/infio-plugin.md).
+> For more details, refer to the [INFIO Plugin Documentation](https://github.com/cornerstone-consulting/INFIODocs/blob/main/infio-plugin.md).
 
 **Summary**
 
