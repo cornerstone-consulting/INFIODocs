@@ -45,6 +45,8 @@
   - [Generating the Summary Report](#generating-the-summary-report)
   - [Generating the Consolidated Report for Multiple Applications](#generating-the-consolidated-report-for-multiple-applications)
   - [Exporting Assessment Answers](#exporting-assessment-answers)
+- [Unsupported functionalities in Babelfish](#unsupported-functionalities-in-bablefish)
+  - [Functionality that isn't currently supported][#functionality-that-isn't-currently-supported]
 - [Monitoring](#monitoring)
 - [Recovery and Backup](#recovery-and-backup)
 - [Managing Licenses](#managing-licenses)
