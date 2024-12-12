@@ -209,77 +209,89 @@ Before deploying the database migration assessment tool, ensure the following pr
 1. Required IAM Permissions
 2. SQL Server Database Permissions
 
-### 1. Required IAM Permissions
+#### 1. Required IAM Permissions  
 
-Below are the required permissions for an IAM user to create AWS resources within an AWS account:
+Below are the required permissions for an IAM user to create AWS resources within an AWS account:  
 
-#### EC2 Permissions
+#### EC2 Permissions  
 
-- `ec2:CreateVpcEndpoint`: Allows creation of a VPC endpoint.
-- `ec2:DescribeVpcEndpoints`: Grants permission to view details of existing VPC endpoints.
-- `ec2:DeleteVpcEndpoints`: Permits deletion of VPC endpoints.
-- `ec2:ModifyVpcEndpoint`: Allows modification of VPC endpoint attributes.
-- `ec2:DescribeRouteTables`: Enables viewing associated route tables.
-- `ec2:DescribeVpcs`: Grants permission to view VPC configurations.
-- `ec2:DescribeSubnets`: Allows viewing subnet details within a VPC.
-- `ec2:DescribeSecurityGroups`: Permits viewing of security groups.
-- `ec2:CreateSecurityGroup`: Grants permission to create new security groups.
-- `ec2:DeleteSecurityGroup`: Allows deletion of security groups.
-- `ec2:RevokeSecurityGroupEgress`: Permits removal of outbound rules.
-- `ec2:AuthorizeSecurityGroupIngress`: Allows adding inbound rules.
-- `ec2:AuthorizeSecurityGroupEgress`: Grants permission to add outbound rules.
+| Permission                         | Description                                           |
+|------------------------------------|-------------------------------------------------------|
+| `ec2:CreateVpcEndpoint`            | Allows creation of a VPC endpoint.                   |
+| `ec2:DescribeVpcEndpoints`         | Grants permission to view details of existing VPC endpoints. |
+| `ec2:DeleteVpcEndpoints`           | Permits deletion of VPC endpoints.                   |
+| `ec2:ModifyVpcEndpoint`            | Allows modification of VPC endpoint attributes.      |
+| `ec2:DescribeRouteTables`          | Enables viewing associated route tables.             |
+| `ec2:DescribeVpcs`                 | Grants permission to view VPC configurations.        |
+| `ec2:DescribeSubnets`              | Allows viewing subnet details within a VPC.          |
+| `ec2:DescribeSecurityGroups`       | Permits viewing of security groups.                  |
+| `ec2:CreateSecurityGroup`          | Grants permission to create new security groups.     |
+| `ec2:DeleteSecurityGroup`          | Allows deletion of security groups.                  |
+| `ec2:RevokeSecurityGroupEgress`    | Permits removal of outbound rules.                   |
+| `ec2:AuthorizeSecurityGroupIngress`| Allows adding inbound rules.                         |
+| `ec2:AuthorizeSecurityGroupEgress` | Grants permission to add outbound rules.             |
 
-#### CloudFormation Permissions
+#### CloudFormation Permissions  
 
-- `cloudformation:DescribeStacks`: View details of stacks.
-- `cloudformation:DescribeStackEvents`: See events related to stack creation, update, or deletion.
-- `cloudformation:DescribeStackResources`: Retrieve information about stack resources.
-- `cloudformation:GetTemplate`: Retrieve the CloudFormation template.
-- `cloudformation:ValidateTemplate`: Validate a CloudFormation template.
-- `cloudformation:CreateStack`: Create a new stack.
+| Permission                         | Description                                           |
+|------------------------------------|-------------------------------------------------------|
+| `cloudformation:DescribeStacks`    | View details of stacks.                              |
+| `cloudformation:DescribeStackEvents` | See events related to stack creation, update, or deletion. |
+| `cloudformation:DescribeStackResources` | Retrieve information about stack resources.        |
+| `cloudformation:GetTemplate`       | Retrieve the CloudFormation template.                |
+| `cloudformation:ValidateTemplate`  | Validate a CloudFormation template.                  |
+| `cloudformation:CreateStack`       | Create a new stack.                                  |
 
-#### KMS Permissions
+#### KMS Permissions  
 
-- `kms:DescribeKey`: View metadata of a specific KMS key.
-- `kms:EnableKeyRotation`: Enable automatic key rotation.
-- `kms:TagResource`: Tag a KMS key.
-- `kms:Decrypt`: Decrypt data using the KMS key.
-- `kms:Encrypt`: Encrypt data with the KMS key.
-- `kms:GenerateDataKey`: Generate a data encryption key (DEK).
-- `kms:CreateKey`: Create new KMS keys.
-- `kms:CreateAlias`: Create an alias for a KMS key.
+| Permission                         | Description                                           |
+|------------------------------------|-------------------------------------------------------|
+| `kms:DescribeKey`                  | View metadata of a specific KMS key.                 |
+| `kms:EnableKeyRotation`            | Enable automatic key rotation.                       |
+| `kms:TagResource`                  | Tag a KMS key.                                       |
+| `kms:Decrypt`                      | Decrypt data using the KMS key.                      |
+| `kms:Encrypt`                      | Encrypt data with the KMS key.                       |
+| `kms:GenerateDataKey`              | Generate a data encryption key (DEK).                |
+| `kms:CreateKey`                    | Create new KMS keys.                                 |
+| `kms:CreateAlias`                  | Create an alias for a KMS key.                       |
 
-#### Secrets Manager Permissions
+#### Secrets Manager Permissions  
 
-- `secretsmanager:ListSecrets`: List all secrets.
-- `secretsmanager:UpdateSecret`: Update secret value or metadata.
-- `secretsmanager:TagResource`: Add or modify secret tags.
-- `secretsmanager:GetSecretValue`: Retrieve a secret's value.
-- `secretsmanager:DeleteSecret`: Delete a specified secret.
-- `secretsmanager:CreateSecret`: Create new secrets.
-- `secretsmanager:GetRandomPassword`: Generate random passwords.
+| Permission                         | Description                                           |
+|------------------------------------|-------------------------------------------------------|
+| `secretsmanager:ListSecrets`       | List all secrets.                                    |
+| `secretsmanager:UpdateSecret`      | Update secret value or metadata.                     |
+| `secretsmanager:TagResource`       | Add or modify secret tags.                           |
+| `secretsmanager:GetSecretValue`    | Retrieve a secret's value.                           |
+| `secretsmanager:DeleteSecret`      | Delete a specified secret.                           |
+| `secretsmanager:CreateSecret`      | Create new secrets.                                  |
+| `secretsmanager:GetRandomPassword` | Generate random passwords.                           |
 
-#### S3 Permissions
+#### S3 Permissions  
 
-- `s3:GetEncryptionConfiguration`: View bucket encryption configuration.
-- `s3:PutEncryptionConfiguration`: Modify bucket encryption settings.
-- `s3:PutBucketTagging`: Tag S3 buckets with metadata.
-- `s3:PutObjectTagging`: Tag individual objects in the bucket.
-- `s3:PutBucketPolicy`: Apply or update bucket policies.
-- `s3:PutBucketPublicAccessBlock`: Modify public access block configuration.
-- `s3:GetBucketLocation`: Retrieve the geographical region of a bucket.
-- `s3:ListBucket`: List objects in the bucket.
-- `s3:GetObject`: Retrieve objects from the bucket.
-- `s3:PutObject`: Upload objects to the bucket.
-- `s3:CreateBucket`: Create a new S3 bucket.
+| Permission                         | Description                                           |
+|------------------------------------|-------------------------------------------------------|
+| `s3:GetEncryptionConfiguration`    | View bucket encryption configuration.                |
+| `s3:PutEncryptionConfiguration`    | Modify bucket encryption settings.                   |
+| `s3:PutBucketTagging`              | Tag S3 buckets with metadata.                        |
+| `s3:PutObjectTagging`              | Tag individual objects in the bucket.                |
+| `s3:PutBucketPolicy`               | Apply or update bucket policies.                     |
+| `s3:PutBucketPublicAccessBlock`    | Modify public access block configuration.            |
+| `s3:GetBucketLocation`             | Retrieve the geographical region of a bucket.        |
+| `s3:ListBucket`                    | List objects in the bucket.                          |
+| `s3:GetObject`                     | Retrieve objects from the bucket.                    |
+| `s3:PutObject`                     | Upload objects to the bucket.                        |
+| `s3:CreateBucket`                  | Create a new S3 bucket.                              |
 
-#### CloudWatch Logs Permissions
+#### CloudWatch Logs Permissions  
 
-- `logs:CreateLogGroup`: Create a new log group.
-- `logs:CreateLogStream`: Create a log stream.
-- `logs:PutLogEvents`: Upload log events to a stream.
+| Permission                         | Description                                           |
+|------------------------------------|-------------------------------------------------------|
+| `logs:CreateLogGroup`              | Create a new log group.                              |
+| `logs:CreateLogStream`             | Create a log stream.                                 |
+| `logs:PutLogEvents`                | Upload log events to a stream.                       |
 
-### 2. SQL Server Database Permissions
+#### 2. SQL Server Database Permissions
 
 To set up the minimum permissions for an on-premises SQL Server database:
 
