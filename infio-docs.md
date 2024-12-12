@@ -45,7 +45,25 @@
   - [Generating the Summary Report](#generating-the-summary-report)
   - [Generating the Consolidated Report for Multiple Applications](#generating-the-consolidated-report-for-multiple-applications)
   - [Exporting Assessment Answers](#exporting-assessment-answers)
-
+- [Monitoring](#monitoring)
+- [Recovery and Backup](#recovery-and-backup)
+- [Managing Licenses](#managing-licenses)
+- [Technical Support & Emergency Maintenance](#technical-support--emergency-maintenance)
+- [FAQs](#faqs)
+  - [Q1: What happens if the EC2 instance is stopped during the assessment?](#q1-what-happens-if-the-ec2-instance-is-stopped-during-the-assessment)
+  - [Q2: Can I use a different database type other than SQL Server?](#q2-can-i-use-a-different-database-type-other-than-sql-server)
+  - [Q3: How can I deploy the INFIO tool in my AWS account?](#q3-how-can-i-deploy-the-infio-tool-in-my-aws-account)
+  - [Q4: How often should I update the tool and its dependencies?](#q4-how-often-should-i-update-the-tool-and-its-dependencies)
+  - [Q5: How are database credentials managed securely?](#q5-how-are-database-credentials-managed-securely)
+  - [Q6: Is the data transfer between components secure?](#q6-is-the-data-transfer-between-components-secure)
+  - [Q7: What security measures are in place for data transfer?](#q7-what-security-measures-are-in-place-for-data-transfer)
+  - [Q8: Where are the assessment reports stored?](#q8-where-are-the-assessment-reports-stored)
+  - [Q9: What happens if the connection to the source SQL Server is lost during assessment?](#q9-what-happens-if-the-connection-to-the-source-sql-server-is-lost-during-assessment)
+  - [Q10: What are the minimum system requirements for running INFIO?](#q10-what-are-the-minimum-system-requirements-for-running-infio)
+  - [Q11: What permissions are required for the IAM role?](#q11-what-permissions-are-required-for-the-iam-role)
+  - [Q12: How do I update the configuration file?](#q12-how-do-i-update-the-configuration-file)
+  - [Q13: Can I run the assessment tool on multiple databases?](#q13-can-i-run-the-assessment-tool-on-multiple-databases)
+  - [Q14: When should I use VPC Endpoints in our environment?](#q14-when-should-i-use-vpc-endpoints-in-our-environment)
 
 ---
 ### Solution Overview
@@ -680,3 +698,106 @@ C:\Users\Administrator\infio\applications\<application_name>\destination\assessm
 ```
 - This file allows you to review or share the assessment data for further analysis or reporting purposes.
 - You can also generate the report from the reports page after selecting application name as well.
+
+---
+
+### Monitoring
+
+For monitoring purposes, the logs contain entries for errors, application startup events, and other activity logs. These logs are organized by month and can be found in the following directory:
+
+```bash
+Users/user_name/infio/logs/
+```
+![image](https://github.com/user-attachments/assets/5aa8fe3a-0fb4-40ed-9b76-4d051e6ac55e)
+
+This structure allows you to easily access and review logs on a monthly basis.
+
+---
+
+### Recovery and Backup
+
+INFIO stores only configuration data, such as secret keys, source-destination folder paths, S3 bucket names, and assessment-related questionnaires needed to run assessments and generate reports. Since this data is solely used for configuration and report generation, it does not require backup.
+
+---
+### Managing Licenses
+
+INFIO deployment does not require specific license management. It uses open-source tools and technologies such as Babelfish Compass, Python, PostgreSQL, and Java. The focus remains on utilizing these tools effectively for the migration process, without any licensing constraints.
+
+---
+
+### Technical Support & Emergency Maintenance
+
+For technical assistance and emergency maintenance, please contact Cornerstone Consulting Group at the following email:  
+[support@cornerstone-consulting.io](mailto:support@cornerstone-consulting.io)  
+
+Our support team will respond within 24 hours of receiving your email. They will assist with running assessments, generating reports, and guiding you on necessary execution and deployment steps. To ensure effective assistance, please provide as much detailed information as possible when reaching out. We are committed to delivering prompt and effective support to ensure a seamless deployment experience for our clients.
+
+Please note, as outlined in the deployment guide, we offer a unified service level model rather than multiple service level agreements (SLAs). This approach simplifies support and ensures consistent service across our client base.
+
+---
+
+### FAQs
+
+**Q1: What happens if the EC2 instance is stopped during the assessment?**  
+A: The assessment process will be halted. You can restart the instance and rerun the service to continue from where it left off.
+
+**Q2: Can I use a different database type other than SQL Server?**  
+A: Currently, the tool supports only SQL Server. Support for other database types may be added in future releases.
+
+**Q3: How can I deploy the INFIO tool in my AWS account?**  
+A: There are two deployment options:  
+- Cloud deployment through AWS Marketplace using INFIO AMI  
+- On-premises deployment using the INFIO plug-in  
+
+**Q4: How often should I update the tool and its dependencies?**  
+A: It is recommended to check for updates quarterly to ensure compatibility with the latest AWS services and security patches.
+
+**Q5: How are database credentials managed securely?**  
+A: Database credentials are stored and managed through AWS Secrets Manager, ensuring secure access to the SQL Server.
+
+**Q6: Is the data transfer between components secure?**  
+A: Yes, all data transfers occur within a private subnet in the VPC, and connections to S3, Secrets Manager, and KMS key are made through secure channels using VPC endpoints.
+
+**Q7: What security measures are in place for data transfer?**  
+A: Security measures include:  
+- TLS encryption for all data in transit  
+- VPC private subnet isolation  
+- IAM role-based access control  
+- Encryption at rest in S3  
+- Secure credential management  
+
+**Q8: Where are the assessment reports stored?**  
+A: Assessment reports are stored in two locations:  
+- Amazon S3 bucket for long-term storage  
+- Locally on the EC2 instance for immediate access  
+
+**Q9: What happens if the connection to the source SQL Server is lost during assessment?**  
+A: The system will:  
+1. Log the connection failure  
+2. Resume from the last successful checkpoint if possible  
+
+**Q10: What are the minimum system requirements for running INFIO?**  
+A:  
+- **For AWS deployment:**  
+  - EC2 instance (recommended t3.medium or higher)  
+  - VPC with private subnet  
+  - Internet access for AWS services  
+
+- **For On-premises:**  
+  - Windows server meeting INFIO plug-in specifications  
+  - Network connectivity to SQL Server  
+  - S3 bucket, Secrets Manager, and KMS key access  
+
+**Q11: What permissions are required for the IAM role?**  
+A: The IAM role needs permissions for EC2, Secrets Manager, S3, and KMS.
+
+**Q12: How do I update the configuration file?**  
+A: Edit the configuration file with the new database details and save it.
+
+**Q13: Can I run the assessment tool on multiple databases?**  
+A: Yes, you can configure and run the tool on multiple databases by updating the configuration file.
+
+**Q14: When should I use VPC Endpoints in our environment?**  
+A: If your EC2 instance is located in a private subnet without internet access, implementing a VPC endpoint is essential to access necessary AWS services. Confirm with your cloud network team whether your EC2 instance already has the required secure connectivity to CloudFormation, S3, Secrets Manager, and KMS services. If secure connectivity is in place, deploying additional VPC endpoints may not be necessary. Otherwise, you will need to deploy VPC endpoints to ensure the INFIO tool can securely communicate with these services.
+
+---
