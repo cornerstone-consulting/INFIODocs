@@ -39,19 +39,28 @@ The INFIO Tool provides two distinct execution modes for assessments. Users can 
 #### Profiler extended events
 In both modes, **Profiler Extended Events** collection is a manual step. After the assessment, you'll receive instructions on how to capture them.
 
-### 🌟 Features
+### Features
 - **Configuration Workflow**: Simple user input configuration for easy setup.
 - **Object Dependency Analysis**: Identifies Object dependencies across SQL Server databases.
 - **DMS Compatibility**: Generates DMS Assessor reports compatible with Migration Service.
 - **Schema-level Dependency Assessment**: Analyzes DDL objects and their interdependencies.
 - **Structured Output**: The outputs are saved as structured **SQL** and **HTML** files at a predefined location specified in the INFIO plugin tool, ensuring they are easy to parse and review.
 
-### ✅ Prerequisites
+### Prerequisites
 
 Ensure the following before using the Infio Plugin:
+- **Python installation**: To use the INFIO Plugin, ensure the following requirements are met:
+
+1. Python (version 3.12.7) must be installed on your machine.
+- If Python is not installed, download and install it from the official Python website:
+https://www.python.org/downloads/release/python-3127/
+- During installation, make sure to add Python to your system's environment PATH for seamless usage.
+
+2. After installing Python, open a terminal or command prompt and run the following command to install the required package:
+pip install mssql-scripter
 - **SQL Server Credentials**: Ensure that you have valid access credentials for your SQL Server instance, and verify that your IP address is authorized to connect to the instance.
 --
-### 🚀 Usage
+### Infio-plugin Usage
 
 #### Assessment Mode Selection
 
@@ -103,7 +112,7 @@ Once the configuration is completed, the plugin will display updates in the term
 #### **Next Steps**:
 - After the tools are executed, you will receive detailed instructions for the manual step of collecting **Profiler Extended Events**.
 
-## 🚀 Uploading Files to an S3 Bucket
+## Uploading Files to an S3 Bucket
 
 After following the instructions to capture **Profiler Extended Events**, you will see the next steps for uploading the generated files into your S3 bucket. There are two ways to do this:
 
