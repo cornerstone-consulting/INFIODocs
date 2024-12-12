@@ -25,8 +25,160 @@
   - [Generating the Consolidated Report for Multiple Applications](#generating-the-consolidated-report-for-multiple-applications)
   - [Exporting Assessment Answers](#exporting-assessment-answers)
 
+---
+### Solution Overview
+**INFIO** is designed to streamline and automate the database migration assessment process, ensuring a smooth and secure transition for complex database systems. This solution is tailored to assess and gather all critical information necessary to build a comprehensive migration plan from **MS SQL** to **Babelfish for Aurora PostgreSQL**.
 
+The solution provides deep insights into the existing database environment while adhering to **AWS best practices** for cloud migration. It emphasizes **security**, **scalability**, **reliability**, and **cost optimization** throughout the process.
 
+---
+
+### Purpose of This Document
+This user guide provides comprehensive instructions for deploying and using the **INFIO Tool**. It covers:
+
+- Necessary prerequisites
+- Step-by-step deployment procedures
+- Usage guidelines
+- Troubleshooting tips
+- Frequently asked questions
+
+---
+
+### Target Audience
+This guide is intended for:
+
+- **IT professionals**
+- **Database administrators**
+- **Cloud engineers**
+
+who are responsible for assessing database compatibility for migration purposes.
+
+---
+
+### Features and Benefits
+#### INFIO Assessment Covers:
+- **Application Deep-Dive**: A thorough analysis of the application architecture and its interactions with the database.
+- **Compass for Database Structure**: An in-depth review of the current database structure to ensure an accurate transition to Babelfish for Aurora PostgreSQL.
+- **Compass for Application Code**: A detailed assessment of application code for compatibility with Babelfish for Aurora PostgreSQL.
+- **Database Migration Service (DMS) Assessment**: Evaluation of AWS DMS to support an efficient migration with minimal downtime.
+- **Cross-Database Dependency Identification**: Detection and resolution of dependencies across multiple databases.
+
+### Key Assessment Outcomes:
+- **Target State Architecture**: A secure, optimized architecture for the target PostgreSQL environment.
+- **Total Cost of Ownership (TCO) Analysis**: Cost analysis to understand the cost implications of the migration.
+- **Application and Database Code Compatibility Report**: A detailed report highlighting unsupported T-SQL features and multiple viable solutions to ensure code is Babelfish compliant.
+- **Data Migration Feasibility**: Assessment of the data migration process, ensuring minimal disruptions and successful transfer.
+- **Dependency Relationships**: A clear understanding of relationships across all database objects to ensure a smooth migration process.
+
+---
+
+### Use Cases
+INFIO can be used to:
+
+- **Assess large-scale heterogeneous database migrations to AWS**: Enable a single-pane-of-glass view for large-scale database workload migration assessments to AWS.
+- **Provide prebuilt automation and reporting**: Utilize role-based access via a single web interface designed specifically for database migration assessments.
+
+---
+
+### Concepts and Definitions
+This section describes key concepts and defines terminology specific to this solution:
+
+- **INFIO AMI**: Prebuilt Amazon Machine Image hosting INFIO tool and services.
+- **Stack**: CloudFormation stack used for AWS resource deployment.
+- **Application**: A group of resources that make up a single business service or application.
+  - **Server**: Source database server to be assessed.
+  - **Database**: Source database to be assessed.
+
+---
+
+### Architecture Overview
+#### Components:
+- **AMI**: The INFIO AMI, a pre-configured, Windows-based Amazon Machine Image (AMI) available on AWS Marketplace, can be used to rapidly deploy EC2 instances equipped with the necessary tools and scripts for implementing the INFIO assessment solution.
+- **Amazon S3**: Used for storing input files prior to assessments and output files following the assessment process.
+- **Secret Manager**: Used as a repository for storing database credentials required to connect to databases.
+- **Key Management Services**: Serves as a secure storage location for encryption keys used to protect resources during INFIO deployments.
+- **CloudFormation Stack**: Used for automated deployments of AWS resources.
+- **VPC Endpoints (Optional)**: Provide secure, private connectivity between your VPC and AWS services without exposing your traffic to the public internet.
+
+---
+
+### AWS Well-Architected Design Considerations:
+
+| Pillar                     | Design Consideration                                                                                                  |
+|----------------------------|----------------------------------------------------------------------------------------------------------------------|
+| **Operational Excellence** | Resources defined as Infrastructure as Code using CloudFormation.                                                   |
+| **Security**               | IAM used for authentication and authorization, with narrowly scoped role permissions. VPC endpoints are used for private communication. |
+| **Reliability**            | This is an AMI-based solution, and a new preconfigured EC2 instance can be provisioned quickly in case of any failure. |
+| **Performance Efficiency** | Right-sizing EC2 instance types and sizes to align with the assessment workload.                                     |
+| **Cost Optimization**      | EC2 lifecycle management and right-sizing help reduce costs.                                                         |
+| **Sustainability**         | The INFIO Plugin streamlines input file gathering, reducing EC2 runtime. Effective EC2 instance lifecycle management further minimizes resource consumption. |
+
+---
+
+#### AWS Services in This Solution
+- **Amazon VPC (Core)**: Provides the underlying network infrastructure to securely connect EC2 instances and other AWS services, including VPC endpoints for private access to resources like S3, KMS, and Secrets Manager.
+- **Amazon EC2 (Core)**: Provides scalable compute resources for running INFIO tool or services within the VPC. Instances in private subnets securely access AWS services via VPC endpoints.
+- **Amazon S3 (Core)**: Acts as a storage solution for database assessment-related artifacts, such as DDL and SQL statement files, accessed via VPC endpoints.
+- **AWS Secrets Manager (Supporting)**: Securely manages and retrieves sensitive information, such as database credentials.
+- **AWS Key Management Service (Supporting)**: Manages encryption keys used to protect data and resources.
+- **AWS CloudFormation (Supporting)**: Accelerates AWS resource provisioning with infrastructure as code.
+- **VPC Endpoints (Optional & Supporting)**: Provide secure, private connectivity between your VPC and AWS services.
+
+---
+
+### Rotating Programmatic Credentials and Cryptographic Keys
+- Secret Manager keys and Customer Manager keys are typically rotated on a periodic basis to enhance security.
+- The **INFIO Tool** is designed for short-term use, typically lasting a few hours to a few days. The decision to rotate keys rests solely with the customer and is not enforced by the tool, as frequent rotation is uncommon for the tool’s intended use case.
+
+---
+
+### Plan Your Deployment  
+
+#### Cost  
+You are responsible for the cost of the AWS services used while running this solution. As of this revision, the estimated cost for running this solution with default settings in the **US East (N. Virginia)** region is detailed below.  
+
+To get the most recent and accurate cost estimate for your AWS architecture, you can use the [AWS Pricing Calculator](https://calculator.aws/).  
+
+| AWS Service           | Factors                                  | Cost/Month [USD]       |
+|------------------------|------------------------------------------|------------------------|
+| **Amazon S3**         | Storage (10GB) & 500 get and put requests/month | $0.23                 |
+| **AWS Secrets Manager** | 5 secrets x 30 days duration            | $0.23                 |
+| **AWS EC2**           | m6a.large, 10GB EBS                     | $2.00                 |
+| **AWS Key Management Service (KMS)** | 2 CMK x Number of symmetric requests (1000) | $130.80 |
+| **Security (IAM Roles)** | IAM roles for EC2 access to AWS services | $2.00                 |
+
+---
+
+### Security  
+
+#### IAM Roles  
+AWS Identity and Access Management (IAM) roles allow you to assign granular access policies and permissions to services and users in the AWS Cloud. This solution creates IAM roles that grant the EC2 instances access to the other AWS services used in this solution.  
+
+#### Amazon S3 Security  
+To enhance security while accessing private objects stored in Amazon S3, we are utilizing **VPC S3 endpoints**. This approach allows our application to securely communicate with S3 without requiring public access to the buckets. By avoiding the creation of public buckets, we significantly reduce the potential attack surface and mitigate the risk of unauthorized access to sensitive data.  
+
+#### Instance Metadata Service (IMDS)  
+The EC2 instances created in this solution support the ability to disable **Instance Metadata Service Version 1 (IMDSv1)** if required.  
+
+- **IMDSv2** is available and recommended for use, as indicated by AWS best practices.  
+- This solution uses the **AWS CLI** and **Boto3** for API calls, ensuring compatibility with IMDSv2.  
+- Using the latest versions of AWS SDKs, we align with AWS security standards, allowing customers to disable IMDSv1 as an option.  
+
+---
+
+#### Supported AWS Regions  
+INFIO on AWS is available in the following AWS Regions:  
+
+| Region Name          |
+|-----------------------|
+| **US East (N. Virginia)** |
+
+---
+
+### AWS CloudFormation Quotas  
+Your AWS account has CloudFormation quotas that you should be aware of when launching the stack for this solution. By understanding these quotas, you can avoid limitation errors that would prevent you from deploying this solution successfully.  
+
+---
 ### Prerequisites to Deploy the INFIO Tool
 
 #### 1. Skillsets
