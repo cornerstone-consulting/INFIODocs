@@ -1,4 +1,4 @@
-## **Unsupported functionalities in Bablefish**
+## **Unsupported functionalities in Babelfish**
 
 In the following table and lists, you can find functionality that isn't currently supported in Bablefish.
 
