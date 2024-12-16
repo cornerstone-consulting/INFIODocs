@@ -14,4 +14,4 @@ For detailed documentation, check the [Unsupported functionalities in Babelfish]
 
 ## Infio security best practices
 
-For detailed documentation, check the [Infio security best practices](infio-security-best-practices.md).
+For detailed documentation, check the [Infio security best practices](Infio-security-best-practices.md).
