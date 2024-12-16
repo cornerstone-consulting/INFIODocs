@@ -134,3 +134,273 @@ The security of INFIO is of the highest priority. Below are the key security bes
 - The EC2 instance is provisioned with the minimum set of AWS Identity and Access Management (IAM) roles and policies required to perform database assessments.
 - The instance may be given limited access to specific AWS services (e.g., S3 for temporary file storage, KMS for encryption, Secrets Manager for retrieving sensitive credentials).
 - Customers are encouraged to review and customize the IAM policies assigned to the instance to further restrict or expand permissions based on their needs.
+
+#### IAM Policy Attached to EC2 Role
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "cloudformation:DescribeStacks",
+        "cloudformation:DescribeStackEvents",
+        "cloudformation:DescribeStackResources",
+        "cloudformation:GetTemplate",
+        "cloudformation:ValidateTemplate"
+      ],
+      "Resource": "arn:aws:cloudformation:us-east-1:020877189064:stack/*",
+      "Effect": "Allow",
+      "Sid": "CloudFormationPermissionsForInfioEC2Instance"
+    },
+    {
+      "Action": [
+        "cloudformation:CreateStack"
+      ],
+      "Resource": "*",
+      "Effect": "Allow",
+      "Sid": "CloudFormationCreatePermissionsForInfioEC2Instance"
+    },
+    {
+      "Action": [
+        "kms:DescribeKey",
+        "kms:EnableKeyRotation",
+        "kms:TagResource",
+        "kms:Decrypt",
+        "kms:Encrypt",
+        "kms:GenerateDataKey"
+      ],
+      "Resource": "arn:aws:kms:us-east-1:020877189064:key/*",
+      "Effect": "Allow",
+      "Sid": "KMSPermissionsForInfioEC2Instance"
+    },
+    {
+      "Action": [
+        "kms:CreateKey",
+        "kms:CreateAlias"
+      ],
+      "Resource": "*",
+      "Effect": "Allow",
+      "Sid": "KMSCreatePermissionsForInfioEC2Instance"
+    },
+    {
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Purpose": "infio"
+        }
+      },
+      "Action": [
+        "secretsmanager:UpdateSecret",
+        "secretsmanager:TagResource",
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DeleteSecret"
+      ],
+      "Resource": [
+        "arn:aws:secretsmanager:us-east-1:020877189064:secret:infio-db-credentials-*",
+        "arn:aws:secretsmanager:us-east-1:020877189064:secret:infio*"
+      ],
+      "Effect": "Allow",
+      "Sid": "SecretsManagerPermissionsForInfioEC2Instance"
+    },
+    {
+      "Action": [
+        "secretsmanager:ListSecrets",
+        "secretsmanager:CreateSecret",
+        "secretsmanager:GetRandomPassword"
+      ],
+      "Resource": "*",
+      "Effect": "Allow",
+      "Sid": "SecretsManagerCreatePermissionsForInfioEC2Instance"
+    },
+    {
+      "Action": [
+        "s3:GetEncryptionConfiguration",
+        "s3:PutEncryptionConfiguration",
+        "s3:PutBucketTagging",
+        "s3:PutObjectTagging",
+        "s3:PutBucketPolicy",
+        "s3:PutBucketPublicAccessBlock",
+        "s3:GetBucketLocation",
+        "s3:ListBucket",
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::infio-private-bucket",
+        "arn:aws:s3:::infio-private-bucket/*",
+        "arn:aws:s3:::infio-cf-templates",
+        "arn:aws:s3:::infio-cf-templates/*"
+      ],
+      "Effect": "Allow",
+      "Sid": "S3BucketPermissionsForInfioEC2Instance"
+    },
+    {
+      "Action": [
+        "s3:CreateBucket"
+      ],
+      "Resource": "arn:aws:s3:::infio-private-bucket",
+      "Effect": "Allow",
+      "Sid": "S3BucketCreatePermissionsForInfioEC2Instance"
+    },
+    {
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:us-east-1:020877189064:log-group:/*",
+      "Effect": "Allow",
+      "Sid": "CloudWatchLogsPermissionsForInfioEC2Instance"
+    }
+  ]
+}
+```
+
+## Customer IAM Roles
+
+### Dedicated IAM Role
+Customers should use a **dedicated IAM role** for deploying the INFIO infrastructure. This ensures:
+- Limited access to sensitive resources.
+- Avoiding over-privileged accounts.
+
+### Multi-Factor Authentication (MFA)
+Enforce **MFA** for:
+- Accessing the AWS Management Console.
+- Performing administrative actions on the EC2 instance.
+
+---
+
+## Logging and Monitoring
+
+### Activity Logging
+- **Detailed Logs**: Activities such as script executions, database connections, and file transfers are stored in INFIO log files.
+- **CloudWatch Notifications**: 
+  - Custom metrics and alerts detect suspicious activities (e.g., unauthorized access, abnormal traffic spikes).
+- **CloudWatch Logs**: Additional logging for EC2 instance actions, such as:
+  - Instance start/stop.
+  - IAM role changes.
+  - Network configurations.
+
+### Vulnerability Management
+- **Regular Scans**: Continuous vulnerability scanning ensures no known vulnerabilities in the AMI system or software components.
+- **Patch Management**: 
+  - The AMI is updated regularly with the latest security patches.
+  - Customers are encouraged to automate patch management using AWS Systems Manager.
+
+---
+
+## Customer Responsibilities
+
+### Securing VPC
+- Correctly configure VPC components such as:
+  - Network ACLs.
+  - Route tables to prevent unauthorized traffic.
+- **Best Practices**:
+  - Limit internet gateway access.
+  - Configure VPN or Direct Connect.
+  - Use AWS Network Firewall for advanced security.
+
+### IAM Best Practices
+- Enforce strong password policies.
+- Enable MFA.
+- Apply least privilege principles.
+
+### Data Backup
+- Customers are responsible for backing up temporary files or results produced by the assessment tool.
+- Use scheduled backups to Amazon S3 or third-party solutions.
+
+---
+
+## Secure Storage and Key Management
+
+### AWS Key Management Service (KMS)
+- **Encryption**: KMS is used for encrypting data at rest and sensitive information.
+- **Custom Keys**: Customers can specify the ARN for their KMS Customer Managed Key (CMK).
+
+### Secrets Management
+- **Sensitive Credentials**:
+  - Stored in AWS Secrets Manager with encryption enabled.
+  - Ensures no plain text credentials are exposed.
+
+---
+
+## Frequently Asked Questions (FAQ)
+
+## Frequently Asked Questions (FAQ)
+
+### How does INFIO ensure secure communication with my SQL Server?
+INFIO uses the **AWS network** to securely connect and communicate with the source SQL Server. By deploying the INFIO instance within a **private subnet**, direct access to the SQL Server is isolated from public networks.
+
+### How is the EC2 instance secured from external access?
+The EC2 instance is deployed in a **private subnet** without direct access to the public internet. Only authorized internal resources, such as your database server within the VPC, can communicate with the instance through configured security groups.
+
+### Can I access the EC2 instance via RDP?
+Yes, RDP access is allowed but limited to **specific IP addresses**, and only **key-based authentication** is supported. You must use a securely stored private key to access the instance. We recommend regularly rotating keys and disabling RDP access when not needed.
+
+### What kind of data is stored on the EC2 instance?
+No customer data is stored persistently. Data processed during the assessment, such as:
+- SQL DDL statements.
+- SQL dynamic queries.
+- SQL Server configuration details.
+- Query results or logs.
+
+This data can be temporarily written to disk but is **deleted after the assessment completes**. You may configure custom cleanup options based on your requirements.
+
+### Are logs from the EC2 instance available to me?
+Yes, all activity and access logs can be streamed to your **AWS CloudWatch** account, where you can monitor them in real-time. These logs provide insight into tool performance, user activity, and any security-related events.
+
+### How is access to the tool controlled?
+Access is controlled via **AWS IAM roles** and security groups. The principle of least privilege is applied, ensuring that the instance has minimal permissions. You can modify the IAM role assigned to the instance to restrict or expand its access to AWS services.
+
+### What happens if vulnerabilities are discovered in the tool?
+We continuously monitor the AMI for new vulnerabilities and apply patches when necessary. If vulnerabilities are discovered, a new version of the AMI is released, and customers are notified to update their instances.
+
+### How can I ensure that my VPC and EC2 instance are secure?
+We recommend following AWS VPC security best practices, including:
+- Use of **Network ACLs**, **Security Groups**, and **AWS Network Firewall**.
+- Monitoring traffic with **VPC Flow Logs**.
+- Using **AWS Shield** for advanced DDoS protection.
+
+### How do you ensure that the AMI is secure before deployment?
+The AMI undergoes extensive testing, including:
+- Vulnerability scanning.
+- Penetration testing.
+- Security audits.
+
+We follow strict guidelines for patch management and secure software development practices.
+
+### Can I update the software on the EC2 instance?
+Yes, you can update the software components (such as PostgreSQL or Python) installed on the EC2 instance. We recommend backing up your instance before making any updates. You can also automate software patching via **AWS Systems Manager**.
+
+### What if I need additional security measures for my use case?
+We understand that security requirements vary by organization. You can configure additional security controls such as:
+- Network access rules.
+- Custom encryption keys.
+- Monitoring alerts based on your specific needs.
+
+### Can I use my own encryption keys for data at rest?
+Yes, the tool supports **customer-managed encryption keys (CMKs)** through **AWS Key Management Service (KMS)** for encrypting EBS volumes or any sensitive data handled by the tool.
+
+### How are my credentials stored and secured?
+The tool uses **AWS Secrets Manager** to store credentials securely. All sensitive information is encrypted, and only the tool’s processes have access to these credentials.
+
+### How do I update to the latest version of the tool?
+Updated AMI images will be made available with security patches and new features. You can launch a new EC2 instance using the latest AMI and migrate any configurations from your previous instance.
+
+### Can the tool be accessed by third parties?
+No, the tool is designed to operate securely within the customer’s VPC and is only accessible by authorized systems in the customer’s network. No external access is allowed.
+
+### What's the required runtime for INFIO in the VPC to finalize the assessment?
+INFIO depends on the input files to start and assess the source environment. If all source files are available, INFIO might need a couple of hours (depending on the file size) to complete the assessment.
+
+### In case INFIO needs to run for an extended period, will there be any antivirus software on the AMI?
+Customers are advised to follow their organization’s best security practices to implement the necessary antivirus measures on the EC2 instance deployed using INFIO AMI. Please note that the AMI itself does not come with a pre-installed antivirus.
+
+### Is there a file that is generated as part of the online INFIO assessment process? What information is captured as part of the output file?
+The data collected during the assessment includes:
+- SQL Server schema definition language.
+- T-SQL code embedded within the application.
+- SQL Server metadata.
+- Configuration details.
+
+This information is stored locally on the EC2 instance and is utilized solely for reporting purposes.
