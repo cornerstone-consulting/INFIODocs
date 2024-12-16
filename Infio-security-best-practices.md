@@ -47,7 +47,8 @@
   - [Can the tool be accessed by third parties?](#can-the-tool-be-accessed-by-third-parties)
   - [What's the required runtime for INFIO in the VPC to finalize the assessment?](#whats-the-required-runtime-for-infio-in-the-vpc-to-finalize-the-assessment)
   - [In case INFIO needs to run for an extended period, will there be any antivirus software on the AMI?](#in-case-infio-needs-to-run-for-an-extended-period-will-there-be-any-antivirus-software-on-the-ami)
-  - [Is there a file generated as part of the online INFIO assessment process? What information is captured as part of the output file?](#is-there-a-file-generated-as-part-of-the-online-infio-assessment-process-what-information-is-captured-as-part-of-the-output-file)
+  - [Is there a file that is generated as part of the online INFIO assessment process? What information is captured as part of the output file?](#is-there-a-file-that-is-generated-as-part-of-the-online-infio-assessment-process-what-information-is-captured-as-part-of-the-output-file)
+
 
 
 ---
