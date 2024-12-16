@@ -1,5 +1,6 @@
-# Table of Contents
+# Infio security best practices
 
+## Table of Contents
 - [Overview](#overview)
 - [EC2 Image Security](#ec2-image-security)
   - [AMI Hardening](#ami-hardening)
@@ -47,6 +48,7 @@
   - [What's the required runtime for INFIO in the VPC to finalize the assessment?](#whats-the-required-runtime-for-infio-in-the-vpc-to-finalize-the-assessment)
   - [In case INFIO needs to run for an extended period, will there be any antivirus software on the AMI?](#in-case-infio-needs-to-run-for-an-extended-period-will-there-be-any-antivirus-software-on-the-ami)
   - [Is there a file generated as part of the online INFIO assessment process? What information is captured as part of the output file?](#is-there-a-file-generated-as-part-of-the-online-infio-assessment-process-what-information-is-captured-as-part-of-the-output-file)
+
 
 ---
 
