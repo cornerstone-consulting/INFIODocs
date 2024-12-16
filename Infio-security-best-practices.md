@@ -326,8 +326,6 @@ Enforce **MFA** for:
 
 ## Frequently Asked Questions (FAQ)
 
-## Frequently Asked Questions (FAQ)
-
 ### How does INFIO ensure secure communication with my SQL Server?
 INFIO uses the **AWS network** to securely connect and communicate with the source SQL Server. By deploying the INFIO instance within a **private subnet**, direct access to the SQL Server is isolated from public networks.
 
