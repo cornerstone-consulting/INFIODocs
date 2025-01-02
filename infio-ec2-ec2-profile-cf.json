@@ -1,0 +1,363 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "EC2InstanceType": {
+        "Type": "String",
+        "Description": "Select the EC2 instance type",
+        "AllowedValues": [ "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "t3a.medium", "t3a.large", "t3a.xlarge", "t3a.2xlarge", "t3.medium", "t3.large", "t3.xlarge", 
+        "t3.2xlarge", "m5.large", "m5.xlarge", "m5.2xlarge", "m5.4xlarge", "m5a.large", "m5a.xlarge", "m5a.2xlarge", "m5a.4xlarge", "m6a.large", "m6a.xlarge", "m6a.2xlarge", 
+        "m6a.4xlarge", "c5.large", "c5.xlarge", "c5.2xlarge", "c5.4xlarge", "c6a.large", "c6a.xlarge", "c6a.2xlarge", "c6a.4xlarge", "r5.large", "r5.xlarge", "r5.2xlarge", 
+        "r5.4xlarge", "r6a.large", "r6a.xlarge", "r6a.2xlarge", "r6a.4xlarge", "d3.xlarge", "d3.2xlarge" ],
+        "Default": "t3.large"
+    },
+    "SubnetID": {
+        "Type": "String",
+        "Description": "ID of a subnet where Infio EC2 instance will be deployed",
+        "ConstraintDescription": "Must be a private subnet in the AZ you select."
+    },
+    "InfioEC2EncryptionKeyAlias": {
+        "Type": "String",
+        "Description": "Alias of the KMS encryption key you would like to use to encrypt the Infio EC2 instance, default is AWS managed aws/ebs KMS",
+        "Default": "aws/ebs"
+    },
+    "VPCCIDR": {
+        "Type": "String",
+        "Description": "CIDR of the VPC where your Infio EC2 instance will be deployed."
+    },
+    "VPCID": {
+        "Type": "String",
+        "Description": "VPC ID where your Infio EC2 instance will be deployed."
+    },
+    "InboundCIDRIP": {
+        "Type": "String",
+        "Description": "CIDR or a single IP address that will be allowed to RDP inbound to the Infio EC2 Instance.",
+         "ConstraintDescription": "Please enetr in the form of xx.xx.xx.xx/xx."
+    }
+  },
+  "Mappings": {
+    "RegionMap": {
+      "us-east-1": { "AMI": "ami-01f3b2192e4a43a2f" }, 
+      "us-east-2": { "AMI": "" },
+      "us-west-1": { "AMI": "" },
+      "us-west-2": { "AMI": "" },
+      "eu-west-1": { "AMI": "" },
+      "eu-west-2": { "AMI": "" },
+      "af-south-1": { "AMI": "" },
+      "ap-east-1": { "AMI": "" },
+      "ap-south-1": { "AMI": "" },
+      "ap-south-2": { "AMI": "" },
+      "ap-southeast-3": { "AMI": "" },
+      "ap-southeast-4": { "AMI": "" },
+      "ap-southeast-5": { "AMI": "" },
+      "ap-northeast-3": { "AMI": "" },
+      "ap-northeast-2": { "AMI": "" },
+      "ap-southeast-1": { "AMI": "" },
+      "ap-southeast-2": { "AMI": "" },
+      "ap-northeast-1": { "AMI": "" },
+      "ca-central-1": { "AMI": "" },
+      "ca-west-1": { "AMI": "" },
+      "eu-central-1": { "AMI": "" },
+      "eu-south-1": { "AMI": "" },
+      "eu-west-3": { "AMI": "" },
+      "eu-south-2": { "AMI": "" },
+      "eu-north-1": { "AMI": "" },
+      "eu-central-2": { "AMI": "" },
+      "il-central-1": { "AMI": "" },
+      "me-south-1": { "AMI": "" },
+      "me-central-1": { "AMI": "" },
+      "sa-east-1": { "AMI": "" },
+      "us-gov-east-1": { "AMI": "" },
+      "us-gov-west-1": { "AMI": "" }
+    }
+  },
+  "Resources": {
+    "EC2SecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName" : "infio-ec2-sg",
+        "GroupDescription": "Security group for Infio EC2 Instance.",
+        "VpcId": { "Ref": "VPCID" },
+        "SecurityGroupIngress": [ 
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 443,
+          "ToPort": 443,
+          "CidrIp": { "Ref": "VPCCIDR" }
+        },
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 80,
+          "ToPort": 80,
+          "CidrIp": { "Ref": "VPCCIDR" }
+        },
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 3389,
+          "ToPort": 3389,
+          "CidrIp": { "Ref": "InboundCIDRIP" }
+        }
+        ],
+        "SecurityGroupEgress": [
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 443,
+          "ToPort": 443,  
+          "CidrIp": { "Ref": "VPCCIDR" }
+        },
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 80,
+          "ToPort": 80,  
+          "CidrIp": { "Ref": "VPCCIDR" }
+        }
+        ]
+       }
+    },
+    "InfioEC2Profile": {
+        "Type": "AWS::IAM::InstanceProfile",
+        "Properties": {
+          "InstanceProfileName" : "infio-ec2-profile",
+          "Path": "/",
+          "Roles": [
+            {
+              "Ref": "InfioEC2Role"
+            }
+          ]
+        }
+      },
+      "InfioEC2Role": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": "ec2.amazonaws.com"
+                },
+                "Action": "sts:AssumeRole"
+              }
+            ]
+          },
+          "RoleName" : "infio-ec2-role",
+          "Path": "/",
+          "Policies": [
+            {
+              "PolicyName": "infio-ec2-role-policy",
+              "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                        {
+                          "Sid": "CloudFormationPermissionsForInfioEC2Instance",
+                          "Effect": "Allow",
+                          "Action": [
+                            "cloudformation:DescribeStacks",
+                            "cloudformation:DescribeStackEvents",
+                            "cloudformation:DescribeStackResources",
+                            "cloudformation:GetTemplate",
+                            "cloudformation:ValidateTemplate" 
+                          ],
+                          "Resource": {
+                                "Fn::Join": [ ":", [ "arn:aws:cloudformation", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "stack/*" ] ]
+                              }
+                        },
+                        {
+                          "Sid": "CloudFormationCreatePermissionsForInfioEC2Instance",
+                          "Effect": "Allow",
+                          "Action": [
+                            "cloudformation:CreateStack"
+                          ],
+                          "Resource": "*"
+                        },
+                        {
+                          "Sid": "KMSPermissionsForInfioEC2Instance",
+                          "Effect": "Allow",
+                          "Action": [
+                            "kms:DescribeKey",
+                            "kms:EnableKeyRotation",
+                            "kms:TagResource",
+                            "kms:Decrypt",
+                            "kms:Encrypt",
+                            "kms:GenerateDataKey"
+                          ],
+                          "Resource": {
+                            "Fn::Join": [ ":", [ "arn:aws:kms", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "key/*" ] ]
+                          }
+                        },
+                        {
+                          "Sid": "KMSCreatePermissionsForInfioEC2Instance",
+                          "Effect": "Allow",
+                          "Action": [
+                              "kms:CreateKey",
+                              "kms:CreateAlias"
+                          ],
+                          "Resource": "*"
+                        },
+                        {
+                          "Sid": "SecretsManagerPermissionsForInfioEC2Instance",
+                          "Effect": "Allow",
+                          "Action": [
+                            "secretsmanager:UpdateSecret",
+                            "secretsmanager:TagResource",
+                            "secretsmanager:GetSecretValue",
+                            "secretsmanager:DeleteSecret",
+                            "secretsmanager:DescribeSecret"              
+                          ],
+                          "Resource": [{
+                            "Fn::Join": [ ":", [ "arn:aws:secretsmanager", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "secret:infio-db-credentials-*" ] ]
+                          },
+                          {
+                            "Fn::Join": [ ":", [ "arn:aws:secretsmanager", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "secret:infio*" ] ]
+                          }],
+                          "Condition": {
+                              "StringEquals": {
+                              "aws:ResourceTag/Purpose": "Infio"
+                              }
+                          }
+                        },
+                        {
+                          "Sid": "SecretsManagerCreatePermissionsForInfioEC2Instance",
+                          "Effect": "Allow",
+                          "Action": [
+                            "secretsmanager:CreateSecret",
+                            "secretsmanager:ListSecrets",
+                            "secretsmanager:GetRandomPassword"
+
+                          ],
+                          "Resource": "*"
+                        },
+                        {
+                          "Sid": "S3BucketPermissionsForInfioEC2Instance",
+                          "Effect": "Allow",
+                          "Action": [
+                            "s3:GetEncryptionConfiguration",
+                            "s3:PutEncryptionConfiguration",
+                            "s3:PutBucketTagging",
+                            "s3:PutObjectTagging",
+                            "s3:PutBucketPolicy",
+                            "s3:PutBucketPublicAccessBlock",
+                            "s3:GetBucketLocation",
+                            "s3:ListBucket",
+                            "s3:GetObject",
+                            "s3:PutObject"
+
+                          ],
+                          "Resource": [{
+                            "Fn::Join": [ ":", [ "arn:aws:s3::", "infio-private-bucket" ] ]
+                          },
+                          {
+                            "Fn::Join": [ ":", [ "arn:aws:s3::", "infio-private-bucket/*" ] ]
+                          }]
+                        },
+                        {
+                          "Sid": "S3BucketCreatePermissionsForInfioEC2Instance",
+                          "Effect": "Allow",
+                          "Action": [
+                            "s3:CreateBucket"
+
+                          ],
+                          "Resource": {
+                            "Fn::Join": [ ":", [ "arn:aws:s3::", "infio-private-bucket" ] ]
+                          }
+                        },
+                        {
+                          "Sid": "CloudWatchLogsPermissionsForInfioEC2Instance",
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:CreateLogGroup",
+                            "logs:CreateLogStream",
+                            "logs:PutLogEvents"
+                          ],
+                          "Resource": {
+                            "Fn::Join": [ ":", [ "arn:aws:logs", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "log-group:/*" ]  ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+          ],
+          "ManagedPolicyArns": [
+            "arn:aws:iam::aws:policy/AmazonSSMManagedEC2InstanceDefaultPolicy",
+            "arn:aws:iam::aws:policy/service-role/AWSLicenseManagerConsumptionPolicy"
+            
+          ],
+          "Tags" : [ {
+              "Key" : "Purpose",
+              "Value" : "infio"
+          }]
+        }
+      },
+      "InfioEC2InstanceKey" : {
+        "Type" : "AWS::EC2::KeyPair",
+        "Properties" : {
+            "KeyFormat" : "pem",
+            "KeyName" : "InfioEC2InstanceKey",
+            "KeyType" : "rsa",
+            "Tags" : [ 
+                {
+                    "Key" : "Purpose",
+                    "Value" : "infio"
+                }
+              ]
+        }
+    },
+    "InfioEC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "IamInstanceProfile" : {"Ref": "InfioEC2Profile"},
+        "BlockDeviceMappings" : [ 
+          {
+            "DeviceName" : "/dev/sda1",
+            "Ebs" : {
+              "DeleteOnTermination" : true,
+              "Encrypted" : true,
+              "KmsKeyId" : {
+                "Fn::Join": [ "/", [ "alias", { "Ref": "InfioEC2EncryptionKeyAlias" } ]  ]
+              },
+              "VolumeSize" : 40,
+              "VolumeType" : "gp2"
+            }
+          }
+        ],
+        "ImageId": {
+            "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "AMI" ]
+          },
+        "InstanceType": { "Ref": "EC2InstanceType" },
+        "KeyName": { "Ref": "InfioEC2InstanceKey" },
+        "SecurityGroupIds": [{ "Ref": "EC2SecurityGroup" }],
+        "SubnetId": { "Ref": "SubnetID" },
+        "Tags" : [ 
+            {
+                "Key" : "Purpose",
+                "Value" : "infio"
+            },
+            {
+              "Key" : "Name",
+              "Value" : "infio-assessment-instance"
+          }
+          ]
+      }
+    }
+  },
+  "Outputs": {
+    "EC2IAMRoleName": {
+      "Description": "The name of the IAM role associated with Infio EC2 instance.",
+      "Value": {
+        "Ref": "InfioEC2Role"
+      }
+    },
+    "EC2InstanceID": {
+      "Description": "The ID of the Infio EC2 instance.",
+      "Value": {
+        "Ref": "InfioEC2Instance"
+      }
+    },
+      "EC2SecurityGroup": {
+        "Description": "The ID of the Sg attached to the Infio EC2 instance.",
+        "Value": {
+          "Ref": "EC2SecurityGroup"
+        }
+    }
+  }
+}
