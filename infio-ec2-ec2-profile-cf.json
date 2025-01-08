@@ -36,7 +36,7 @@
   },
   "Mappings": {
     "RegionMap": {
-      "us-east-1": { "AMI": "ami-01f3b2192e4a43a2f" }, 
+      "us-east-1": { "AMI": "ami-01fdd1768c9bcffe5" }, 
       "us-east-2": { "AMI": "" },
       "us-west-1": { "AMI": "" },
       "us-west-2": { "AMI": "" },
@@ -272,6 +272,17 @@
                           "Resource": {
                             "Fn::Join": [ ":", [ "arn:aws:logs", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "log-group:/*" ]  ]
                           }
+                        },
+                        {
+                        "Sid": "InfioLicenseManagerIntegrationPolicy",
+                        "Effect": "Allow",
+                        "Action": [
+                            "license-manager:CheckoutLicense",
+                            "license-manager:ExtendLicenseConsumption",
+                            "license-manager:ListReceivedLicenses",
+                            "license-manager:GetLicense"
+                          ],
+                        "Resource": "*"
                         }
                       ]
                     }
@@ -279,7 +290,8 @@
           ],
           "ManagedPolicyArns": [
             "arn:aws:iam::aws:policy/AmazonSSMManagedEC2InstanceDefaultPolicy",
-            "arn:aws:iam::aws:policy/service-role/AWSLicenseManagerConsumptionPolicy"
+            "arn:aws:iam::aws:policy/service-role/AWSLicenseManagerConsumptionPolicy",
+            "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
             
           ],
           "Tags" : [ {
@@ -315,8 +327,8 @@
               "KmsKeyId" : {
                 "Fn::Join": [ "/", [ "alias", { "Ref": "InfioEC2EncryptionKeyAlias" } ]  ]
               },
-              "VolumeSize" : 40,
-              "VolumeType" : "gp2"
+              "VolumeSize" : 50,
+              "VolumeType" : "gp3"
             }
           }
         ],
