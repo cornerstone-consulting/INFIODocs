@@ -245,7 +245,7 @@ The INFIO EC2 instance includes all necessary tools to ensure secure and efficie
 
 #### 3. License manager
 
-AWS License Manager must be configured to manage and track licenses for EC2 instances. Ensure proper license configurations are set up and associated with instances, and attach the required IAM role (AWSLicenseManagerInstanceServiceRolePolicy) for license compliance.
+AWS License Manager must be configured to manage and track licenses for EC2 instances. Ensure proper license configurations are set up and associated with instances.
 
 ---
 
@@ -549,14 +549,15 @@ The `--endpoint-url` parameter is **optional**. Utilize it only if you created a
 
 ### INFIO Assessment Tool Usage Guide
 
-1. Navigate to the `Desktop:\INFIO Assessment Tool` folder located on the desktop of the INFIO EC2 instance.
-2. Inside the **INFIO Assessment Tool** folder, you will find three subfolders:
+1. Before running the INFIO Assessment Tool, you must complete the CloudFormation template steps outlined above to create the necessary INFIO resources and ensure the tool runs successfully.
+2. Navigate to the `Desktop:\INFIO Assessment Tool` folder located on the desktop of the INFIO EC2 instance.
+3. Inside the **INFIO Assessment Tool** folder, you will find three subfolders:
     - `aws-infra-setup`
     - `infio`
     - `infio-plugin`
-3. Open the `infio` folder. Inside this folder, locate and run the INFIO **exe file** to start the application. It will run the INFIO tool in Google Chrome browser.
-4. If you encounter the error "License validation failed. The app cannot be started," please contact Cornerstone Support for assistance with license validation at support@cornerstone-consulting.io.
-5. Once the tool is launched, go to the `Assessment` page where INFIO will prompt you to enter the application name and company name. If your company name is not available in the list, you can enter the company name.
+4. Open the `infio` folder. Inside this folder, locate and run the INFIO **exe file** to start the application. It will run the INFIO tool in Google Chrome browser.
+5. If you encounter the error "License validation failed. The app cannot be started," please contact Cornerstone Support for assistance with license validation at support@cornerstone-consulting.io.
+6. Once the tool is launched, go to the `Assessment` page where INFIO will prompt you to enter the application name and company name. If your company name is not available in the list, you can enter the company name.
 
 **Filling Out the Questionnaire**
 
