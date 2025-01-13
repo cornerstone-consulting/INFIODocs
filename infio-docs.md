@@ -26,6 +26,7 @@
 - [Prerequisites to Deploy the INFIO Tool](#prerequisites-to-deploy-the-infio-tool)
   - [Skillsets](#skillsets)
   - [Others](#others)
+  - [License manager](#licensemanager)
 - [Prerequisites Checklist](#prerequisites-checklist)
   - [Required IAM Permissions](#required-iam-permissions)
   - [SQL Server Database Permissions](#sql-server-database-permissions)
