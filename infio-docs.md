@@ -245,8 +245,7 @@ The INFIO EC2 instance includes all necessary tools to ensure secure and efficie
 
 #### 3. License manager
 
-AWS License Manager must be configured to manage and track licenses for EC2 instances. Ensure proper license configurations are set up and associated with instances.
----
+AWS License Manager must be configured to manage and track licenses for EC2 instances. Ensure proper license configurations are set up and associated with instances, and attach the required IAM role (AWSLicenseManagerInstanceServiceRolePolicy) for license compliance.---
 
 ### Prerequisites Checklist
 
