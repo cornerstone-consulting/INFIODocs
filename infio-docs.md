@@ -26,7 +26,7 @@
 - [Prerequisites to Deploy the INFIO Tool](#prerequisites-to-deploy-the-infio-tool)
   - [Skillsets](#skillsets)
   - [Others](#others)
-  - [License manager](#licensemanager)
+  - [License manager](#license-manager)
 - [Prerequisites Checklist](#prerequisites-checklist)
   - [Required IAM Permissions](#required-iam-permissions)
   - [SQL Server Database Permissions](#sql-server-database-permissions)
@@ -243,10 +243,11 @@ The INFIO EC2 instance includes all necessary tools to ensure secure and efficie
 - **PostgreSQL**: Preinstalled to store assessment data and configuration details, serving as a local database for quick access to critical migration information.
 - **Babelfish Compass**: Preinstalled to identify SQL Server features incompatible with PostgreSQL and provide guidance for adjustments.
 
-
 #### 3. License manager
 
-AWS License Manager must be configured to manage and track licenses for EC2 instances. Ensure proper license configurations are set up and associated with instances, and attach the required IAM role (AWSLicenseManagerInstanceServiceRolePolicy) for license compliance.---
+AWS License Manager must be configured to manage and track licenses for EC2 instances. Ensure proper license configurations are set up and associated with instances, and attach the required IAM role (AWSLicenseManagerInstanceServiceRolePolicy) for license compliance.
+
+---
 
 ### Prerequisites Checklist
 
