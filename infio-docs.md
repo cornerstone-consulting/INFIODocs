@@ -242,6 +242,10 @@ The INFIO EC2 instance includes all necessary tools to ensure secure and efficie
 - **PostgreSQL**: Preinstalled to store assessment data and configuration details, serving as a local database for quick access to critical migration information.
 - **Babelfish Compass**: Preinstalled to identify SQL Server features incompatible with PostgreSQL and provide guidance for adjustments.
 
+
+#### 3. License manager
+
+AWS License Manager must be configured to manage and track licenses for EC2 instances. Ensure proper license configurations are set up and associated with instances.
 ---
 
 ### Prerequisites Checklist
