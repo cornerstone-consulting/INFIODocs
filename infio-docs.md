@@ -326,6 +326,7 @@ Below are the required permissions for an IAM user to create AWS resources withi
 | `s3:PutBucketPublicAccessBlock`    | Modify public access block configuration.            |
 | `s3:GetBucketLocation`             | Retrieve the geographical region of a bucket.        |
 | `s3:ListBucket`                    | List objects in the bucket.                          |
+| `s3:ListAllMyBuckets`              | List all the buckets that exists in aws account.     |
 | `s3:GetObject`                     | Retrieve objects from the bucket.                    |
 | `s3:PutObject`                     | Upload objects to the bucket.                        |
 | `s3:CreateBucket`                  | Create a new S3 bucket.                              |
