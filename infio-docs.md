@@ -35,7 +35,7 @@
   - [Log in to a Windows INFIO EC2 Instance in a Private Subnet Using a Bastion Host](#log-in-to-a-windows-infio-ec2-instance-in-a-private-subnet-using-a-bastion-host)
   - [VPC Endpoint Deployment for CloudFormation Service (Optional)](#vpc-endpoint-deployment-for-cloudformation-service-optional)
   - [VPC Endpoint Deployment for S3, Secret Manager, and KMS](#vpc-endpoint-deployment-for-s3-secret-manager-and-kms)
-  - [Setting up AWS Resources via CloudFormation](#setting-up-aws-resources-via-cloudformation)
+  - [Setting up AWS Resources via CloudFormation](#Steps-for-setting-up-AWS-resources-for-infio-assessment-tool-via-cloudFormation)
 - [INFIO Assessment Tool Usage Guide](#infio-assessment-tool-usage-guide)
   - [Filling Out the Questionnaire](#filling-out-the-questionnaire)
   - [Navigating to the Configuration Page](#navigating-to-the-configuration-page)
