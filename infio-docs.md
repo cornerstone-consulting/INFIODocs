@@ -448,7 +448,7 @@ From the AWS Console in the same account where you have deployed the **INFIO EC2
 ### VPC Endpoint Deployment for S3, Secret manager, and KMS
 
 **Purpose:** 
-- This deployment is necessary if your **VPC landing zone** does not support **EC2 instances hosted in a private subnet** to connect with AWS services. The provided **CloudFormation template** creates a secure environment for the INFIO assessment tool within an AWS VPC. It establishes **VPC endpoints** for **S3**, **Secrets Manager**, and **KMS** services, enabling secure access from the INFIO EC2 instance.
+- This deployment is necessary if your **VPC landing zone** does not support **EC2 instances hosted in a private subnet** to connect with AWS services. The provided **CloudFormation template** creates a secure environment for the INFIO assessment tool within an AWS VPC. It establishes **VPC endpoints** for **S3**, **Secrets Manager**, and **KMS** services, enabling secure access from the INFIO EC2 instance. 
 
 > Note: Configuring VPC Endpoints for these services is optional. If your INFIO EC2 instance already has direct access to these services through existing network configurations, you may skip this step.
 
@@ -516,7 +516,7 @@ aws cloudformation create-stack --stack-name INFIOVPCEndpoints \
 
 ### Steps for setting up AWS Resources for Infio Assessment Tool via CloudFormation
 
-This CloudFormation template provisions the necessary AWS resources for the **INFIO Assessment Tool**, including a KMS key, Secrets Manager secret, and S3 bucket. These resources are optimized to ensure secure data storage and management, enabling robust encryption and controlled access with AWS's advanced security features.
+This CloudFormation template provisions the necessary AWS resources for the **INFIO Assessment Tool**, including a KMS key, Secrets Manager secret, and S3 bucket. These resources are optimized to ensure secure data storage and management, enabling robust encryption and controlled access with AWS's advanced security features. The Secrets Manager secrets are specifically intended to securely store credentials and connection details for the data providers used by AWS Database Migration Service (DMS) and Infio tool, ensuring secure and seamless data migration operations.
 
 #### Deployment Steps
 
@@ -529,7 +529,7 @@ This CloudFormation template provisions the necessary AWS resources for the **IN
 
    ```bash
    aws cloudformation create-stack --stack-name INFIOResources \
-       --template-body file://C:/Users/Administrator/Desktop/INFIO%20Assessment%20Tool/aws-infra-setup/INFIO-Setup-CF.json \
+       --template-body file://C:/Users/Administrator/Desktop/INFIO%20Assessment%20Tool/aws-infra-setup/INFIO-Setup-CF_v06.2_TargetDBSMSecretTestDeployment.json \
        --endpoint-url <cloudformation_endpoint_url>
    ```
 The `--endpoint-url` parameter is **optional**. Utilize it only if you created a **CloudFormation endpoint** in the previous step. If not, please omit this parameter from the command line.
