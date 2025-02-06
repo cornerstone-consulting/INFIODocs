@@ -392,9 +392,6 @@ To set up the minimum permissions for an on-premises SQL Server database:
    - **Bastion Host Security Group**:  
      - Allow inbound **SSH (port 22)** from your IP for Linux-based bastion hosts.  
      - Allow inbound **RDP (port 3389)** from your IP for Windows-based bastion hosts.  
-   - **Bastion Host Security Group**:  
-     - Allow inbound SSH (port 22) from your IP – For Linux-based bastion hosts.  
-     - Allow inbound RDP (port 3389) from your IP – For Windows-based bastion hosts.  
    - **INFIO EC2 Instance Security Group**:  
      - Allow inbound RDP (port 3389) only from the bastion host's private IP address.  
 
