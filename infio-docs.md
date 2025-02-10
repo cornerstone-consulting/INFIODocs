@@ -30,6 +30,7 @@
 - [Prerequisites Checklist](#prerequisites-checklist)
   - [Required IAM Permissions](#required-iam-permissions)
   - [SQL Server Database Permissions](#sql-server-database-permissions)
+  - [Configuring Inbound Rules for SQL Server and Target RDS for AWS Schema conversion](#configuring-inbound-rules-for-sql-server-and-target-rds-for-aws-schema-conversion)
 - [Deployment Steps](#deployment-steps)
   - [How to Deploy EC2 from INFIO AMI](#how-to-deploy-ec2-from-infio-ami)
   - [Log in to a Windows INFIO EC2 Instance in a Private Subnet Using a Bastion Host](#log-in-to-a-windows-infio-ec2-instance-in-a-private-subnet-using-a-bastion-host)
@@ -70,6 +71,12 @@
 ### Solution Overview
 **INFIO** is designed to streamline and automate the database migration assessment process, ensuring a smooth and secure transition for complex database systems. This solution is tailored to assess and gather all critical information necessary to build a comprehensive migration plan from **MS SQL** to **Babelfish for Aurora PostgreSQL**.
 
+An important part of INFIO is **Sql Server** to **Aurora Postgres** assessment. This assessment contains DMS Schema conversion which is the report that it generates to help you convert your schema. This database migration assessment report summarizes all of the schema conversion tasks. It also details the action items for schema that can't be converted to the DB engine of your target DB instance. You can view the report in the S3 bucket or in INFIO ec2 instance as a PDF or comma-separated value (CSV) file.
+
+The migration assessment report includes the following:
+- An executive summary
+- Recommendations, including conversion of server objects, backup suggestions, and linked server changes
+
 The solution provides deep insights into the existing database environment while adhering to **AWS best practices** for cloud migration. It emphasizes **security**, **scalability**, **reliability**, and **cost optimization** throughout the process.
 
 ---
@@ -103,6 +110,7 @@ who are responsible for assessing database compatibility for migration purposes.
 - **Compass for Application Code**: A detailed assessment of application code for compatibility with Babelfish for Aurora PostgreSQL.
 - **Database Migration Service (DMS) Assessment**: Evaluation of AWS DMS to support an efficient migration with minimal downtime.
 - **Cross-Database Dependency Identification**: Detection and resolution of dependencies across multiple databases.
+- **Schema conversion** - Transforms the existing SQL Server schema into a Aurora PostgreSQL schema, ensuring a smooth migration.
 
 ### Key Assessment Outcomes:
 - **Target State Architecture**: A secure, optimized architecture for the target PostgreSQL environment.
@@ -110,6 +118,7 @@ who are responsible for assessing database compatibility for migration purposes.
 - **Application and Database Code Compatibility Report**: A detailed report highlighting unsupported T-SQL features and multiple viable solutions to ensure code is Babelfish compliant.
 - **Data Migration Feasibility**: Assessment of the data migration process, ensuring minimal disruptions and successful transfer.
 - **Dependency Relationships**: A clear understanding of relationships across all database objects to ensure a smooth migration process.
+- **Schema conversion assessment report**: A database migration assessment report summarizes all of the schema conversion tasks which includes an executive summary, recommendations, including conversion of server objects, backup suggestions, and linked server changes.
 
 ---
 
@@ -118,6 +127,7 @@ INFIO can be used to:
 
 - **Assess large-scale heterogeneous database migrations to AWS**: Enable a single-pane-of-glass view for large-scale database workload migration assessments to AWS.
 - **Provide prebuilt automation and reporting**: Utilize role-based access via a single web interface designed specifically for database migration assessments.
+- **Generates assessment report for schema converion**: Provides detailed reports on schema compatibility and necessary modifications for a seamless migration.
 
 ---
 
@@ -166,6 +176,7 @@ This section describes key concepts and defines terminology specific to this sol
 - **AWS Key Management Service (Supporting)**: Manages encryption keys used to protect data and resources.
 - **AWS CloudFormation (Supporting)**: Accelerates AWS resource provisioning with infrastructure as code.
 - **VPC Endpoints (Optional & Supporting)**: Provide secure, private connectivity between your VPC and AWS services.
+- **AWS DMS(Supporting)**: Provides assessment report for schema conversion. 
 
 ---
 
@@ -229,8 +240,8 @@ Your AWS account has CloudFormation quotas that you should be aware of when laun
 To deploy the solution successfully, the following skills and knowledge are required:
 
 - Familiarity with AWS.
-- Proficiency in AWS CLI and various AWS services (such as S3, EC2, VPC, CloudFormation, KMS, and Secrets Manager).
-- Familiarity with database migration processes.
+- Proficiency in AWS CLI and various AWS services (such as S3, EC2, VPC, CloudFormation, KMS, DMS and Secrets Manager).
+- Familiarity with database migration processes and schema conversions.
 - Basic understanding of PostgreSQL and SQL Server.
 
 > **Important Note**: The INFIO does not require the use of AWS account root privileges for deployment or operation.
@@ -255,6 +266,7 @@ Before deploying the database migration assessment tool, ensure the following pr
 
 1. Required IAM Permissions
 2. SQL Server Database Permissions
+3. Configuring Inbound Rules for SQL Server and Target RDS for AWS Schema conversion  
 
 #### 1. Required IAM Permissions  
 
@@ -320,24 +332,80 @@ Below are the required permissions for an IAM user to create AWS resources withi
 |------------------------------------|-------------------------------------------------------|
 | `s3:GetEncryptionConfiguration`    | View bucket encryption configuration.                |
 | `s3:PutEncryptionConfiguration`    | Modify bucket encryption settings.                   |
-| `s3:PutBucketTagging`              | Tag S3 buckets with metadata.                        |
-| `s3:PutObjectTagging`              | Tag individual objects in the bucket.                |
-| `s3:PutBucketPolicy`               | Apply or update bucket policies.                     |
-| `s3:PutBucketPublicAccessBlock`    | Modify public access block configuration.            |
+| `s3:PutBucketTagging`              | Add or update tags on an S3 bucket.                  |
+| `s3:PutObjectTagging`              | Add or update tags on individual objects.            |
+| `s3:PutBucketPolicy`               | Apply or update bucket policies to control access.   |
+| `s3:PutBucketPublicAccessBlock`    | Configure public access block settings for a bucket. |
 | `s3:GetBucketLocation`             | Retrieve the geographical region of a bucket.        |
-| `s3:ListBucket`                    | List objects in the bucket.                          |
-| `s3:ListAllMyBuckets`              | List all the buckets that exists in aws account.     |
-| `s3:GetObject`                     | Retrieve objects from the bucket.                    |
-| `s3:PutObject`                     | Upload objects to the bucket.                        |
+| `s3:ListBucket`                    | List objects and folders within a bucket.            |
+| `s3:GetObject`                     | Retrieve an object from a bucket.                    |
+| `s3:PutObject`                     | Upload or overwrite an object in a bucket.           |
+| `s3:GetBucketVersioning`           | Check if versioning is enabled for a bucket.        |
+| `s3:GetObjectVersion`              | Retrieve a specific version of an object.            |
+| `s3:PutBucketVersioning`           | Enable or modify versioning settings for a bucket.   |
 | `s3:CreateBucket`                  | Create a new S3 bucket.                              |
 
-#### CloudWatch Logs Permissions  
+#### CloudWatch Logs Permissions 
 
-| Permission                         | Description                                           |
-|------------------------------------|-------------------------------------------------------|
-| `logs:CreateLogGroup`              | Create a new log group.                              |
-| `logs:CreateLogStream`             | Create a log stream.                                 |
-| `logs:PutLogEvents`                | Upload log events to a stream.                       |
+| Permission                 | Description                                              |
+|----------------------------|----------------------------------------------------------|
+| `logs:CreateLogGroup`      | Create a new log group in CloudWatch Logs.               |
+| `logs:CreateLogStream`     | Create a log stream within a log group.                  |
+| `logs:PutLogEvents`        | Upload log events to a specific log stream.              |
+| `logs:DescribeLogStreams`  | Retrieve details about log streams within a log group.   |
+| `logs:DescribeLogGroups`   | Retrieve details about existing log groups.              |
+
+#### AWS License Manager Persmissions
+
+| Permission                                      | Description                                              |
+|------------------------------------------------|----------------------------------------------------------|
+| `license-manager:CheckoutLicense`              | Check out a license from AWS License Manager.           |
+| `license-manager:ExtendLicenseConsumption`     | Extend the consumption period of a checked-out license. |
+| `license-manager:ListReceivedLicenses`         | List licenses received from a license issuer.           |
+| `license-manager:GetLicense`                   | Retrieve details about a specific license.              |
+
+
+#### AWS DMS Permissions 
+
+| Permission                                  | Description                                                       |
+|--------------------------------------------|-------------------------------------------------------------------|
+| `dms:CreateDataProvider`                   | Create a data provider for database migration.                   |
+| `dms:CreateMigrationProject`               | Create a migration project in AWS DMS.                           |
+| `dms:CreateDataMigration`                   | Initiate a new data migration process.                           |
+| `dms:CreateReplicationInstance`            | Create a replication instance for data migration.                |
+| `dms:ListDataProviders`                     | List all configured data providers.                              |
+| `dms:ListMigrationProjects`                 | List existing migration projects in AWS DMS.                     |
+| `dms:AddTagsToResource`                     | Add tags to a DMS resource for better management.                |
+| `dms:StartDataMigration`                    | Start a data migration process.                                  |
+| `dms:DescribeInstanceProfiles`              | Get details of DMS instance profiles.                           |
+| `dms:ListInstanceProfiles`                   | List all available instance profiles in AWS DMS.                 |
+| `dms:StartMetadataModelAssessment`          | Start an assessment of a metadata model.                        |
+| `dms:ListMetadataModelAssessments`          | List previous metadata model assessments.                        |
+| `dms:ExportMetadataModelAssessment`         | Export metadata model assessment reports.                        |
+| `dms:UpdateDataProvider`            | Update an existing data provider for database migration. |
+| `dms:DeleteDataProvider`            | Delete a configured data provider.                   |
+| `dms:UpdateMigrationProject`        | Update an existing migration project in AWS DMS.     |
+| `dms:DeleteMigrationProject`        | Remove a migration project from AWS DMS.             |
+
+
+#### AWS RDS Permissions 
+
+| Permission                         | Description                                              |
+|------------------------------------|----------------------------------------------------------|
+| `rds:DescribeDBClusters`          | Retrieve details about Amazon RDS database clusters.    |
+| `rds:DescribeDBInstances`         | Get information about RDS database instances.           |
+| `rds:DescribeDBClusterSnapshots`  | View details of DB cluster snapshots.                   |
+| `rds:ListTagsForResource`         | List tags assigned to an RDS resource.                  |
+
+#### AWS IAM Permissions  
+
+| Permission        | Description                                      |
+|------------------|--------------------------------------------------|
+| `iam:PassRole`   | Allow passing an IAM role to AWS services.       |
+| `iam:ListRoles`  | List all IAM roles in the AWS account.           |
+
+
+
 
 #### 2. SQL Server Database Permissions
 
@@ -356,6 +424,11 @@ To set up the minimum permissions for an on-premises SQL Server database:
     GRANT SELECT ON MSDB.DBO.BACKUPFILE TO user;
     ```
 
+#### 3. Configuring Inbound Rules for SQL Server and Target RDS for AWS Schema conversion
+
+1. On the SQL Server, allow inbound traffic on the SQL port (1433 or as configured) from the security group attached to the infio-assessment-instance (infio-ec2-dms-sg).
+2. On the target RDS, allow inbound traffic on port 5432 from the security group attached to the infio-assessment-instance (infio-ec2-dms-sg).
+
 ---
 
 ## Deployment Steps
@@ -363,14 +436,16 @@ To set up the minimum permissions for an on-premises SQL Server database:
 ### How to Deploy EC2 from INFIO AMI
 
 1.  Navigate to the [AWS Marketplace](https://signin.aws.amazon.com/signin?redirect_uri=https%3A%2F%2Faws.amazon.com%2Fmarketplace%3F%26isauthcode%3Dtrue&client_id=arn%3Aaws%3Aiam%3A%3A015428540659%3Auser%2Fawsmp-contessa&forceMobileApp=0) to download the INFIO AMI. During this process, you will be prompted to answer several necessary questions, detailed below:
-    - **Region**: Select the region that you want to deploy your EC2 instance. The default is `us-east-1`.
-    - **Region**: Select the region that you want to deploy your EC2 instance. The default is `us-east-1`.
-    - **EC2 Instance Type**: Select the instance type that you want to use for the EC2 instance. The default is `m6a.large`.
-    - **Subnet ID**: Provide the ID of a subnet where the EC2 instance will be deployed.
-    - **EC2 Encryption Key**: Alias of the KMS Customer managed encryption key you would like to use to encrypt the INFIO EC2 instance, default is AWS managed `aws/ebs` KMS key.
-    - **VPCCIDR**: CIDR of the VPC where your INFIO EC2 instance will be deployed.
-    - **VPCID**: VPC ID where your INFIO EC2 instance will be deployed.
-    - **InboundCIDRIP**: CIDR or a single IP address that will be allowed to RDP inbound to the INFIO EC2 Instance.
+    - **EC2InstanceType**: Specifies the EC2 instance type. Default is `m6a.large`.  
+    - **SubnetID**: The ID of the subnet where the Infio EC2 instance will be deployed.  
+    - **DMSSubnetGroupSubnetIDs**: A comma-separated list of subnet IDs for the source SQL Server and target PostgreSQL.  
+    - **SourceSQLServerPort**: The port number used by the source SQL Server. Default is `1433`.  
+    - **SourceSQLServerIP**: The IP address of the source SQL Server in `x.x.x.x/32` format.  
+    - **TargetPGServerSG**: The Security Group ID attached to the target PostgreSQL database.  
+    - **InfioEC2EncryptionKeyAlias**: The KMS encryption key alias used to encrypt the Infio EC2 instance. Default is `aws/ebs`.  
+    - **VPCCIDR**: The CIDR of the VPC where the Infio EC2 instance will be deployed.  
+    - **VPCID**: The VPC ID where the Infio EC2 instance will be deployed.  
+    - **InboundCIDRIP**: The CIDR or IP address allowed for RDP access to the Infio EC2 instance. Must be in `xx.xx.xx.xx/xx` format.  
 
 2. After completing the questionnaire, AWS Marketplace will deploy an EC2 instance in the private subnet.
 
@@ -467,7 +542,7 @@ Follow the steps for deployment.
 
 ```bash
 aws cloudformation create-stack --stack-name INFIOVPCEndpoints \
-    --template-body file://C:/Users/Administrator/Desktop/INFIO%20Assessment%20Tool/aws-infra-setup/INFIO-S3-KMS-SM-VPCEndpoints.json \
+    --template-body file://C:/Users/Administrator/Desktop/INFIO%20Assessment%20Tool/aws-infra-setup/INFIO-S3-KMS-SM-VPCEndpoints-CF.json \
     --parameters ParameterKey=VPCID,ParameterValue=<ParameterValue1> \
                 ParameterKey=VPCCIDR,ParameterValue=<ParameterValue2> \
                 ParameterKey=SecurityGroupID,ParameterValue=<ParameterValue3> \
@@ -526,7 +601,7 @@ This CloudFormation template provisions the necessary AWS resources for the **IN
 
    ```bash
    aws cloudformation create-stack --stack-name INFIOResources \
-       --template-body file://C:/Users/Administrator/Desktop/INFIO%20Assessment%20Tool/aws-infra-setup/INFIO-Setup-CF_v06.2_TargetDBSMSecretTestDeployment.json \
+       --template-body file://C:/Users/Administrator/Desktop/INFIO%20Assessment%20Tool/aws-infra-setup/INFIO-Setup-CF.json \
        --endpoint-url <cloudformation_endpoint_url>
    ```
 The `--endpoint-url` parameter is **optional**. Utilize it only if you created a **CloudFormation endpoint** in the previous step. If not, please omit this parameter from the command line.
@@ -602,6 +677,13 @@ On the configuration page, you need to click on the `add Configurations` button,
 
 1. Now, you will be asked to choose assessment modes.
 2. The INFIO Tool provides two distinct execution modes for assessments. You can select the mode that aligns with their requirements and data collection files preferences for running assessments. Below is a detailed explanation of each mode:
+  
+- [SQL Server to Babelfish](#sql-server-to-babelfish)  
+- [SQL Server to Aurora PostgreSQL](#sql-server-to-aurora-postgresql)   
+
+#### SQL Server to Babelfish
+
+If you choose **SQL Server to Babelfish**, INFIO provides two execution modes for assessments. Follow the steps below for SQL Server to Babelfish.  
 
 #### 1. **Offline Mode**
 
@@ -705,6 +787,102 @@ C:\Users\Administrator\infio\applications\<application_name>\destination\assessm
 - You can also generate the report from the reports page after selecting application name as well.
 
 ---
+
+#### SQL Server to Aurora PostgreSQL
+
+If you choose **SQL Server to Aurora PostgreSQL**, follow the steps below:
+
+The **SQL Server to Aurora PostgreSQL** assessment provides insights to help you convert your schema for conversion. This database conversion assessment generate report and it includes:
+
+- **Executive Summary**: A high-level overview of the assessment results.
+- **Recommendations**:
+  - Conversion of server objects.
+  - Backup suggestions.
+  - Changes required for linked servers.
+
+You can view this report in the **AWS DMS Console** or **S3* export it as a **PDF** or **CSV** file for further review.
+
+#### Configure your data providers for DMS Schema conversion
+
+Before configuring data providers, you must select the **Application Name** that you want to proceed with.
+Once you have selected the application and then click on Data providers tab, and follow these steps to configure the **Source** and **Target Data Providers**.
+
+##### **Source Data Provider**
+1. Specify the **Source Server Port** (default: `1433`).
+2. Enter the **Source Default Database Name** (e.g., `master`).
+3. Provide the **Source Server Name** (e.g., `ec2-xx-xx-xx-xx.compute-1.amazonaws.com`).
+
+##### **Target Data Provider**
+1. Specify the **Target Server Port** (default: `5432`).
+2. Enter the **Target Default Database Name** (e.g., `postgres`).
+3. Select the **Target Server Name** from the dropdown (e.g., `info-dms-cs.cluster-xxxxx.us-east-1.rds.amazonaws.com`).
+
+#### **Step 3: Save Configuration**
+- Click **Create Data Providers** to save the configuration.
+
+Once the data providers are configured, you can proceed with further schema conversion steps.
+
+#### **Steps to Create a Migration Project**
+
+After configuring the **Source** and **Target Data Providers**, follow these steps to create a **Database Migration Project**.
+
+- Go to migrations tab, and click on create migration project button, and model will be open to create migration project. 
+- The **DMS Project Name** will be auto-filled (e.g., `info-dms-commissions`).
+- Choose the **Instance Profile** from the dropdown.
+- Select **`infio-ec2-dms-role`** as the instance profile.
+- ⚠ **Note:** The DMS instance profile is **private by default**. If necessary for debugging/troubleshooting, you can make it **public** through the AWS **IAM Console**.
+
+##### **Configure Source Data Provider**
+1. Verify the **Source Data Provider** (e.g., `info-sct-commissions-source`).
+2. Select **Source Secret Name** from the dropdown.
+   - Choose **`infio-source-db-credentials`** (pre-created during EC2 deployment from AMI).
+3. Select **IAM Role for Source Secret**.
+   - Choose **`infio-ec2-dms-role`**.
+
+##### **Configure Target Data Provider**
+1. Verify the **Target Data Provider** (e.g., `info-sct-commissions-target`).
+2. Select **Target Secret Name** from the dropdown.
+   - Choose **`infio-target-db-credentials`** (pre-created during EC2 deployment from AMI).
+3. Select **IAM Role for Target Secret**.
+   - Choose **`infio-ec2-dms-role`**.
+
+##### **Configure S3 bucket setting**
+1. Select **S3 bucket** from the dropdown.
+   - Choose **`infio-private-bucket`** (pre-created during EC2 deployment from AMI).
+3. Select **IAM Role for S3 bucket**.
+   - Choose **`infio-ec2-dms-role`**.
+
+##### **Save Configuration**
+- Click **Create migration project** to proceed with the complete migration setup.
+
+
+#### **Steps for Schema Conversion**
+
+Once the **Migration Project** and **Data Providers** are created, follow these steps to perform **Schema Conversion**.
+
+##### **Navigate to Schema Conversion Tab**
+- Go to the **Schema Conversion** tab in the migration tool.
+
+##### **Launch Schema Conversion**
+- Click on **"Launch Schema Conversion"**.
+- A status message will appear:  
+  - **"Launching Schema Conversion, it may take a few minutes to complete."**
+  - **"Schema Conversion is still in progress. Please wait..."**
+- Wait for the process to complete.
+
+##### **Export Schema Conversion Report**
+- Once the schema conversion process is successful, the **"Export Schema Conversion Report"** button will become available and Infio prompted message of "Successfully launched schmea conversion...".
+- Click **"Export Schema Conversion Report"**.
+- The exported report will be stored in **S3 bucket**:  
+  - **`infio-private-bucket`** (also visible in the status message).
+
+#### **Step 4: Verify Exported Report**
+- Go to the **AWS S3 Console**.
+- Navigate to **`infio-private-bucket`**.
+- Locate the schema conversion report.
+
+Once the report is available, you can proceed with further migration steps.
+
 
 ### Monitoring
 
