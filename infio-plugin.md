@@ -5,8 +5,8 @@
   - [Modes of Operation](#modes-of-operation)
     - [Offline Mode](#offline-mode)
     - [Mixed Mode](#mixed-mode)
-    - [Profiler Extended Events](#profiler-extended-events)
-  - [Features](#-features)
+    - [Online Mode](#online-mode)
+  - [Features](#features)
   - [Prerequisites](#-prerequisites)
 - [Usage](#usage)
   - [Assessment Mode Selection](#assessment-mode-selection)
@@ -32,15 +32,21 @@ The INFIO Tool provides two distinct execution modes for assessments. Users can 
 
 #### Offline mode
 - **Automated**: Collects DDL, DMS, and Object Dependency Files.
-- **Manual**: Profiler Extended Events (instructions provided after assessment).
+- **Manual**: Profiler Events (instructions provided after assessment).
 
 #### Mixed mode
 - **Automated**: DDL Dependency File.
-- **Manual**: Profiler Extended Events, DMS and Database Dependency Files.
+- **Manual**: Profiler Events, DMS and Database Dependency Files.
 
-#### Profiler extended events
-In both modes, **Profiler Extended Events** collection is a manual step. After the assessment, you'll receive instructions on how to capture them.
+In both modes, **Profiler Events** collection is a manual step. After the assessment, you'll receive instructions on how to capture them.
 
+#### Online mode
+- **Automated**: Collects DDL, DMS, Object Dependency files and create extended event session for extended events.
+- **Manual**: There is a no need to perform manual steps.
+
+
+#### Collect the XML file for extended events
+- In this mode, INFIO plugin generates the XML file of extended events by providing extended event session name.
 ---
 
 ### Features
@@ -48,7 +54,7 @@ In both modes, **Profiler Extended Events** collection is a manual step. After t
 - **Object Dependency Analysis**: Identifies Object dependencies across SQL Server databases.
 - **DMS Compatibility**: Generates DMS Assessor reports compatible with Migration Service.
 - **Schema-level Dependency Assessment**: Analyzes DDL objects and their interdependencies.
-- **Structured Output**: The outputs are saved as structured **SQL** and **HTML** files at a predefined location specified in the INFIO plugin tool, ensuring they are easy to parse and review.
+- **Structured Output**: The outputs are saved as structured **SQL**, **HTML** and **XML** files at a predefined location specified in the INFIO plugin tool, ensuring they are easy to parse and review.
 
 ---
 
@@ -100,7 +106,8 @@ public
 ```
 These permissions allow the INFIO Plugin to retrieve necessary information from the SQL Server without compromising security.
 
---
+---
+
 ### Infio-plugin Usage
 
 #### Assessment Mode Selection
@@ -187,7 +194,7 @@ There are two methods to upload those files to S3 bucket.
     - Inside the `<application_name>` folder, create the following subfolders:
       - `source/ddl/`
       - `source/dms/sql_server_output_files/`
-      - `source/object_dependency/`
+      - `source/object_dependency_sql_files/`
       - `source/sql_statements/`
 
 4. **Upload Files from Your Local System**:
