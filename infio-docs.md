@@ -63,13 +63,15 @@
 
 ---
 ### Solution Overview
-**INFIO** is designed to streamline and automate the database migration assessment process, ensuring a smooth and secure transition for complex database systems. This solution is tailored to assess and gather all critical information necessary to build a comprehensive migration plan from **MS SQL** to **Babelfish for Aurora PostgreSQL**.
+**INFIO** is designed to streamline and automate the database migration assessment process, ensuring a smooth and secure transition for complex database systems. This solution is tailored to assess and gather all critical information necessary to build a comprehensive migration plan from **MS SQL** to **Babelfish for Aurora PostgreSQL**. This assessment includes the INFIO Database Migration Assessment Report, which provides a comprehensive evaluation of database objects, dependencies, and potential compatibility issues. The report helps users understand migration feasibility, estimate effort, and identify required modifications to ensure a successful transition.
 
 An important part of INFIO is **Sql Server** to **Aurora Postgres** assessment. This assessment contains DMS Schema conversion which is the report that it generates to help you convert your schema. This database migration assessment report summarizes all of the schema conversion tasks. It also details the action items for schema that can't be converted to the DB engine of your target DB instance. You can view the report in the S3 bucket or in INFIO ec2 instance as a PDF or comma-separated value (CSV) file.
 
-The migration assessment report includes the following:
+The schema conversion report includes the following:
 - An executive summary
 - Recommendations, including conversion of server objects, backup suggestions, and linked server changes
+
+With schema conversion report, you get a summary of your schema conversion tasks and the details for items that DMS Schema Conversion can't automatically convert to your target database. Database migration assessment reports help evaluate how much of your migration project DMS Schema Conversion can automate. These reports also help to estimate the amount of manual effort that is required to complete the conversion
 
 The solution provides deep insights into the existing database environment while adhering to **AWS best practices** for cloud migration. It emphasizes **security**, **scalability**, **reliability**, and **cost optimization** throughout the process.
 
