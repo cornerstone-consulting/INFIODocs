@@ -2,19 +2,16 @@
 
 ## Table of Contents
 - [Infio Plugin Overview](#infio-plugin-overview)
-  - [Modes of Operation](#modes-of-operation)
-    - [Offline Mode](#offline-mode)
-    - [Mixed Mode](#mixed-mode)
-    - [Online Mode](#online-mode)
   - [Features](#features)
   - [Prerequisites](#-prerequisites)
-- [Usage](#usage)
-  - [Assessment Mode Selection](#assessment-mode-selection)
-    - [Offline Mode](#1-offline-mode)
-    - [Mixed Mode](#2-mixed-mode)
+  - [Modes of Operation](#modes-of-operation)
+    - [Offline Mode](#1️⃣-offline-mode)
+    - [Mixed Mode](#2️⃣-mixed-mode)
+    - [Online Mode](#3️⃣-online-mode)
+    - [Collect XML File from Extended Events Session](#4️⃣-collect-xml-file-from-extended-events-session)
   - [Configuration](#configuration)
-    - [Example Input](#example-input)
-  - [Next Steps](#next-steps)
+    - [Extended Events Scheduler (Online Mode Only)](#extended-events-scheduler-online-mode-only)
+    - [Extended Events XML File Retrieval Guide](#extended-events-xml-file-retrieval-guide)
 - [Uploading Files to an S3 Bucket](#uploading-files-to-an-s3-bucket)
   - [Important Notes Regarding File Uploads Based on Assessment Mode](#important-notes-regarding-file-uploads-based-on-assessment-mode)
   - [Method 1: Using AWS Console](#method-1-using-aws-console)
@@ -22,31 +19,8 @@
 
 ### Infio Plugin Overview
 
-The **Infio Plugin** simplifies migration from **SQL Server** to **PostgreSQL** using **Babelfish**. It automates the creation of essential dependency, assessor input files, helping you assess compatibility and identify issues during migration.
+The **Infio Plugin** simplifies migration from **SQL Server** to **PostgreSQL** using **Babelfish**. It automates the creation of essential dependency, assessor input files, helping you assess compatibility and identify issues during migration. 
 
----
-
-### Modes of operation
-
-The INFIO Tool provides two distinct execution modes for assessments. Users can select the mode that aligns with their requirements and data collection preferences for running assessments. Below is a detailed explanation of each mode:
-
-#### Offline mode
-- **Automated**: Collects DDL, DMS, and Object Dependency Files.
-- **Manual**: Profiler Events (instructions provided after assessment).
-
-#### Mixed mode
-- **Automated**: DDL Dependency File.
-- **Manual**: Profiler Events, DMS and Database Dependency Files.
-
-In both modes, **Profiler Events** collection is a manual step. After the assessment, you'll receive instructions on how to capture them.
-
-#### Online mode
-- **Automated**: Collects DDL, DMS, Object Dependency files and create extended event session for extended events.
-- **Manual**: There is a no need to perform manual steps.
-
-
-#### Collect the XML file for extended events
-- In this mode, INFIO plugin generates the XML file of extended events by providing extended event session name.
 ---
 
 ### Features
@@ -108,25 +82,57 @@ These permissions allow the INFIO Plugin to retrieve necessary information from 
 
 ---
 
-### Infio-plugin Usage
+### Modes of operation
 
-#### Assessment Mode Selection
+The **INFIO Plugin** offers different modes to accommodate various data collection and assessment requirements. Choose the mode that best fits your migration needs. 
 
-When running the **Infio Plugin**, you will be prompted to choose an **Assessment Mode**. There are two options available:
 
-#### 1. **Offline Mode**
-- INFIO plugin will collect Data Definition Language (DDL), DMS Assessor and Object Dependency input data.
-- Profiler Extended Events must be manually collected from the source server.
+#### **1️⃣ Offline Mode**  
+🔹 **Purpose:** Best for scenarios where extended events collection is handled manually.  
+🔹 **Process:**  
+- **Automatically executed**:  
+  - **Data Definition Language (DDL) Scripts**  
+  - **Database Migration Service (DMS) tasks**  
+  - **Object Dependency analysis**  
+- **Manually executed**:  
+  - **Profiler Extended Events Collection**  
 
-#### 2. **Mixed Mode**
-- INFIO plugin will collect Data Definition Language (DDL) input data only. INFIO tool will collect DMS Assessor and Object Dependency input data.
-- Profiler Extended Events must be manually collected from the source server. 
 
-After selecting the mode, the Infio Plugin will proceed with the automated tasks, and at the end of the process, you'll receive detailed instructions for any manual steps for capturing Profiler Extended Events from SQL server.
+#### **2️⃣ Mixed Mode**  
+🔹 **Purpose:** A combination of automated and manual processes.  
+🔹 **Process:**  
+- **Automatically executed**:  
+  - **Data Definition Language (DDL) Scripts**  
+- **Manually executed**:  
+  - **Profiler Extended Events Collection**  
+
+
+#### **3️⃣ Online Mode**  
+🔹 **Purpose:** Fully automated assessment, ideal for real-time data collection and migration readiness analysis.  
+🔹 **Process:**  
+- **Automatically executed**:  
+  - **Data Definition Language (DDL) Scripts**  
+  - **Database Migration Service (DMS) tasks**  
+  - **Object Dependency analysis**  
+- **INFIO Plugin Action:**  
+  - Creates a **SQL Server Agent jobs** to manage **Extended Events sessions** dynamically.  
+
+
+#### **4️⃣ Collect XML File from Extended Events Session**  
+🔹 **Purpose:** Retrieve and analyze Extended Events session data manually.  
+🔹 **Process:**  
+- **INFIO Plugin retrieves** the generated **XML file** from an **Extended Events session**.  
+- Users must **upload the XML file** to a designated location for further processing for database migration.  
+
+Once an assessment mode is selected, the **INFIO Plugin** will:  
+- Execute **automated data collection tasks** based on the selected mode.  
+- Provide **detailed instructions** for any **manual steps** required to capture **Profiler Extended Events** from SQL Server.  
+
+---
 
 ### Configuration
 
-After choosing assessment mode, you will be prompted to provide the following details (some of them are mandatory):
+If you choose any of the options (1, 2, or 3), you will be prompted to provide the following details, some of which are mandatory.
 
 - **Application Name**: Enter the application name (should be the same as the one you entered during Infio tool setup).
 - **SQL Server Name**: Hostname or IP address of the SQL Server instance. 
@@ -150,31 +156,102 @@ Enter Databases to Include (comma-separated) Press enter to include all database
 Enter Databases to Exclude (comma-separated) Press enter to keep the default excluded databases only (master, model, msdb, tempdb):
 ```
 
+#### Extended Events Scheduler (Online Mode Only)  
+
+If you select **Online Mode (Option 3)**, the INFIO Plugin will prompt you to schedule the start and stop times for the **Extended Events session** just after running DDL, DML and object dependency tools. This allows for automated collection of performance data during the specified interval.  
+
+#### **Steps:**  
+
+##### **📌 Schedule Start Time:**  
+- The plugin will display the **current SQL Server time**.  
+- You will be prompted to enter the desired **start time** for the **Extended Events session**.  
+- **Input Format:** 24-hour format (`HH:MM`).  
+- **Validation:** The start time must be **later than the current SQL Server time**.  
+
+##### **📌 Schedule Stop Time:**  
+- After setting the **start time**, you will be prompted to enter the **stop time**.  
+- **Input Format:** 24-hour format (`HH:MM`).  
+- **Validation:** The stop time must be **later than the start time**.  
+
+##### **📌 Example Input:**  
+```plaintext
+=== Extended Events Scheduler ===
+
+Please schedule the time for Extended Events to run today.  
+Please enter a value greater than the current SQL Server time, 14:30:00.  
+Enter the time in the format of hours, minutes, and seconds.  
+- Hours should be between 0 and 23 (24-hour format).  
+- Minutes and seconds should be between 0 and 59.  
+
+Enter hour (0-23): 15  
+Enter minute (0-59): 0  
+
+At what time do you want the Extended Events session to stop today?  
+Enter the stop time in hours and minutes (24-hour format).  
+
+Enter stop hour (0-23): 16  
+Enter stop minute (0-59): 0  
+```
+
 Once the configuration is completed, the plugin will display updates in the terminal as each tool is executed. These updates include the following messages according to you have performed assessment mode:
 - "Running Object Dependency Tool..."
 - "Running DMS Assessor Tool..."
 - "Running DDL Tool..."
+- "Running Extended events Tool..."
 - "SQL file saved at: C:\Users\<user_name>\infio-plugin\<application_name>\source\database_dependency\sql_server_database_dependencies.sql"
-- "Profiler Extended Events collection (manual process)" will be noted at the end of the tool executions.
+- After the tools are executed, you will receive detailed instructions for the manual step of collecting **Profiler Extended Events** and [uploading these files to an S3 bucket](#uploading-files-to-an-s3-bucket).
 
-#### **Next Steps**:
-- After the tools are executed, you will receive detailed instructions for the manual step of collecting **Profiler Extended Events**.
+---
+
+#### **Extended Events XML File Retrieval Guide**  
+
+The **INFIO Plugin** provides an option to **retrieve and save Extended Events session data** as an XML file for further analysis. If you choose **Option 4: Collect XML File from Extended Events Session**, the plugin will guide you through extracting and saving the event data in XML file.  
+
+##### **📌 Steps to Retrieve Extended Events XML File**  
+
+##### **Step 1: Enter Extended Events Session Name**  
+- The INFIO Plugin will prompt you to enter the **exact name** of the **Extended Events session** you previously created in option 3 for online mode.  
+- The session name **must match exactly** as it exists in SQL Server (case-sensitive).  
+- If an invalid session name is entered, an error will be displayed.  
+
+```plaintext
+Please enter the exact name of the Extended Events session that you have created (case-sensitive, e.g., performance_session_2024): 
+```
+
+If the session does not exist, the plugin will display:
+
+```
+Error: The session '<session_name>' does not exist in SQL Server. Please enter the correct session name.
+```
+
+##### **Step 2: Saving XML file**
+The retrieved event data is converted into an XML file and saved locally.
+
+The plugin will display the following message:
+
+```
+Please wait for a while; this process might take some time to complete.
+✅ The Extended Events XML file has been successfully saved at the location: <source_directory>\extended_events\<session_name>.xml
+```
 
 ---
 
 ## Uploading Files to an S3 Bucket
 
-After following the instructions to capture **Profiler Extended Events**, you will see the next steps for uploading the generated files into your S3 bucket. There are two ways to do this:
+After following the instructions to capture **Profiler Events**, you will see the next steps for uploading the generated files into your S3 bucket. There are two ways to do this:
 
 ### **Important Notes Regarding File Uploads Based on Assessment Mode**
 
-The files you need to upload (DDL, DMS, and Object Dependency) depend on the **assessment mode** you have chosen. Here's the breakdown:
+The files you need to upload (DDL, DMS, Object Dependency, extended events) depend on the **assessment mode** you have chosen. Here's the breakdown:
 
 - **Offline Mode**: 
-    - You will need to upload **DDL, DMS and Object_dependencies folder's files** to the `<application_name>/source/ddl/`, `<application_name>/source/dms/` and `<application_name>/source/object_dependency` respectively folders of the S3 bucket.
+    - You will need to upload **DDL, DMS and Object_dependencies folder's files** to the `<application_name>/source/ddl/`, `<application_name>/source/dms/sql_server_output_files` and `<application_name>/source/object_dependency_sql_files` respectively folders of the S3 bucket.
 
 - **Mixed Mode**: 
     - Similarly, in **Offline mode**, you will only need to upload the **DDL files** to the `<application_name>/source/ddl/` folder.
+
+- **Online Mode & Collect XML file mode**: 
+    - You will need to upload **DDL, DMS and Object_dependencies folder's files** to the `<application_name>/source/ddl/`, `<application_name>/source/dms/sql_server_output_files` `<application_name>/source/object_dependency_sql_files` and `<application_name>/source/sql_statements` respectively folders of the S3 bucket.
 
 There are two methods to upload those files to S3 bucket. 
 ### **Method 1: Using AWS Console**
@@ -202,10 +279,10 @@ There are two methods to upload those files to S3 bucket.
     - Click **Upload** at the top of the screen.
     - Click **Add files**/Add folder to select the files or folders from your local system’s `ddl`, `dms`, and `object_dependencies` folder.
     - Click **Upload** to start the transfer.
-    - Repeat the upload process for the other folders (`source/dms/` and `source/object_dependency/`).
+    - Repeat the upload process for the other folders (`source/dms/sql_server_output_files`, `source/object_dependency_sql_files/` and `source/sql_statements/`).
 
 5. **Verify the Uploaded Files**:
-    - Navigate to each folder (`ddl`, `dms`, `object_dependency`) in the S3 bucket.
+    - Navigate to each folder (`ddl`, `dms`, `object_dependency` and `sql_statements`) in the S3 bucket.
     - Confirm that the files have been uploaded successfully.
 
 > **Note**: Ensure that the files are in the correct folder structure in the S3 bucket.
@@ -231,8 +308,10 @@ Alternatively, you can use the AWS CLI to upload the files from your local machi
       aws s3 cp /path/to/your/ddl/files s3://your-bucket-name/application_name/source/ddl/ --recursive
       ```
     - Replace `/path/to/your/ddl/files` with the local path where the DDL files are located.
-    - Repeat the upload process for the other folders (`source/dms/` and `source/object_dependency/`).
+    - Repeat the upload process for the other folders (`source/dms/sql_server_output_files`, `source/object_dependency_sql_files/` and `source/sql_statements/`).
 
 > Replace `your-bucket-name` with your actual S3 bucket name and ensure the paths are correct for your local environment.
----
+
 Both methods will ensure your files are properly uploaded to the appropriate locations within your S3 bucket.
+
+---
