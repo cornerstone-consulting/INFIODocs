@@ -977,29 +977,41 @@ Please note, as outlined in the deployment guide, we offer a unified service lev
 
 ---
 
-### FAQs
+### FAQs  
 
-**Q1: What happens if the EC2 instance is stopped during the assessment?**  
-A: The assessment process will be halted. You can restart the instance and rerun the service to continue from where it left off.
+**Q1: Why should I set the EC2 instance keyboard layout to English?**  
+If the EC2 instance keyboard layout is set to a non-English language, users may experience:  
+- **Login failures** due to incorrect password input (special characters may be mapped differently).  
+- **Command-line errors** when executing scripts or commands in the terminal.  
+- **Issues with remote access tools (RDP, SSH, or console login)** that expect an English keyboard layout.  
 
-**Q2: Can I use a different database type other than SQL Server?**  
-A: Currently, the tool supports only SQL Server. Support for other database types may be added in future releases.
+> **Solution:**  
+Before using the EC2 instance, ensure the keyboard layout is set to **English (US)**:
+- **Windows EC2**: Go to **Settings → Time & Language → Language & Region**, then set the keyboard to **English (United States)**.  
 
-**Q3: How can I deploy the INFIO tool in my AWS account?**  
+---
+
+**Q2: What happens if the EC2 instance is stopped during the assessment?**  
+A: The assessment process will be halted. You can restart the instance and rerun the service to continue from where it left off.  
+
+**Q3: Can I use a different database type other than SQL Server?**  
+A: Currently, the tool supports only SQL Server. Support for other database types may be added in future releases.  
+
+**Q4: How can I deploy the INFIO tool in my AWS account?**  
 A: There are two deployment options:  
 - Cloud deployment through AWS Marketplace using INFIO AMI  
 - On-premises deployment using the INFIO plug-in  
 
-**Q4: How often should I update the tool and its dependencies?**  
-A: It is recommended to check for updates quarterly to ensure compatibility with the latest AWS services and security patches.
+**Q5: How often should I update the tool and its dependencies?**  
+A: It is recommended to check for updates quarterly to ensure compatibility with the latest AWS services and security patches.  
 
-**Q5: How are database credentials managed securely?**  
-A: Database credentials are stored and managed through AWS Secrets Manager, ensuring secure access to the SQL Server.
+**Q6: How are database credentials managed securely?**  
+A: Database credentials are stored and managed through AWS Secrets Manager, ensuring secure access to the SQL Server.  
 
-**Q6: Is the data transfer between components secure?**  
-A: Yes, all data transfers occur within a private subnet in the VPC, and connections to S3, Secrets Manager, and KMS key are made through secure channels using VPC endpoints.
+**Q7: Is the data transfer between components secure?**  
+A: Yes, all data transfers occur within a private subnet in the VPC, and connections to S3, Secrets Manager, and KMS key are made through secure channels using VPC endpoints.  
 
-**Q7: What security measures are in place for data transfer?**  
+**Q8: What security measures are in place for data transfer?**  
 A: Security measures include:  
 - TLS encryption for all data in transit  
 - VPC private subnet isolation  
@@ -1007,17 +1019,17 @@ A: Security measures include:
 - Encryption at rest in S3  
 - Secure credential management  
 
-**Q8: Where are the assessment reports stored?**  
+**Q9: Where are the assessment reports stored?**  
 A: Assessment reports are stored in two locations:  
 - Amazon S3 bucket for long-term storage  
 - Locally on the EC2 instance for immediate access  
 
-**Q9: What happens if the connection to the source SQL Server is lost during assessment?**  
+**Q10: What happens if the connection to the source SQL Server is lost during assessment?**  
 A: The system will:  
 1. Log the connection failure  
 2. Resume from the last successful checkpoint if possible  
 
-**Q10: What are the minimum system requirements for running INFIO?**  
+**Q11: What are the minimum system requirements for running INFIO?**  
 A:  
 - **For AWS deployment:**  
   - EC2 instance (recommended t3.medium or higher)  
@@ -1029,44 +1041,43 @@ A:
   - Network connectivity to SQL Server  
   - S3 bucket, Secrets Manager, and KMS key access  
 
-**Q11: What permissions are required for the IAM role?**  
-A: The IAM role needs permissions for EC2, Secrets Manager, S3, and KMS.
+**Q12: What permissions are required for the IAM role?**  
+A: The IAM role needs permissions for EC2, Secrets Manager, S3, and KMS.  
 
-**Q12: How do I update the configuration file?**  
-A: Edit the configuration file with the new database details and save it.
+**Q13: How do I update the configuration file?**  
+A: Edit the configuration file with the new database details and save it.  
 
-**Q13: Can I run the assessment tool on multiple databases?**  
-A: Yes, you can configure and run the tool on multiple databases by updating the configuration file.
+**Q14: Can I run the assessment tool on multiple databases?**  
+A: Yes, you can configure and run the tool on multiple databases by updating the configuration file.  
 
-**Q14: When should I use VPC Endpoints in our environment?**  
-A: If your EC2 instance is located in a private subnet without internet access, implementing a VPC endpoint is essential to access necessary AWS services. Confirm with your cloud network team whether your EC2 instance already has the required secure connectivity to CloudFormation, S3, Secrets Manager, and KMS services. If secure connectivity is in place, deploying additional VPC endpoints may not be necessary. Otherwise, you will need to deploy VPC endpoints to ensure the INFIO tool can securely communicate with these services.
+**Q15: When should I use VPC Endpoints in our environment?**  
+A: If your EC2 instance is located in a private subnet without internet access, implementing a VPC endpoint is essential to access necessary AWS services. Confirm with your cloud network team whether your EC2 instance already has the required secure connectivity to CloudFormation, S3, Secrets Manager, and KMS services. If secure connectivity is in place, deploying additional VPC endpoints may not be necessary. Otherwise, you will need to deploy VPC endpoints to ensure the INFIO tool can securely communicate with these services.  
 
+**Q16: Why is AWS DMS Schema Conversion (SC) failing?**  
+If AWS DMS SC is failing, it could be due to networking issues. One possible reason is that the instance profile is private by default. Try setting the instance profile to public temporarily for debugging and troubleshooting from the AWS IAM console. Once the networking issue is resolved, revert it back to private for security best practices. Other potential issues can be **security groups, RDS or EC2 IP, database name, or incorrect credentials**.  
 
-**Q15: Why is AWS DMS Schema Conversion (SC) failing?**
-If AWS DMS SC is failing, it could be due to networking issues. One possible reason is that the instance profile is private by default. Try setting the instance profile to public temporarily for debugging and troubleshooting from the AWS IAM console. Once the networking issue is resolved, revert it back to private for security best practices. And other potential issues can be security groups or endpoint of RDS or EC2 IP or password and username or database name. 
-
-**Q16. How can I check logs for DMS Schema Conversion failures?** 
+**Q17. How can I check logs for DMS Schema Conversion failures?**  
 AWS DMS Migration Projects are directly linked to CloudWatch Logs, where detailed logs of failures are recorded. Check CloudWatch logs to identify the specific reason for failure, such as authentication issues, connectivity problems, or missing configurations.  
 
-**Q17. What should I verify if authentication to the database is failing?**  
+**Q18. What should I verify if authentication to the database is failing?**  
 If authentication against the database is failing, ensure that:  
 - The username and password in AWS Secrets Manager are correct.  
 - The correct database name is being used (e.g., `master`, `postgres`, etc.).  
 - The credentials match those required by the **source and target databases**.  
 
-**Q18: How can subnet configuration impact AWS DMS connectivity?**
-If the DMS instance is unable to connect to the source or target database, check the subnets provided for creating the subnet group. The list of subnets provisioned during deployment should match the subnets that can communicate with the target RDS and source EC2 instance**.  
+**Q19: How can subnet configuration impact AWS DMS connectivity?**  
+If the DMS instance is unable to connect to the source or target database, check the subnets provided for creating the subnet group. The list of subnets provisioned during deployment should match the subnets that can communicate with the target RDS and source EC2 instance.  
 
-**Q19: How does the DMS instance profile affect connectivity?** 
+**Q20: How does the DMS instance profile affect connectivity?**  
 When an INFIO Assessment EC2 instance is launched, an instance profile is automatically created. Ensure that:  
 - The instance profile has the necessary IAM permissions to access AWS resources.  
 - The subnets where the DMS instance is deployed allow communication with the target RDS and source EC2 instance.  
-- The security group rules allow inbound and outbound traffic as required.
+- The security group rules allow inbound and outbound traffic as required.  
 
-**Q20: Can I rerun a failed migration project, or do I need to delete and recreate it?**  
-If a migration project fails, you need to delete the existing migration project from INFIO and then recreate it before running the migration again. This ensures a clean setup and avoids potential conflicts from previous failed attempts.
+**Q21: Can I rerun a failed migration project, or do I need to delete and recreate it?**  
+If a migration project fails, you need to delete the existing migration project from INFIO and then recreate it before running the migration again. This ensures a clean setup and avoids potential conflicts from previous failed attempts.  
 
-**Q21: If the Schema Conversion (SC) runs multiple times, what happens to the files in S3?**  
-If the SC process runs multiple times, the files in S3 get overwritten with the latest output. The existing files are replaced with the newly generated schema conversion results. To retain previous versions, consider enabling versioning on the S3 bucket or manually saving copies before rerunning the SC process.
+**Q22: If the Schema Conversion (SC) runs multiple times, what happens to the files in S3?**  
+If the SC process runs multiple times, the files in S3 get overwritten with the latest output. The existing files are replaced with the newly generated schema conversion results. To retain previous versions, consider enabling versioning on the S3 bucket or manually saving copies before rerunning the SC process.  
 
 ---
