@@ -1,5 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "This stack will deploy INFIO EC2 Instance, EC2 Profile with required permissions assigned to the instance, and a Security Group attached to the INFIO instance.",
   "Parameters": {
     "EC2InstanceType": {
         "Type": "String",
@@ -8,12 +9,29 @@
         "t3.2xlarge", "m5.large", "m5.xlarge", "m5.2xlarge", "m5.4xlarge", "m5a.large", "m5a.xlarge", "m5a.2xlarge", "m5a.4xlarge", "m6a.large", "m6a.xlarge", "m6a.2xlarge", 
         "m6a.4xlarge", "c5.large", "c5.xlarge", "c5.2xlarge", "c5.4xlarge", "c6a.large", "c6a.xlarge", "c6a.2xlarge", "c6a.4xlarge", "r5.large", "r5.xlarge", "r5.2xlarge", 
         "r5.4xlarge", "r6a.large", "r6a.xlarge", "r6a.2xlarge", "r6a.4xlarge", "d3.xlarge", "d3.2xlarge" ],
-        "Default": "t3.large"
+        "Default": "m6a.large"
     },
     "SubnetID": {
         "Type": "String",
         "Description": "ID of a subnet where Infio EC2 instance will be deployed",
         "ConstraintDescription": "Must be a private subnet in the AZ you select."
+    },
+    "DMSSubnetGroupSubnetIDs": {
+      "Type": "CommaDelimitedList",
+      "Description": "Comma-delimited list of subnet IDs. This list should hold the subnet/s of the source SQL server and the subnet/s of the destination Postgres Database."
+    },
+    "SourceSQLServerPort": {
+      "Type": "Number",
+      "Description": "Port number source SQL server communicates over.",
+      "Default": 1433
+    },
+    "SourceSQLServerIP": {
+      "Type": "String",
+      "Description": "IP of your source SQL Database in the format x.x.x.x/32."
+    },
+    "TargetPGServerSG": {
+      "Type": "String",
+      "Description": "ID of one of the SGs attached to your target PostgreSQL Database."
     },
     "InfioEC2EncryptionKeyAlias": {
         "Type": "String",
@@ -71,11 +89,11 @@
     }
   },
   "Resources": {
-    "EC2SecurityGroup": {
+    "EC2DMSSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupName" : "infio-ec2-sg",
-        "GroupDescription": "Security group for Infio EC2 Instance.",
+        "GroupName" : "infio-ec2-dms-sg",
+        "GroupDescription": "Security group for Infio EC2 Instance and the DMS SC Instance.",
         "VpcId": { "Ref": "VPCID" },
         "SecurityGroupIngress": [ 
         {
@@ -92,8 +110,8 @@
         },
         {
           "IpProtocol": "tcp",
-          "FromPort": 3389,
-          "ToPort": 3389,
+          "FromPort": 1433,
+          "ToPort": 1433,
           "CidrIp": { "Ref": "InboundCIDRIP" }
         }
         ],
@@ -112,6 +130,82 @@
         }
         ]
        }
+    },
+    "InboundRuleFromSelfSQLPort": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+          "IpProtocol": "tcp",
+          "FromPort": { "Ref": "SourceSQLServerPort" }, 
+          "ToPort": { "Ref": "SourceSQLServerPort" }, 
+          "SourceSecurityGroupId":  { "Ref": "EC2DMSSecurityGroup" },
+          "GroupId": { "Ref": "EC2DMSSecurityGroup" }
+      }
+    },
+    "InboundRuleFromSelfPGPort": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+          "IpProtocol": "tcp",
+          "FromPort": 5432,
+          "ToPort": 5432,
+          "SourceSecurityGroupId":  { "Ref": "EC2DMSSecurityGroup" },
+          "GroupId": { "Ref": "EC2DMSSecurityGroup" }
+      }
+    },
+    "OutboundRuleToSelfSQLPort": {
+       "Type": "AWS::EC2::SecurityGroupEgress",
+       "Properties":{
+          "IpProtocol": "tcp",
+          "FromPort": { "Ref": "SourceSQLServerPort" }, 
+          "ToPort": { "Ref": "SourceSQLServerPort" }, 
+          "DestinationSecurityGroupId": { "Ref": "EC2DMSSecurityGroup" },
+          "GroupId": { "Ref": "EC2DMSSecurityGroup" }
+       }
+    },
+    "OutboundRuleToSelfPGPort": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties":{
+         "IpProtocol": "tcp",
+         "FromPort": 5432, 
+         "ToPort": 5432, 
+         "DestinationSecurityGroupId": { "Ref": "EC2DMSSecurityGroup" },
+         "GroupId": { "Ref": "EC2DMSSecurityGroup" }
+      }
+   },
+   "OutboundRuleToSourceSQLPort": {
+    "Type": "AWS::EC2::SecurityGroupEgress",
+    "Properties":{
+      "IpProtocol": "tcp",
+      "FromPort": { "Ref": "SourceSQLServerPort" }, 
+      "ToPort": { "Ref": "SourceSQLServerPort" }, 
+      "CidrIp": { "Ref": "SourceSQLServerIP" },
+      "GroupId": { "Ref": "EC2DMSSecurityGroup" }
+    }
+    },
+    "OutboundRuleToTargetPGPort": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties":{
+          "IpProtocol": "tcp",
+          "FromPort": 5432, 
+          "ToPort": 5432, 
+          "DestinationSecurityGroupId": { "Ref": "TargetPGServerSG" },  
+          "GroupId": { "Ref": "EC2DMSSecurityGroup" }
+      }
+    },
+    "InfioDMSSubnetGroup" : {
+      "Type" : "AWS::DMS::ReplicationSubnetGroup",
+      "Properties" : {
+          "ReplicationSubnetGroupDescription" : "This is a DMS Subnet Group used by Infio assessment tool.",
+          "ReplicationSubnetGroupIdentifier" : "infio-dms-subnet-group",
+          "SubnetIds" : { "Ref": "DMSSubnetGroupSubnetIDs" }, 
+          "Tags" : [{
+            "Key" : "Purpose",
+            "Value" : "infio"
+            },
+            {
+              "Key" : "project",
+              "Value" : "infio-assessment"
+            } ]
+        }
     },
     "InfioEC2Profile": {
         "Type": "AWS::IAM::InstanceProfile",
@@ -134,17 +228,22 @@
               {
                 "Effect": "Allow",
                 "Principal": {
-                  "Service": "ec2.amazonaws.com"
+                  "Service": [ 
+                      "ec2.amazonaws.com",
+                      "dms-data-migrations.amazonaws.com",
+                      "dms.us-east-1.amazonaws.com",
+                      "dms.amazonaws.com"
+                    ]
                 },
                 "Action": "sts:AssumeRole"
               }
             ]
           },
-          "RoleName" : "infio-ec2-role",
+          "RoleName" : "infio-ec2-dms-role",
           "Path": "/",
           "Policies": [
             {
-              "PolicyName": "infio-ec2-role-policy",
+              "PolicyName": "infio-ec2-dms-role-policy",
               "PolicyDocument": {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -202,19 +301,31 @@
                             "secretsmanager:TagResource",
                             "secretsmanager:GetSecretValue",
                             "secretsmanager:DeleteSecret",
-                            "secretsmanager:DescribeSecret"              
+                            "secretsmanager:CreateSecret"        
                           ],
                           "Resource": [{
-                            "Fn::Join": [ ":", [ "arn:aws:secretsmanager", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "secret:infio-db-credentials-*" ] ]
+                            "Fn::Join": [ ":", [ "arn:aws:secretsmanager", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "secret:infio-source-db-credentials*" ] ]
+                          },
+                          {
+                            "Fn::Join": [ ":", [ "arn:aws:secretsmanager", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "secret:infio-target-db-credentials*" ] ]
                           },
                           {
                             "Fn::Join": [ ":", [ "arn:aws:secretsmanager", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "secret:infio*" ] ]
                           }],
                           "Condition": {
                               "StringEquals": {
-                              "aws:ResourceTag/Purpose": "Infio"
+                              "aws:ResourceTag/Purpose": "infio"
                               }
                           }
+                        },
+                        {
+                          "Sid": "ListAllS3Buckets",
+                          "Effect": "Allow",
+                          "Action": [
+                            "s3:ListBucket",
+                            "s3:ListAllMyBuckets"
+                          ],
+                          "Resource": [ "*" ]
                         },
                         {
                           "Sid": "SecretsManagerCreatePermissionsForInfioEC2Instance",
@@ -222,7 +333,8 @@
                           "Action": [
                             "secretsmanager:CreateSecret",
                             "secretsmanager:ListSecrets",
-                            "secretsmanager:GetRandomPassword"
+                            "secretsmanager:GetRandomPassword",
+                            "secretsmanager:DescribeSecret"
 
                           ],
                           "Resource": "*"
@@ -240,7 +352,11 @@
                             "s3:GetBucketLocation",
                             "s3:ListBucket",
                             "s3:GetObject",
-                            "s3:PutObject"
+                            "s3:PutObject",
+                            "s3:GetBucketLocation",
+                            "s3:GetBucketVersioning",
+			                    	"s3:GetObjectVersion",
+				                    "s3:PutBucketVersioning"
 
                           ],
                           "Resource": [{
@@ -267,7 +383,10 @@
                           "Action": [
                             "logs:CreateLogGroup",
                             "logs:CreateLogStream",
-                            "logs:PutLogEvents"
+                            "logs:PutLogEvents",
+                            "logs:DescribeLogStreams",
+                            "logs:CreateLogGroup",
+                            "logs:DescribeLogGroups"
                           ],
                           "Resource": {
                             "Fn::Join": [ ":", [ "arn:aws:logs", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "log-group:/*" ]  ]
@@ -283,6 +402,82 @@
                             "license-manager:GetLicense"
                           ],
                         "Resource": "*"
+                        },
+                        {
+                          "Sid": "InfioDMSPermissionSet",
+                          "Effect": "Allow",
+                          "Action": [
+                            "dms:CreateDataProvider",
+                            "dms:CreateMigrationProject",
+                            "dms:CreateDataMigration",
+                            "dms:CreateReplicationInstance",
+                            "dms:ListDataProviders",
+                            "dms:ListMigrationProjects",
+                            "dms:AddTagsToResource",
+                            "dms:StartDataMigration",
+                            "dms:DescribeInstanceProfiles",
+                            "dms:ListInstanceProfiles",
+                            "dms:StartMetadataModelAssessment",
+                            "dms:ListMetadataModelAssessments",
+                            "dms:ExportMetadataModelAssessment"
+                          ],
+                          "Resource": "*"
+                        },
+                        {   
+                            "Sid": "InfioDMSDeleteUpdatePermissionSet",
+                            "Effect": "Allow",
+                            "Action": [
+                                "dms:UpdateDataProvider",
+                                "dms:DeleteDataProvider",
+                                "dms:UpdateMigrationProject",
+                                "dms:DeleteMigrationProject"
+                            ],
+                            "Resource": [{
+                              "Fn::Join": [ ":", [ "arn:aws:dms", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "migration-project:*" ]  ]
+                            },
+                            {
+                              "Fn::Join": [ ":", [ "arn:aws:dms", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "data-provider:*" ]  ]
+                            }
+                            ]
+                        },
+                        {
+                          "Sid": "InfioRDSReadOnlyPermissions",
+                          "Effect": "Allow",
+                          "Action": [
+                            "rds:DescribeDBClusters",
+                            "rds:DescribeDBInstances",
+                            "rds:DescribeDBClusterSnapshots",
+                            "rds:ListTagsForResource"
+                          ],
+                          "Resource": [{
+                            "Fn::Join": [ ":", [ "arn:aws:rds", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "cluster", "*" ]  ]
+                          },
+                          {
+                            "Fn::Join": [ ":", [ "arn:aws:rds", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "db", "*" ]  ]
+                          },
+                          {
+                            "Fn::Join": [ ":", [ "arn:aws:rds", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "*" ]  ]
+                          }]
+                        },
+                        {
+                          "Sid": "InfioAbilityToPassTheRoleRequiredByDMS",
+                          "Effect": "Allow",
+                          "Action": [
+                            "iam:PassRole"
+                          ],
+                          "Resource": {
+                            "Fn::Join": [ ":", [ "arn:aws:iam:", { "Ref": "AWS::AccountId" }, "role/infio-ec2-dms-role" ]  ]
+                          }
+                        },
+                        {
+                          "Sid": "InfioAbilityToListRolesRequiredByInfioUI",
+                          "Effect": "Allow",
+                          "Action": [
+                            "iam:ListRoles"
+                          ],
+                          "Resource": {
+                            "Fn::Join": [ ":", [ "arn:aws:iam:", { "Ref": "AWS::AccountId" }, "role/*" ]  ]
+                          }
                         }
                       ]
                     }
@@ -325,7 +520,7 @@
               "DeleteOnTermination" : true,
               "Encrypted" : true,
               "KmsKeyId" : {
-                "Fn::Join": [ "/", [ "alias", { "Ref": "InfioEC2EncryptionKeyAlias" } ]  ]
+                "Fn::Join": [ "/", [ "alias", { "Ref": "InfioEC2EncryptionKeyAlias" } ]  ]  
               },
               "VolumeSize" : 50,
               "VolumeType" : "gp3"
@@ -337,7 +532,7 @@
           },
         "InstanceType": { "Ref": "EC2InstanceType" },
         "KeyName": { "Ref": "InfioEC2InstanceKey" },
-        "SecurityGroupIds": [{ "Ref": "EC2SecurityGroup" }],
+        "SecurityGroupIds": [{ "Ref": "EC2DMSSecurityGroup" }],
         "SubnetId": { "Ref": "SubnetID" },
         "Tags" : [ 
             {
@@ -350,6 +545,22 @@
           }
           ]
       }
+    },
+    "DMSInstanceProfile":{
+      "Type" : "AWS::DMS::InstanceProfile",
+      "Properties" : {
+          "Description" : "This is INFIO DMS SC Instance Profile.",
+          "InstanceProfileIdentifier" : "infio-dms-instance-profile",
+          "InstanceProfileName" : "infio-dms-instance-profile",
+          "NetworkType" : "IPV4",
+          "PubliclyAccessible" : false,
+          "SubnetGroupIdentifier" : "infio-dms-subnet-group",
+          "Tags" : [ {
+            "Key" : "Purpose",
+            "Value" : "infio"
+            } ],
+          "VpcSecurityGroups" : [ { "Ref": "EC2DMSSecurityGroup" } ]
+        }
     }
   },
   "Outputs": {
@@ -365,10 +576,10 @@
         "Ref": "InfioEC2Instance"
       }
     },
-      "EC2SecurityGroup": {
-        "Description": "The ID of the Sg attached to the Infio EC2 instance.",
+      "EC2DMSSecurityGroup": {
+        "Description": "The ID of the SG attached to the Infio EC2 instance and the DMS SC Instance.",
         "Value": {
-          "Ref": "EC2SecurityGroup"
+          "Ref": "EC2DMSSecurityGroup"
         }
     }
   }
