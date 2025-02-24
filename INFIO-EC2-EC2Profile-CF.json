@@ -2,19 +2,23 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "This stack will deploy INFIO EC2 Instance, EC2 Profile with required permissions assigned to the instance, and a Security Group attached to the INFIO instance.",
   "Parameters": {
+    "ImageId": {
+      "Type": "String",
+      "Default": "ami-0a1eb5c60011479a6"
+    },
     "EC2InstanceType": {
-        "Type": "String",
-        "Description": "Select the EC2 instance type",
-        "AllowedValues": [ "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "t3a.medium", "t3a.large", "t3a.xlarge", "t3a.2xlarge", "t3.medium", "t3.large", "t3.xlarge", 
-        "t3.2xlarge", "m5.large", "m5.xlarge", "m5.2xlarge", "m5.4xlarge", "m5a.large", "m5a.xlarge", "m5a.2xlarge", "m5a.4xlarge", "m6a.large", "m6a.xlarge", "m6a.2xlarge", 
-        "m6a.4xlarge", "c5.large", "c5.xlarge", "c5.2xlarge", "c5.4xlarge", "c6a.large", "c6a.xlarge", "c6a.2xlarge", "c6a.4xlarge", "r5.large", "r5.xlarge", "r5.2xlarge", 
-        "r5.4xlarge", "r6a.large", "r6a.xlarge", "r6a.2xlarge", "r6a.4xlarge", "d3.xlarge", "d3.2xlarge" ],
-        "Default": "m6a.large"
+      "Type": "String",
+      "Description": "Select the EC2 instance type",
+      "AllowedValues": [ "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "t3a.medium", "t3a.large", "t3a.xlarge", "t3a.2xlarge", "t3.medium", "t3.large", "t3.xlarge", 
+      "t3.2xlarge", "m5.large", "m5.xlarge", "m5.2xlarge", "m5.4xlarge", "m5a.large", "m5a.xlarge", "m5a.2xlarge", "m5a.4xlarge", "m6a.large", "m6a.xlarge", "m6a.2xlarge", 
+      "m6a.4xlarge", "c5.large", "c5.xlarge", "c5.2xlarge", "c5.4xlarge", "c6a.large", "c6a.xlarge", "c6a.2xlarge", "c6a.4xlarge", "r5.large", "r5.xlarge", "r5.2xlarge", 
+      "r5.4xlarge", "r6a.large", "r6a.xlarge", "r6a.2xlarge", "r6a.4xlarge", "d3.xlarge", "d3.2xlarge" ],
+      "Default": "m6a.large"
     },
     "SubnetID": {
-        "Type": "String",
-        "Description": "ID of a subnet where Infio EC2 instance will be deployed",
-        "ConstraintDescription": "Must be a private subnet in the AZ you select."
+      "Type": "String",
+      "Description": "ID of a subnet where Infio EC2 instance will be deployed",
+      "ConstraintDescription": "Must be a private subnet in the AZ you select."
     },
     "DMSSubnetGroupSubnetIDs": {
       "Type": "CommaDelimitedList",
@@ -34,58 +38,22 @@
       "Description": "ID of one of the SGs attached to your target PostgreSQL Database."
     },
     "InfioEC2EncryptionKeyAlias": {
-        "Type": "String",
-        "Description": "Alias of the KMS encryption key you would like to use to encrypt the Infio EC2 instance, default is AWS managed aws/ebs KMS",
-        "Default": "aws/ebs"
+      "Type": "String",
+      "Description": "Alias of the KMS encryption key you would like to use to encrypt the Infio EC2 instance, default is AWS managed aws/ebs KMS",
+      "Default": "aws/ebs"
     },
     "VPCCIDR": {
-        "Type": "String",
-        "Description": "CIDR of the VPC where your Infio EC2 instance will be deployed."
+      "Type": "String",
+      "Description": "CIDR of the VPC where your Infio EC2 instance will be deployed."
     },
     "VPCID": {
-        "Type": "String",
-        "Description": "VPC ID where your Infio EC2 instance will be deployed."
+      "Type": "String",
+      "Description": "VPC ID where your Infio EC2 instance will be deployed."
     },
     "InboundCIDRIP": {
-        "Type": "String",
-        "Description": "CIDR or a single IP address that will be allowed to RDP inbound to the Infio EC2 Instance.",
-         "ConstraintDescription": "Please enetr in the form of xx.xx.xx.xx/xx."
-    }
-  },
-  "Mappings": {
-    "RegionMap": {
-      "us-east-1": { "AMI": "ami-01fdd1768c9bcffe5" }, 
-      "us-east-2": { "AMI": "" },
-      "us-west-1": { "AMI": "" },
-      "us-west-2": { "AMI": "" },
-      "eu-west-1": { "AMI": "" },
-      "eu-west-2": { "AMI": "" },
-      "af-south-1": { "AMI": "" },
-      "ap-east-1": { "AMI": "" },
-      "ap-south-1": { "AMI": "" },
-      "ap-south-2": { "AMI": "" },
-      "ap-southeast-3": { "AMI": "" },
-      "ap-southeast-4": { "AMI": "" },
-      "ap-southeast-5": { "AMI": "" },
-      "ap-northeast-3": { "AMI": "" },
-      "ap-northeast-2": { "AMI": "" },
-      "ap-southeast-1": { "AMI": "" },
-      "ap-southeast-2": { "AMI": "" },
-      "ap-northeast-1": { "AMI": "" },
-      "ca-central-1": { "AMI": "" },
-      "ca-west-1": { "AMI": "" },
-      "eu-central-1": { "AMI": "" },
-      "eu-south-1": { "AMI": "" },
-      "eu-west-3": { "AMI": "" },
-      "eu-south-2": { "AMI": "" },
-      "eu-north-1": { "AMI": "" },
-      "eu-central-2": { "AMI": "" },
-      "il-central-1": { "AMI": "" },
-      "me-south-1": { "AMI": "" },
-      "me-central-1": { "AMI": "" },
-      "sa-east-1": { "AMI": "" },
-      "us-gov-east-1": { "AMI": "" },
-      "us-gov-west-1": { "AMI": "" }
+      "Type": "String",
+      "Description": "CIDR or a single IP address that will be allowed to RDP inbound to the Infio EC2 Instance.",
+      "ConstraintDescription": "Please enetr in the form of xx.xx.xx.xx/xx."
     }
   },
   "Resources": {
@@ -110,8 +78,8 @@
         },
         {
           "IpProtocol": "tcp",
-          "FromPort": 1433,
-          "ToPort": 1433,
+          "FromPort": 3389,
+          "ToPort": 3389,
           "CidrIp": { "Ref": "InboundCIDRIP" }
         }
         ],
@@ -419,6 +387,7 @@
                             "dms:ListInstanceProfiles",
                             "dms:StartMetadataModelAssessment",
                             "dms:ListMetadataModelAssessments",
+                            "dms:UpdateMigrationProject",
                             "dms:ExportMetadataModelAssessment"
                           ],
                           "Resource": "*"
@@ -429,7 +398,6 @@
                             "Action": [
                                 "dms:UpdateDataProvider",
                                 "dms:DeleteDataProvider",
-                                "dms:UpdateMigrationProject",
                                 "dms:DeleteMigrationProject"
                             ],
                             "Resource": [{
@@ -527,9 +495,7 @@
             }
           }
         ],
-        "ImageId": {
-            "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "AMI" ]
-          },
+        "ImageId": { "Ref": "ImageId" },
         "InstanceType": { "Ref": "EC2InstanceType" },
         "KeyName": { "Ref": "InfioEC2InstanceKey" },
         "SecurityGroupIds": [{ "Ref": "EC2DMSSecurityGroup" }],
