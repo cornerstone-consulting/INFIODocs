@@ -35,7 +35,7 @@
   - [How to Deploy EC2 from INFIO AMI](#how-to-deploy-ec2-from-infio-ami)
   - [Log in to a Windows INFIO EC2 Instance in a Private Subnet Using a Bastion Host](#log-in-to-a-windows-infio-ec2-instance-in-a-private-subnet-using-a-bastion-host)
   - [VPC Endpoint Deployment for CloudFormation Service (Optional)](#vpc-endpoint-deployment-for-cloudformation-service-optional)
-  - [VPC Endpoint Deployment for S3, Secret Manager, and KMS](#vpc-endpoint-deployment-for-s3-secret-manager-and-kms)
+  - [VPC Endpoint Deployment for S3, Secret manager, KMS, EC2, DMS, RDS, and IAM and security group for all VPC endpoints](#vpc-endpoint-deployment-for-s3-secret-manager-kms-ec2-dms-rds-and-iam-and-security-group-for-all-vpc-endpoints)
   - [Steps for setting up AWS Resources for Infio Assessment Tool via CloudFormation](#Steps-for-setting-up-AWS-resources-for-infio-assessment-tool-via-cloudFormation)
 - [INFIO Assessment Tool Usage Guide](#infio-assessment-tool-usage-guide)
   - [Filling Out the Questionnaire](#filling-out-the-questionnaire)
