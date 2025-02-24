@@ -483,9 +483,11 @@ To set up the minimum permissions for an on-premises SQL Server database:
 ### VPC Endpoint Deployment for CloudFormation Service (Optional):
 
 **Purpose**:
-From the AWS Console in the same account where you have deployed the **INFIO EC2 instance**, you can deploy an AWS VPC Endpoint for CloudFormation service. This step is necessary if your **VPC landing zone** does not support EC2 instances hosted in a private subnet to connect to AWS services (e.g., when EC2 instances in private subnets cannot access CloudFormation service). Access to the CloudFormation Service is required to deploy additional AWS resources from the **INFIO EC2 instance**. 
+From the AWS Console in the same account where you have deployed the **INFIO EC2 instance**, you can deploy an AWS VPC Endpoint for CloudFormation service. This step is necessary if your **VPC landing zone** does not support EC2 instances hosted in a private subnet to connect to AWS services (e.g., when EC2 instance in private subnets cannot access CloudFormation service). Access to the CloudFormation Service is required to deploy additional AWS resources from the **INFIO EC2 instance**. 
 
 > **Note**: Verify network connectivity or consult your cloud network administrator before deploying this endpoint.
+
+This cloudformation template will deploy cloudformation endpoint for INFIO EC2 instance and security group for cloudformation endpoint.
 
 **Deployment Steps:**
 
@@ -514,10 +516,11 @@ From the AWS Console in the same account where you have deployed the **INFIO EC2
 
 ---
 
-### VPC Endpoint Deployment for S3, Secret manager, and KMS
+### VPC Endpoint Deployment for S3, Secret manager, KMS, EC2, DMS, RDS, and IAM and security group for all VPC endpoints
 
 **Purpose:** 
-- This deployment is necessary if your **VPC landing zone** does not support **EC2 instances hosted in a private subnet** to connect with AWS services. The provided **CloudFormation template** creates a secure environment for the INFIO assessment tool within an AWS VPC. It establishes **VPC endpoints** for **S3**, **Secrets Manager**, and **KMS** services, enabling secure access from the INFIO EC2 instance. 
+- This deployment is necessary if your **VPC landing zone** does not support **EC2 instances hosted in a private subnet** to connect with AWS services. The provided **CloudFormation template** creates a secure environment for the INFIO assessment tool within an AWS VPC. It establishes **VPC endpoints** for **S3**, **Secrets Manager**, **KMS**, **EC2**, **DMS**, **RDS**, and **IAM** services, enabling secure access from the INFIO EC2 instance, in which EC2, DMS, RDS and IAM service endpoints are being used for AWS schema conversion.
+- This CloudFormation template creates a Security Group (SG) named **infio-vpc-endpoint-sg** for VPC endpoints (S3, Secrets Manager, KMS, EC2, DMS, RDS, and IAM). This security group controls who can access the VPC endpoint and where it can send data.  
 
 > Note: Configuring VPC Endpoints for these services is optional. If your INFIO EC2 instance already has direct access to these services through existing network configurations, you may skip this step.
 
@@ -534,12 +537,12 @@ Follow the steps for deployment.
 1. Access the **Desktop** drive of the **INFIO EC2 instance**.
 2. Navigate to the folder containing the **INFIO Assessment Tool**.  
    - Inside, locate the `aws-infra-setup` folder.
-   - Find the template file: `INFIO-S3-KMS-SM-VPCEndpoints.json`.
+   - Find the template file: `INFIO-S3-KMS-SM-DMS-EC2-RDS-IAM-VPCEndpoints.json`.
    - Open the command prompt from `aws-infra-setup` folder and run the below command.
 
 ```bash
 aws cloudformation create-stack --stack-name INFIOVPCEndpoints \
-    --template-body file://C:/Users/Administrator/Desktop/INFIO%20Assessment%20Tool/aws-infra-setup/INFIO-S3-KMS-SM-VPCEndpoints-CF.json \
+    --template-body file://C:/Users/Administrator/Desktop/INFIO%20Assessment%20Tool/aws-infra-setup/INFIO-S3-KMS-SM-DMS-EC2-RDS-IAM-VPCEndpoints.json \
     --parameters ParameterKey=VPCID,ParameterValue=<ParameterValue1> \
                 ParameterKey=VPCCIDR,ParameterValue=<ParameterValue2> \
                 ParameterKey=SecurityGroupID,ParameterValue=<ParameterValue3> \
@@ -566,6 +569,7 @@ aws cloudformation create-stack --stack-name INFIOVPCEndpoints \
       - This defines inbound rules for secure communication with the VPC endpoint.
     - **SubnetID**:  
       The subnet where the INFIO EC2 instance is deployed.
+      - Use private subnet id where INFIO Ec2 instance will be deployed. 
 
 
 5. Find the CloudFormation Endpoint URL:
@@ -581,11 +585,38 @@ aws cloudformation create-stack --stack-name INFIOVPCEndpoints \
     - Ensure that this step is completed before proceeding to deploy dependent services.
     - Verify the status of the stack in the **AWS Console** under **CloudFormation services** to confirm that the stack is fully deployed and all resources have been created.
 
+#### VPC Endpoint Security Group inbound and outbound rules(infio-vpc-endpoint-sg)
+
+This **Security Group** allows secure **HTTPS (443) communication** between the **VPC endpoint**, the **INFIO EC2 instance**, and other AWS services inside the **VPC**.
+
+#### 🔹 Inbound Rules (Incoming Traffic)
+- **Allows HTTPS traffic from the INFIO EC2 instance** (SecurityGroupID) → Ensures only this EC2 instance can access the VPC endpoint securely.  
+- **Allows HTTPS traffic from within the VPC (VPCCIDR)** → Enables access for other AWS services like EC2, Lambda, etc.
+
+#### 🔹 Outbound Rules (Outgoing Traffic)
+- **Allows HTTPS responses to all resources inside the VPC (VPCCIDR)** → Ensures AWS services in the VPC can receive responses.  
+- **Allows HTTPS responses to the INFIO EC2 instance** (SecurityGroupID) → Ensures the EC2 instance can get responses from the VPC endpoint.
+
+This setup ensures **secure communication** between the **VPC endpoint, INFIO EC2 instance, and other AWS resources inside the VPC**.
+
 ---
 
 ### Steps for setting up AWS Resources for Infio Assessment Tool via CloudFormation
 
-This CloudFormation template provisions the necessary AWS resources for the **INFIO Assessment Tool**, including a KMS key, Secrets Manager secret, and S3 bucket. These resources are optimized to ensure secure data storage and management, enabling robust encryption and controlled access with AWS's advanced security features. The Secrets Manager secrets are specifically intended to securely store credentials and connection details for the data providers used by AWS Database Migration Service (DMS) and Infio tool, ensuring secure and seamless data migration operations.
+- This CloudFormation template provisions the necessary AWS resources for the **INFIO Assessment Tool**, including a KMS key, secrets manager secret, and S3 bucket. These resources are optimized to ensure secure data storage and management, enabling robust encryption and controlled access with AWS's advanced security features. The Secrets Manager secrets are specifically intended to securely store credentials and connection details for the data providers used by AWS Database Migration Service (DMS) and Infio tool, ensuring secure and seamless data migration operations.
+- When an **INFIO EC2 instance** is deployed from the **AWS Marketplace**, the following additional resources are automatically created:
+
+**1️⃣ EC2 IAM Role**  
+- An **IAM role** is attached to the instance to grant **secure access** to AWS services.  
+
+**2️⃣ Security Group (SG) "infio-ec2-dms-sg" for the INFIO EC2 Instance**  
+- A **Security Group** is created to **control inbound and outbound traffic**.  
+- It ensures **secure communication** between the EC2 instance and other services inside the **VPC**.
+- This security group is attached with INFIO EC2 instance and DMS instance profile.
+
+**3️⃣ DMS Instance Profile (Required by Schema Conversion)**  
+- A **DMS (Database Migration Service) instance profile** is created.  
+- This is required by **Schema conversion (SC)** for **securely managing migration-related tasks**.  
 
 #### Deployment Steps
 
@@ -614,6 +645,25 @@ The `--endpoint-url` parameter is **optional**. Utilize it only if you created a
     ```plaintext
     https://vpce-0d160416ea2418058-0oelz5ve.cloudformation.us-east-1.vpce.amazonaws.com
     ```
+
+#### Security Group inbound and outbound rules for INFIO EC2 instace(infio-ec2-dms-sg)  
+
+This **Security Group** manages access for **database and network communication** between **EC2, SQL Server, PostgreSQL, and VPC endpoints**.  
+
+🔹 **Inbound Rules (Incoming Traffic)**  
+- **`Port 1443` from `self`** → Allows internal communication within the same security group.  
+- **`Port 5432` from `self`** → Enables PostgreSQL instances in the same security group to communicate.  
+- **`Port 443` from `VPC CIDR`** → Allows secure HTTPS traffic from resources inside the VPC.  
+- **`Port 1443` from `VPC CIDR`** → Permits database connections from resources inside the VPC.  
+- **`Port 1433` from `SQL Server IP`** → Allows incoming connections from a specific SQL Server instance.  
+
+🔹 **Outbound Rules (Outgoing Traffic)**  
+- **`Port 1443` to `SQL Server IP`** → Allows outgoing database connections to SQL Server.  
+- **`Port 443` to `VPC Endpoint SG`** → Enables secure communication with VPC endpoints.  
+- **`Port 443` to `VPC CIDR`** → Allows HTTPS traffic to resources inside the VPC.  
+- **`Port 5432` to `PostgreSQL SG`** → Permits outgoing connections to PostgreSQL instances.  
+- **`Port 1433` to `self`** → Allows internal SQL Server communication within the same security group.  
+- **`Port 5432` to `self`** → Enables internal PostgreSQL communication within the same security group.
 
 ---
 
