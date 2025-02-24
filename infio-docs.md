@@ -648,22 +648,30 @@ The `--endpoint-url` parameter is **optional**. Utilize it only if you created a
 
 #### Security Group inbound and outbound rules for INFIO EC2 instace(infio-ec2-dms-sg)  
 
-This **Security Group** manages access for **database and network communication** between **EC2, SQL Server, PostgreSQL, and VPC endpoints**.  
+This **Security Group** manages access for **database and network communication** between **EC2, SQL Server, PostgreSQL, and VPC endpoints**.
+
+> Note: SQL server port (can be 1433 or anything that your input) is taken as input from the user. 
 
 🔹 **Inbound Rules (Incoming Traffic)**  
-- **`Port 1443` from `self`** → Allows internal communication within the same security group.  
+- **`SQL server Port (1443 or custom)` from `self`** → Allows internal communication within the same security group.  
 - **`Port 5432` from `self`** → Enables PostgreSQL instances in the same security group to communicate.  
 - **`Port 443` from `VPC CIDR`** → Allows secure HTTPS traffic from resources inside the VPC.  
-- **`Port 1443` from `VPC CIDR`** → Permits database connections from resources inside the VPC.  
-- **`Port 1433` from `SQL Server IP`** → Allows incoming connections from a specific SQL Server instance.  
-
+- **`Port 80` from `VPC CIDR`** → Permits HTTP connections from resources inside the VPC.  
+- **`Port 3389` from `Inbound CIDR / IP`** → Permits RDP connections from user provided CIDR or IP address.  
+- **`SQL server Port (1443 or custom)` from `VPC CIDR`** → Permits database connections from resources inside the VPC.  
+- **`SQL server Port (1443 or custom)` from `SQL Server IP`** → Allows incoming connections from a specific SQL Server instance.  
+ 
 🔹 **Outbound Rules (Outgoing Traffic)**  
-- **`Port 1443` to `SQL Server IP`** → Allows outgoing database connections to SQL Server.  
-- **`Port 443` to `VPC Endpoint SG`** → Enables secure communication with VPC endpoints.  
+- **`SQL server Port (1443 or custom)` to `SQL Server IP`** → Allows outgoing database connections to SQL Server.  
 - **`Port 443` to `VPC CIDR`** → Allows HTTPS traffic to resources inside the VPC.  
+- **`Port 80` from `VPC CIDR`** → Permits HTTP traffic to resources inside the VPC.  
 - **`Port 5432` to `PostgreSQL SG`** → Permits outgoing connections to PostgreSQL instances.  
-- **`Port 1433` to `self`** → Allows internal SQL Server communication within the same security group.  
+- **`SQL server Port (1443 or custom)` to `self`** → Allows internal SQL Server communication within the same security group.  
 - **`Port 5432` to `self`** → Enables internal PostgreSQL communication within the same security group.
+ 
+User needs to manually add: 
+🔹 **Outbound Rules (Outgoing Traffic)**   
+- **`Port 443` to `VPC Endpoint SG`** → Enables secure communication with VPC endpoints.  
 
 ---
 
@@ -711,8 +719,6 @@ On the configuration page, you need to click on the `add Configurations` button,
 7. Enter the database name(s) you want to exclude. Press enter to retain the default excluded databases (master, model, msdb, tempdb).
 8. Specify any additional settings or configurations required for your SQL Server.
 9. Enter the SQL Server **port number**.
-
-> **Note**: Make sure SQL Server is accessible from the INFIO EC2 instance.
 
 #### Final Review and Confirmation
 
@@ -771,6 +777,8 @@ If you choose **SQL Server to Babelfish**, INFIO provides two execution modes fo
 
 - **Offline Mode** relies on the INFIO plugin for broader file collection.
 - **Mixed Mode** distributes the workload between the INFIO plugin and the INFIO tool.
+
+> **Important Note**: Make sure SQL Server is accessible from the INFIO EC2 instance security group.
 
 --- 
 
@@ -928,6 +936,8 @@ Once you have selected the application and then click on Data providers tab, and
 - Click **Create Data Providers** to save the configuration.
 
 Once the data providers are configured, you can proceed with further schema conversion steps.
+
+> **Important Note**: Make sure SQL Server and RDS instance are accessible from the INFIO EC2 instance security group.
 
 #### **Steps to create a migration project**
 
