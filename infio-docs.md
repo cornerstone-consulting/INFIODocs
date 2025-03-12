@@ -38,22 +38,19 @@
   - [VPC Endpoint Deployment for S3, Secret manager, KMS, EC2, DMS, RDS, and IAM and security group for all VPC endpoints](#vpc-endpoint-deployment-for-s3-secret-manager-kms-ec2-dms-rds-and-iam-and-security-group-for-all-vpc-endpoints)
   - [Steps for setting up AWS Resources for Infio Assessment Tool via CloudFormation](#Steps-for-setting-up-AWS-resources-for-infio-assessment-tool-via-cloudFormation)
 - [INFIO Assessment Tool Usage Guide](#infio-assessment-tool-usage-guide)
-  - [Filling Out the Questionnaire](#filling-out-the-questionnaire)
-  - [Navigating to the Configuration Page](#navigating-to-the-configuration-page)
-    - [Configuration Page Setup](#configuration-page-setup)
-  - [Assessment Mode Selection](#assessment-mode-selection)
-    - [SQL server to Babelfish](#sql-server-to-babelfish)
-      - [Offline Mode](#offline-mode)
-      - [Mixed Mode](#mixed-mode)
-      - [INFIO Database Migration Assessment Report](#infio-database-migration-assessment-report)
-      - [Generating the Summary Report](#generating-the-summary-report)
-      - [Generating the Consolidated Report for Multiple Applications](#generating-the-consolidated-report-for-multiple-applications)
-      - [Exporting Assessment Answers](#exporting-assessment-answers)
-    - [SQL server to Aurora postgresql](#sql-server-to-aurora-postgresql)
-      - [Configure your data providers for DMS Schema conversion](#configure-your-data-providers-for-dms-schema-conversion)
-      - [Steps to create a migration project](#steps-to-create-a-migration-project)
-      - [Steps for Schema Conversion](#steps-for-schema-conversion)
-      - [Export Schema Conversion Report](#export-schema-conversion-report)
+  - [Infio Dashboard Overview](#infio-dashboard-overview)
+  - [Configuration Page Setup](#configuration-page-setup)
+  - [Application Discovery](#application-discovery)
+  - [Steps to Perform Assessment in INFIO](#steps-to-perform-assessment-in-infio)
+  - [Generating the Summary Report](#generating-the-summary-report)
+    - [Migration Assessment Report Covers](#migration-assessment-report-covers)
+    - [Report Sections Overview](#report-sections-overview)
+    - [Key Insights from TCO Analysis](#key-insights-from-tco-analysis)
+  - [SQL server to Aurora postgresql](#sql-server-to-aurora-postgresql)
+    - [Configure your data providers for DMS Schema conversion](#configure-your-data-providers-for-dms-schema-conversion)
+    - [Steps to create a migration project](#steps-to-create-a-migration-project)
+    - [Steps for Schema Conversion](#steps-for-schema-conversion)
+    - [Export Schema Conversion Report](#export-schema-conversion-report)
 - [Monitoring](#monitoring)
 - [Recovery and Backup](#recovery-and-backup)
 - [Managing Licenses](#managing-licenses)
@@ -500,7 +497,7 @@ This cloudformation template will deploy cloudformation endpoint for INFIO EC2 i
    - Under the **Prepare template** option, select **Choose an existing template**.  
    - Click on the **Upload a template file** button.
    - For the upload file, go to the `Desktop` of the Windows EC2 instance (**INFIO EC2 instance**).  
-   - Locate the folder containing the **INFIO Assessment Tool**. Inside, you'll find the `aws-infra-setup` folder, which contains the `INFIO-CF-VPCEndpoint.json` CloudFormation template.  
+   - Locate the folder containing the **INFIO Assessment Tool**. Inside, you'll find the `aws-infra-setup` folder, which contains the `INFIO-CF-VPCEndpoint_EndpointSG-CF.json` CloudFormation template.  
    - Click **Next** to proceed.
 
 4. **Configure the Stack**  
@@ -683,64 +680,153 @@ User needs to manually add:
     - `aws-infra-setup`
     - `infio`
     - `infio-plugin`
-4. Open the `infio` folder. Inside this folder, locate and run the INFIO **exe file** to start the application. It will run the INFIO tool in Google Chrome browser.
+4. Open the `infio` folder. Inside this folder, locate and run the **start_infio batch file** to start the application. It will run the INFIO tool in Google Chrome browser.
 5. If you encounter the error "License validation failed. The app cannot be started," please contact Cornerstone Support for assistance with license validation at support@cornerstone-consulting.io.
 6. Once the tool is launched, go to the `Assessment` page where INFIO will prompt you to enter the application name and company name. If your company name is not available in the list, you can enter the company name.
 
-**Filling Out the Questionnaire**
+#### Infio Dashboard Overview
 
-1. Complete all required fields in the questionnaire on the assessment page. This typically includes details about your application and its requirements.
-2. Ensure that all information is accurate before proceeding to the next step.
+- When a user opens Infio, Infio directed to the **Dashboard** as the homepage.  
 
- **Navigating to the AWS Secrets Manager Page**
+**Dashboard Sections**
+The dashboard provides an overview of key metrics related to application assessments:  
+- **Submitted Applications**: Number of applications submitted.  
+- **Assessment Discovered**: Number of assessments identified.  
+- **Assessments Run**: Number of assessments executed.  
+- **Reports Generated**: Number of reports created based on assessments.  
 
-1. Once the questionnaires are completed, navigate to the **AWS Secrets Manager** page where your SQL Server database credentials are stored.  
-   - To view or edit these credentials, click on **Edit Secrets**. From there, you can access and modify the stored details.
+**Application Status Table**
+Displays the current status of applications across different stages:  
+| Applications | Assessment Discovered | Assessments Run | Reports Generated |
+|-------------|----------------------|----------------|------------------|
+| 0 | 0 | 0 | 0 |
 
-2. If you need to store additional secrets in the **Secrets Manager**, follow these steps:  
-   - Click on the **Create Secret** button.  
-   - Ensure the secret name begins with `infio_`.  
-   - Add the **username** and **password** to allow INFIO to automatically use these credentials in the configurations.
+**Left Navigation Panel**
+The sidebar contains the following options:  
+- **🏠 Home** - Redirects to the dashboard.  
+- **⚙️ Configure** - Allows users to set up configurations.  
+- **🔍 Discover** - Helps in identifying available applications.  
+- **📊 Assess** - Facilitates running assessments on discovered applications.  
+- **📄 Reports** - Contains generated reports and their details.  
+  - Expandable submenu for detailed report views.  
+- **🚀 Deploy** - Deployment-related functionality.  
+- **🔄 Migrate** - Migration-related functionality.
 
-**Navigating to the Configuration Page**
+After dashboard page, you need to go to the configure page setup.
 
-1. After submitting the questionnaire, proceed to the configuration page setup.
+---
 
-**Configuration Page Setup**
+### Configuration Page Setup
 
-On the configuration page, you need to click on the `add Configurations` button, where you will be prompted to provide information for various components. Follow these steps:
+On the configuration page, you need to click on the `create new config` button, where you will be prompted to provide information for various components. Follow these steps:
 
-1. Select the application name and provide the details of your SQL Server, including the server name, username, and password.
-2. Ensure that the SQL Server username and password provided are for a **read-only access user**. This ensures that only data retrieval operations are allowed, and no modifications can be made to the database.
-3. INFIO retrieves the SQL Server credentials (username and password) directly from the **AWS Secrets Manager**, where they have been securely stored. Ensure that the secret name starts with `infio_` as per the setup instructions so select the secret from drop down.  
-4. Specify the source and destination directories where your application's DDL, DMS, object dependencies, and profiler extended events are stored, as well as where assessment reports will be generated.
-5. Enter the **S3 bucket name** where your application's DDL, DMS, object dependencies, and profiler extended events are stored.
-6. Enter the database name(s) you want to include in the assessment. You can leave this blank to include all databases in the SQL Server.
-7. Enter the database name(s) you want to exclude. Press enter to retain the default excluded databases (master, model, msdb, tempdb).
-8. Specify any additional settings or configurations required for your SQL Server.
-9. Enter the SQL Server **port number**.
+**Configure Application**
+1. **Add New Company** or **Choose an Existing Company**.
+2. Enter **Company Name**.
+3. Enter **Application Name**.
 
-#### Final Review and Confirmation
+**Configure Database**
+1. Click **Add Server** to configure a new database.
+2. Fill in the following details:
+   - **Source DB Server Name**: Enter the database host name.
+   - **Port**: Default is `1433` or you can enter your custom port number.
+   - **Source Secret**: Choose from available secrets or you can add, edit, and delete existing secrets from drop down.
+   - **Workload Type**: Select **PRODUCTION** or **NON-PRODUCTION**.
+   - **Database to Include**: After entering the Source DB Server Name, click the Refresh button located just below the Secret Configurations section. This will load all the databases available on your source database server. Alternatively, you can leave this field empty to include all databases.
+   - **Database to Exclude**: Select the databases you want to exclude. If left empty, the default system databases (master, model, msdb, tempdb) will be excluded automatically.
+3. Click on **Secret Configurations** to:
+   - **Add (+)** a new secret.
+   - **Edit (✏️)** an existing secret.
+   - **Delete (🗑️)** a secret.
 
-1. Review all the information you have entered on the configuration page.
-2. Make any necessary adjustments or corrections.
-3. Once all details are correct, click the **"Submit"** or **"Finish"** button to complete the setup process.
+**Actions**
+- **Cancel**: Discard changes.
+- **Submit**: Save the configuration.
 
-#### Assessment Mode Selection
+> Note: You can add up to a total of five server databases within a single application.
 
-1. Now, you will be asked to choose assessment modes.
-2. The INFIO Tool provides two distinct execution modes for assessments. You can select the mode that aligns with their requirements and data collection files preferences for running assessments. Below is a detailed explanation of each mode:
-  
-- [SQL Server to Babelfish](#sql-server-to-babelfish)  
-- [SQL Server to Aurora PostgreSQL](#sql-server-to-aurora-postgresql)   
+Once the configuration is saved, users will see the following information at the top of the page:
 
---- 
+- Application Name: Displays the name of the configured application.
+- Company Name: Shows the name of the organization associated with the application.
+- Bucket Name: Indicates the S3 bucket used for storing related data.
+- Number of Servers: Specifies how many database servers are included in this configuration.
 
-#### SQL Server to Babelfish
+You can make necessary adjustments using the edit or delete options, ensuring that database configurations align with your requirements.
 
-If you choose **SQL Server to Babelfish**, INFIO provides two execution modes for assessments. Follow the steps below for SQL Server to Babelfish.  
+After that on the left sidebar, click on **Discover** to access the **Application Discovery** page.
 
-#### 1. **Offline Mode**
+---
+
+### Application Discovery
+
+**1. Application Name (Dropdown)**
+- Click the refresh button and after that click on the dropdown.
+- Select the name of the application you want to configure.
+- If the application name is not available, ensure it has been added in the configuration settings.
+
+**2. Select Servers (Dropdown)**
+- Click the refresh button and after that and click on the dropdown to view available servers.
+- Choose the servers associated with your application.
+- Ensure that the required servers have been added in the **Configure** section before proceeding.
+
+**3. Is your application a third-party or Commercial Off-the-Shelf (COTS) Solution? (Dropdown)**
+- Select **Yes** if your application is a third-party or off-the-shelf solution.
+- Select **No** if the application is custom-built or proprietary.
+
+**4. Is there any additional information you would like to provide about your application? (Text Box)**
+- Enter any relevant details about the application that might be useful for discovery.
+- This could include the purpose of the application, specific configurations, or dependencies.
+
+After filling in all the fields, click on **Discover Server Info** at the bottom of the page to proceed.
+This will trigger the system to fetch **Server & Environment Metrics** related to the selection.
+
+**Fill in the Server & Environment Metrics**
+
+- Click on **Discover Server Info** to fetch server and environment details automatically.
+- If any data is incorrect, update it manually and click **Update Server Info**.
+- Ensure that the required configurations are set before proceeding.
+
+**SQL Server Instance Count**
+- Enter the number of **SQL Server Instances** in the respective fields for:
+  - **Production**
+  - **Non-Production**
+
+**2. Total Number of CPU Cores**
+- Enter the total **CPU Core count** for:
+  - **Production**
+  - **Non-Production**
+
+**3. SQL Server Node Distribution**
+- In the **Primary Node** field, enter the count of SQL Server primary nodes.
+- In the **Secondary Node** dropdown, select the number of secondary nodes.
+
+**4. Total Storage Distribution**
+- Enter the total **EBS/RDS storage** (in GB).
+- Enter the total **FSx-SAZ, FSx-MAZ, or Other storage** (in GB).
+
+**5. Save the Changes**
+- After entering all the required details, click on the **Update Server Info** button to save the changes.
+
+After that on the left sidebar, click on **Assess** under the "Discover" section to access the **Assessment** page.
+
+---
+
+### Steps to Perform Assessment in INFIO
+
+**1. Select the Target State**
+- Ensure that the checkbox **"SQL Server to Babelfish"** is selected.
+
+**2. Choose the Application**
+- In the **"Select Application"** dropdown, choose the relevant application (e.g., `northwind`).
+
+**3. Select the Server**
+- Click on the **"Select Servers"** dropdown.
+- Choose the appropriate server from the list (e.g., `ec2-1-23-456-789.compute-1.amazonaws.com`).
+
+**4. Choose the Assessment Mode**
+
+**1. Offline Mode**
 
 - **Purpose**: Ideal for scenarios requiring manual collection of DMS, DDL, and object dependencies files using the INFIO plugin, which can then be uploaded to an S3 bucket.
 - **Functionality**:
@@ -750,7 +836,7 @@ If you choose **SQL Server to Babelfish**, INFIO provides two execution modes fo
         - Object Dependency input files.
     - **Manual Effort Required**: Profiler Extended Events must be manually collected from the source SQL server.
 
-#### 2. **Mixed Mode**
+**2. Mixed Mode**
 
 - **Purpose**: Combines automated and manual file collection, providing flexibility in how files are gathered.
 - **Functionality**:
@@ -780,47 +866,53 @@ If you choose **SQL Server to Babelfish**, INFIO provides two execution modes fo
 
 > **Important Note**: Make sure SQL Server is accessible from the INFIO EC2 instance security group.
 
---- 
+**5. Review Database Configurations**
+- Verify the displayed details:
+
+**6. Run the Assessment**
+- Click the **"Run Assessment"** button to start the assessment process.
+ 
+ After successfully running assessment process on the left sidebar, click **Reports** and then select **Reports Overview**.
+ 
+---
 
 #### Generating the Summary Report
 
-1. **Run the Assessment**
-   - Ensure the necessary files are in the S3 bucket.
-   - Select the application name and click the `Run Assessment` button.
-   - After successfully running assessments, you need to understand the reports that INFIO will generate.
+**Step 1: Select Report Generation Mode**
+  - `Individual`: An individual report provides a comprehensive analysis of the feasibility and compatibility of migrating an existing **SQL Server database** to **Babelfish for Aurora PostgreSQL** or other AWS services for single application that you have selected. This report helps users understand potential migration challenges, highlights areas that require manual intervention, and offers insights to ensure a smooth transition.  
+  - `Consolidated`: A **Consolidated Report** provides a unified summary of report results across multiple applications within a specific company. This report combines data from individual application assessments, offering a comprehensive overview of database compatibility, migration readiness, and potential issues. It is particularly useful for organizations managing multiple applications and needing a holistic view of their migration landscape.
 
-2. **Understanding the Generated Reports**
-   - The INFIO tool will generate a Database Migration Assessment Report, evaluating the compatibility of the SQL Server database with Babelfish for Aurora PostgreSQL.
-   - The report highlights supported and unsupported features, providing recommendations and workarounds for unsupported database objects, transaction commands, and specific data types.
-   - Manual intervention may be required for tasks such as adding primary keys to tables and addressing incomplete backup strategies.
-   - This report guides users to streamline migration processes and address compatibility challenges effectively.
+**Step 2: Select the Application and/or company**
+  - Select an application if you selected individual report generation mode or select company if you selected consolidated report generation for multiple applications within a specific company.
 
-3. **Generate the Report**
+
+**Step 3: Generate the Report**
    - To generate the generate the reports, click the `Generate Report` button to create the report for the selected application.
 
-4. **Report Storage Locations**
-   - The report will be saved in the specified S3 bucket and you can download the report from below S3 path:
-     ```
-     S3: <application_name>/destination/reports/<application_name>.html
-     ```
-   - A local copy of the report will also be saved at INFIO EC2 instance:
-     ```
-     Local path: C:\Users\Administrator\infio\applications\<application_name>\destination\reports\<application_name>.html
-     ```
-     > **Note**: In both locations, `<application_name>` represents the name of the application for which the report was generated.
+**Step 4: Report Storage Locations**
+  - The individual mode report will be saved in the specified S3 bucket in html and pdf format and you can download the report from below S3 path:
+  ```
+  S3: <application_name>/destination/reports/<application_name>.html/pdf
+  ```
+  - A local copy of the report will also be saved at INFIO EC2 instance:
+    ```
+    Local path: C:\Users\Administrator\infio\applications\<application_name>\destination\reports\<application_name>.html/pdf
+    ```
+  > **Note**: In both locations, `<application_name>` represents the name of the application for which the report was generated.
 
-5. **Download and review**
+  The consolidated mode report can be accessed at the following location:  
+  ```sh
+  C:\Users\Administrator\infio\consolidated_reports\<Company Name>
+  ```
+  - This consolidated report enables users to review and analyze the overall migration strategy for all applications within the company efficiently.
+
+**Step 5: Download and review**
     - You can download the summary report from the S3 bucket or INFIO EC2 instance.
     - Review the compatibility results and recommendations.
 
 ---
 
-#### INFIO Database Migration Assessment Report  
-
-The **INFIO Database Migration Assessment Report** provides a comprehensive analysis of the feasibility and compatibility of migrating an existing **SQL Server database** to **Babelfish for Aurora PostgreSQL** or other AWS services. This report helps users understand potential migration challenges, highlights areas that require manual intervention, and offers insights to ensure a smooth transition.  
-
-
-#### Migration Assessment Report Covers
+##### Migration Assessment Report Covers
 The report evaluates the migration process by:  
 - **Assessing Compatibility**: Identifies which database components are supported, unsupported, or require modifications.  
 - **Estimating Migration Effort**: Highlights the level of effort needed for conversion, including schema changes and manual adjustments.  
@@ -828,36 +920,36 @@ The report evaluates the migration process by:
 - **Providing Schema and Code Analysis**: Examines the database structure, stored procedures, and application logic for compatibility gaps.  
 - **Analyzing Cost (TCO)**: Compares cost estimates for different deployment models, helping businesses optimize infrastructure and licensing expenses.  
 
-#### Report Sections Overview  
+##### Report Sections Overview  
 
-##### 1. Executive Summary  
+**1. Executive Summary**
 - Summarizes the overall **migration feasibility** based on compatibility analysis.  
 - Provides a **migration effort estimate** (low, medium, or high).  
 - Highlights key database areas that need **manual review or modifications**.  
 
-##### 2. Compatibility Analysis  
+**2. Compatibility Analysis**  
 - Presents **graphical insights** (charts, percentages) on the **schema compatibility**.  
 - Breaks down database components into **fully compatible, partially compatible, or unsupported** categories.  
 
-##### 3. Conversion Effort Matrix 
+**3. Conversion Effort Matrix**
 - Categorizes database objects based on **migration readiness**.  
 - Identifies **stored procedures, triggers, constraints, and data types** that may require modifications.  
 - Helps users estimate the level of effort required for successful migration.  
 
-##### 4. Unsupported Features & Workarounds  
+**4. Unsupported Features & Workarounds**  
 - Lists **SQL Server features** that are not directly supported by Babelfish.  
 - Suggests **possible solutions or changes** to adapt the database structure.  
 - Highlights whether the required effort is **low, medium, or high**.  
 
-##### 5. Schema and Object-Level Assessment  
+**5. Schema and Object-Level Assessment**  
 - Analyzes the **database structure**, including **tables, indexes, constraints, and keys**.  
 - Identifies **potential performance issues** or missing optimizations.  
 - Reports on any database objects that require changes before migration.  
 
-##### 6. Total Cost of Ownership (TCO) Analysis  
+**6. Total Cost of Ownership (TCO) Analysis**
 The **TCO section** in the INFIO report provides an estimate of **migration costs** based on different deployment models. It helps organizations evaluate the **financial impact** of moving from **SQL Server to Babelfish for Aurora PostgreSQL** or other AWS-managed services.  
 
-#### Key Insights from TCO Analysis  
+##### Key Insights from TCO Analysis  
 - **Cost Comparison**: Evaluates multiple deployment options, comparing the estimated **monthly and yearly costs** across configurations.  
 - **SQL Server Compute Resource Overview**: Analyzes the existing **infrastructure usage**, including instance count and compute resource allocation.  
 - **TCO Bar Chart – Cost Breakdown**: Provides **graphical insights** into cost distribution among different AWS services.  
@@ -867,41 +959,6 @@ This section allows decision-makers to compare costs and choose the **most cost-
 
 ---
 
-#### Generating the Consolidated Report for Multiple Applications
-
-A **Consolidated Report** provides a unified summary of report results across multiple applications within a specific company. This report combines data from individual application assessments, offering a comprehensive overview of database compatibility, migration readiness, and potential issues. It is particularly useful for organizations managing multiple applications and needing a holistic view of their migration landscape.
-
-To generate the Consolidated Report:
-
-1. Navigate to the **Reports Page** in the INFIO tool.  
-2. Click on the **`Generate Consolidated Report`** button.  
-3. In the prompt, select the **Company Name** for which you want to consolidate the reports.  
-4. INFIO will automatically aggregate the data from all applications linked to the selected company and generate the consolidated report.
-
-The generated report can be accessed at the following location:  
-```sh
-C:\Users\Administrator\infio\consolidated_reports\<Company Name>
-```
-- This consolidated report enables users to review and analyze the overall migration strategy for all applications within the company efficiently.
-
----
-
-#### **Exporting Assessment Answers**
-
-To view and export the assessment answers you provided in the INFIO tool, follow these steps:
-
-1. Navigate to the **Reports Section** in the INFIO tool.  
-2. Select the **Application Name** for which you want to export the assessment answers.  
-3. Once selected, INFIO will generate a CSV file containing all the answers you filled out on the assessment page.  
-
-The exported CSV file will be saved at the following location:  
-```sh
-C:\Users\Administrator\infio\applications\<application_name>\destination\assessment\<Application_name>_assessment_report.csv
-```
-- This file allows you to review or share the assessment data for further analysis or reporting purposes.
-- You can also generate the report from the reports page after selecting application name as well.
-
----
 
 #### SQL Server to Aurora PostgreSQL
 
