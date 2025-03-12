@@ -497,7 +497,7 @@ This cloudformation template will deploy cloudformation endpoint for INFIO EC2 i
    - Under the **Prepare template** option, select **Choose an existing template**.  
    - Click on the **Upload a template file** button.
    - For the upload file, go to the `Desktop` of the Windows EC2 instance (**INFIO EC2 instance**).  
-   - Locate the folder containing the **INFIO Assessment Tool**. Inside, you'll find the `aws-infra-setup` folder, which contains the `INFIO-CF-VPCEndpoint.json` CloudFormation template.  
+   - Locate the folder containing the **INFIO Assessment Tool**. Inside, you'll find the `aws-infra-setup` folder, which contains the `INFIO-CF-VPCEndpoint_EndpointSG-CF.json` CloudFormation template.  
    - Click **Next** to proceed.
 
 4. **Configure the Stack**  
