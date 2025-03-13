@@ -683,11 +683,11 @@ User needs to manually add:
     - `infio-plugin`
 4. Open the `infio` folder. Inside this folder, locate and run the **start_infio batch file** to start the application. It will run the INFIO tool in Google Chrome browser.
 5. If you encounter the error "License validation failed. The app cannot be started," please contact Cornerstone Support for assistance with license validation at support@cornerstone-consulting.io.
-6. Once the tool is launched, go to the `Assessment` page where INFIO will prompt you to enter the application name and company name. If your company name is not available in the list, you can enter the company name.
+6. Once the tool is launched, go to the `Home` page where INFIO will prompt you dashboard page. If your company name is not available in the list, you can enter the company name.
 
 #### Infio Dashboard Overview
 
-- When a user opens Infio, Infio directed to the **Dashboard** as the homepage.
+- When you opens tool, Infio directed to the **Dashboard** as the homepage.
 
 ![application-discovery](images/home(dashboard).PNG)
 
