@@ -238,8 +238,6 @@ Please wait for a while; this process might take some time to complete.
 
 ## Uploading Files to an S3 Bucket
 
-After following the instructions to capture **Profiler Events**, you will see the next steps for uploading the generated files into your S3 bucket. There are two ways to do this:
-
 ### **Important Notes Regarding File Uploads Based on Assessment Mode**
 
 The files you need to upload (DDL, DMS, Object Dependency, extended events) depend on the **assessment mode** you have chosen. Here's the breakdown:
