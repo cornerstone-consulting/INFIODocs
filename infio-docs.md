@@ -46,6 +46,7 @@
     - [Migration Assessment Report Covers](#migration-assessment-report-covers)
     - [Report Sections Overview](#report-sections-overview)
     - [Key Insights from TCO Analysis](#key-insights-from-tco-analysis)
+  - [Export Server Metrics](#export-server-metrics)
   - [SQL server to Aurora postgresql](#sql-server-to-aurora-postgresql)
     - [Configure your data providers for DMS Schema conversion](#configure-your-data-providers-for-dms-schema-conversion)
     - [Steps to create a migration project](#steps-to-create-a-migration-project)
@@ -686,7 +687,9 @@ User needs to manually add:
 
 #### Infio Dashboard Overview
 
-- When a user opens Infio, Infio directed to the **Dashboard** as the homepage.  
+- When a user opens Infio, Infio directed to the **Dashboard** as the homepage.
+
+![application-discovery](images/home(dashboard).PNG)
 
 **Dashboard Sections**
 The dashboard provides an overview of key metrics related to application assessments:  
@@ -718,7 +721,12 @@ After dashboard page, you need to go to the configure page setup.
 
 ### Configuration Page Setup
 
-On the configuration page, you need to click on the `create new config` button, where you will be prompted to provide information for various components. Follow these steps:
+On the configuration page, you need to click on the `create new config` button, where you will be prompted to provide information for various components.
+
+For more reference you can see snapshot of configuration page.
+![configure](images/configure.PNG)
+
+Follow these steps to configuer your application:
 
 **Configure Application**
 1. **Add New Company** or **Choose an Existing Company**.
@@ -735,15 +743,17 @@ On the configuration page, you need to click on the `create new config` button, 
    - **Database to Include**: After entering the Source DB Server Name, click the Refresh button located just below the Secret Configurations section. This will load all the databases available on your source database server. Alternatively, you can leave this field empty to include all databases.
    - **Database to Exclude**: Select the databases you want to exclude. If left empty, the default system databases (master, model, msdb, tempdb) will be excluded automatically.
 3. Click on **Secret Configurations** to:
-   - **Add (+)** a new secret.
+   - **Add (+)** a new secret. When you add a secret, ensure that secret name should start with "infio" keyword.
    - **Edit (✏️)** an existing secret.
    - **Delete (🗑️)** a secret.
 
 **Actions**
 - **Cancel**: Discard changes.
-- **Submit**: Save the configuration.
+- **Submit**: Save the configuration of all databases.
 
-> Note: You can add up to a total of five server databases within a single application.
+![add configure](images/add%20new%20configure.PNG)
+
+> Note: You can add up to a total of 5 server databases within a single application.
 
 Once the configuration is saved, users will see the following information at the top of the page:
 
@@ -778,6 +788,8 @@ After that on the left sidebar, click on **Discover** to access the **Applicatio
 - Enter any relevant details about the application that might be useful for discovery.
 - This could include the purpose of the application, specific configurations, or dependencies.
 
+![application-discovery](images/application-discovery.png)
+
 After filling in all the fields, click on **Discover Server Info** at the bottom of the page to proceed.
 This will trigger the system to fetch **Server & Environment Metrics** related to the selection.
 
@@ -786,6 +798,8 @@ This will trigger the system to fetch **Server & Environment Metrics** related t
 - Click on **Discover Server Info** to fetch server and environment details automatically.
 - If any data is incorrect, update it manually and click **Update Server Info**.
 - Ensure that the required configurations are set before proceeding.
+
+![update server info](images/update%20server%20info.PNG)
 
 **SQL Server Instance Count**
 - Enter the number of **SQL Server Instances** in the respective fields for:
@@ -813,6 +827,8 @@ After that on the left sidebar, click on **Assess** under the "Discover" section
 ---
 
 ### Steps to Perform Assessment in INFIO
+
+![assessment page](images/assessment.PNG)
 
 **1. Select the Target State**
 - Ensure that the checkbox **"SQL Server to Babelfish"** is selected.
@@ -877,6 +893,8 @@ After that on the left sidebar, click on **Assess** under the "Discover" section
 ---
 
 #### Generating the Summary Report
+
+![individual report](images/generate%20individual%20report.PNG)
 
 **Step 1: Select Report Generation Mode**
   - `Individual`: An individual report provides a comprehensive analysis of the feasibility and compatibility of migrating an existing **SQL Server database** to **Babelfish for Aurora PostgreSQL** or other AWS services for single application that you have selected. This report helps users understand potential migration challenges, highlights areas that require manual intervention, and offers insights to ensure a smooth transition.  
@@ -959,6 +977,30 @@ This section allows decision-makers to compare costs and choose the **most cost-
 
 ---
 
+##### Export Server Metrics
+
+Server Metrics provide detailed insights into the SQL Server instance running in your environment. It includes information about enabled/disabled features such as:  
+- **SQL Server Analysis Services (SSAS)**  
+- **SQL Server Integration Services (SSIS)**  
+- **SQL Server Reporting Services (SSRS)**  
+- **Microsoft Distributed Transaction Coordinator (MSDTC)**  
+
+These metrics help in assessing the server configuration and determining compatibility for migration.  
+
+**Steps to Export Server Metrics** 
+
+1. Navigate to the **Server Metrics** section from the left sidebar.  
+2. Select the **Application** for which you want to export the metrics.  
+3. Click on the **Server Metrics** button to fetch the server details automatically.  
+4. Once the data is displayed, click on the **Export Server Metrics** button.  
+5. A success message will confirm that the metrics have been exported as a CSV file.  
+6. The exported file path will be displayed on the screen, as shown below:  
+
+![Export Server Metrics](images/Export%20Server%20metrics.PNG)  
+
+You can now use this CSV file for further assessment and reporting.  
+
+---
 
 #### SQL Server to Aurora PostgreSQL
 
