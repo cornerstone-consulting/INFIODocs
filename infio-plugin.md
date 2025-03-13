@@ -91,29 +91,29 @@ The **INFIO Plugin** offers different modes to accommodate various data collecti
 🔹 **Purpose:** Best for scenarios where extended events collection is handled manually.  
 🔹 **Process:**  
 - **Automatically executed**:  
-  - **Data Definition Language (DDL) Scripts**  
-  - **Database Migration Service (DMS) tasks**  
-  - **Object Dependency analysis**  
+  - **Data Definition Language (DDL) Tool to collect DDL files**  
+  - **Database Migration Service (DMS) Assessor Tool**  
+  - **Object Dependency analysis files**  
 - **Manually executed**:  
-  - **Profiler Extended Events Collection**  
+  - **Profiler Events Collection**  
 
 
 #### **2️⃣ Mixed Mode**  
 🔹 **Purpose:** A combination of automated and manual processes.  
 🔹 **Process:**  
 - **Automatically executed**:  
-  - **Data Definition Language (DDL) Scripts**  
+  - **Data Definition Language (DDL) Tool to collect DDL files**  
 - **Manually executed**:  
-  - **Profiler Extended Events Collection**  
+  - **Profiler Events Collection**  
 
 
 #### **3️⃣ Online Mode**  
 🔹 **Purpose:** Fully automated assessment, ideal for real-time data collection and migration readiness analysis.  
 🔹 **Process:**  
 - **Automatically executed**:  
-  - **Data Definition Language (DDL) Scripts**  
-  - **Database Migration Service (DMS) tasks**  
-  - **Object Dependency analysis**  
+  - **Data Definition Language (DDL) Tool to collect DDL files**  
+  - **Database Migration Service (DMS) Assessor Tool**  
+  - **Object Dependency analysis files**  
 - **INFIO Plugin Action:**  
   - Creates a **SQL Server Agent jobs** to manage **Extended Events sessions** dynamically.  
 
