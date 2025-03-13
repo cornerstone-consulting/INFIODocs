@@ -828,7 +828,7 @@ After that on the left sidebar, click on **Assess** under the "Discover" section
 
 ### Steps to Perform Assessment in INFIO
 
-![assessment page](images/assessment.PNG)
+![assessment](images/Assessment.png)
 
 **1. Select the Target State**
 - Ensure that the checkbox **"SQL Server to Babelfish"** is selected.
