@@ -15,7 +15,3 @@ For detailed documentation, check the [Unsupported functionalities in Babelfish]
 ## Infio security best practices
 
 For detailed documentation, check the [Infio security best practices](Infio-security-best-practices.md).
-
-## Infio Ec2 profile cloudformation File
-
-For detailed documentation, check the [Infio EC2 profile cloudformation File](infio-ec2-ec2-profile-cf.json).
