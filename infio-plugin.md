@@ -3,7 +3,7 @@
 ## Table of Contents
 - [Infio Plugin Overview](#infio-plugin-overview)
   - [Features](#features)
-  - [Prerequisites](#-prerequisites)
+  - [Prerequisites](#prerequisites-for-using-the-infio-plugin)
   - [Modes of Operation](#modes-of-operation)
     - [Offline Mode](#1️⃣-offline-mode)
     - [Mixed Mode](#2️⃣-mixed-mode)
@@ -62,8 +62,8 @@ To connect to your SQL Server instance, ensure the following:
   - Ensure your IP address is authorized to connect to the SQL Server instance.  
 
 - **Read-Only Access**:  
-  - The SQL Server username must have **read-only access** with the `db_datareader` role.  
-  - This ensures only data retrieval operations are allowed, preventing changes to the database.  
+  - The SQL Server username must have read-only access with the `db_datareader` role on all databases, including system databases to run Infio-plugin. Additionally, the msdb database, which is a system database, must have the `SQLAgentUserRole`, `SQLAgentReaderRole` and `SQLAgentOperatorRole` as these SQL agent roles are needed to run extended event tool and generate extended events xml file. 
+  - This ensures only data retrieval operations are allowed, preventing changes to the database. 
 
 #### 4. **Server Role Permissions**  
 The following server roles are required to run the INFIO Plugin:  
@@ -78,6 +78,24 @@ The following server roles are required to run the INFIO Plugin:
 ##MS_ServerStateReader##
 public
 ```
+
+#### 5. **Granting Server-Level Permission: `ALTER ANY EVENT SESSION`**
+
+To enable the user to create, modify, and delete **Extended Events** sessions to get extended events, grant the `ALTER ANY EVENT SESSION` permission.
+
+**Steps to Grant the Permission:**
+
+1. **Open SQL Server Management Studio (SSMS)** and connect to your SQL Server instance.
+2. In **Object Explorer**, navigate to: **"Security" → "Logins"**
+3. Find your user (e.g., `sql_user`). If the user does not exist, create a new login.
+4. Right-click on the user and select **"Properties"**.
+5. In the **Login Properties** window, click on **"Securables"** in the left pane.
+6. Click **"Search"** → Select **"Specific objects"** → Click **"OK"**.
+7. In the new window, select **"Server"** and click **"OK"**.
+8. In the **Permissions for infiro** list, find **"ALTER ANY EVENT SESSION"**.
+9. Check the **"Grant"** box next to **"ALTER ANY EVENT SESSION"**.
+10. Click **"OK"** to apply the changes.
+
 These permissions allow the INFIO Plugin to retrieve necessary information from the SQL Server without compromising security.
 
 ---
