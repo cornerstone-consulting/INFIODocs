@@ -31,6 +31,8 @@
   - [1. Required IAM Permissions](#1-required-iam-permissions)
   - [2. SQL Server Database Permissions](#2-sql-server-database-permissions)
   - [3. Configuring Inbound Rules for SQL Server and Target RDS for AWS Schema conversion](#3-configuring-inbound-rules-for-sql-server-and-target-rds-for-aws-schema-conversion)
+  - [4. SQL Server Credentials with permissions](#4-sql-server-credentials-with-permissions)
+  - [5. Required server roles for infio tool](#5-required-server-roles-for-infio-tool)
 - [Deployment Steps](#deployment-steps)
   - [How to Deploy EC2 from INFIO AMI](#how-to-deploy-ec2-from-infio-ami)
   - [Log in to a Windows INFIO EC2 Instance in a Private Subnet Using a Bastion Host](#log-in-to-a-windows-infio-ec2-instance-in-a-private-subnet-using-a-bastion-host)
@@ -423,6 +425,31 @@ To set up the minimum permissions for an on-premises SQL Server database:
 
 1. On the SQL Server, allow inbound traffic on the SQL port (1433 or as configured) from the security group attached to the infio-assessment-instance (infio-ec2-dms-sg).
 2. On the target RDS, allow inbound traffic on port 5432 from the security group attached to the infio-assessment-instance (infio-ec2-dms-sg).
+
+#### 4. **SQL Server Credentials with permissions**  
+To connect to your SQL Server instance, ensure the following:  
+
+- **Access Credentials**:  
+  - Have valid access credentials (username and password) for your SQL Server instance.  
+  - Ensure your IP address is authorized to connect to the SQL Server instance.  
+
+- **Read-Only Access**:  
+  - The SQL Server username must have read-only access with the `db_datareader` role on all databases, including system databases which is mandatory, to run the INFIO tool.  
+  - This ensures only data retrieval operations are allowed, preventing changes to the database.  
+
+#### 5. **Required Server Roles for INFIO tool**  
+The following **server roles** must be assigned to the SQL Server user to successfully run the INFIO tool:  
+
+```plaintext
+##MS_DatabaseConnector##  
+##MS_DefinitionReader##  
+##MS_PerformanceDefinitionReader##  
+##MS_SecurityDefinitionReader##  
+##MS_ServerPerformanceStateReader##  
+##MS_ServerSecurityStateReader##  
+##MS_ServerStateReader##  
+public  
+```
 
 ---
 
