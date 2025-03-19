@@ -12,7 +12,7 @@
   - [Configuration](#configuration)
     - [Extended Events Scheduler (Online Mode Only)](#extended-events-scheduler-online-mode-only)
     - [Extended Events XML File Retrieval Guide](#extended-events-xml-file-retrieval-guide)
-  - [Uploading Files to an S3 Bucket or INFIO EC2 instance directory](#uploading-files-to-an-s3-bucket-or-infio-ec2-instance-directory)
+  - [Uploading Files to an S3 Bucket or INFIO EC2 instance INFIO directory](#uploading-files-to-an-s3-bucket-or-infio-ec2-instance-infio-directory)
 
 ### Infio Plugin Overview
 
@@ -251,7 +251,7 @@ Please wait for a while; this process might take some time to complete.
 
 ---
 
-## Uploading Files to an S3 Bucket or INFIO EC2 instance directory
+## Uploading Files to an S3 Bucket or INFIO EC2 instance INFIO directory
 
 > Note: To run an assessment in the INFIO tool, users must upload the required files to either a designated S3 bucket or the INFIO EC2 instance drive. Only one of these locations should be opted for file upload.
 
