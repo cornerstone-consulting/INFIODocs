@@ -25,8 +25,9 @@
 - [Prerequisites](#prerequisites)  
   - [1. Skillsets](#1-skillsets)  
   - [2. Verify IAM role permissions after deploying INFIO EC2 instance](#2-verify-iam-role-permissions-after-deploying-infio-ec2-instance)
-- [Deployment steps of INFIO EC2 instance](#1-deployment-of-ec2-instance-from-infio-amiaws-marketplace)
-  - [1. Deployment of EC2 instance from INFIO AMI(AWS Marketplace)](#1-deployment-of-ec2-instance-from-infio-ami)
+- [Required SQL Server Database Permissions for Running the INFIO Tool](#required-sql-server-database-permissions-for-running-the-infio-tool)
+- [Deployment steps of INFIO EC2 instance](#deployment-steps-of-infio-ec2-instance)
+  - [1. Deployment of EC2 instance from INFIO AMI(AWS Marketplace)](#1-deployment-of-ec2-instance-from-infio-amiaws-marketplace)
   - [2. Log in to a Windows INFIO EC2 Instance in a Private Subnet Using a Bastion Host (Optional)](#2-log-in-to-a-windows-infio-ec2-instance-in-a-private-subnet-using-a-bastion-host-optional)
   - [3. VPC Endpoint Deployment for CloudFormation Service (Optional)](#3-vpc-endpoint-deployment-for-cloudformation-service-optional)
   - [4. VPC Endpoint Deployment for S3, Secret manager, KMS, EC2, DMS, RDS, and IAM and security group for all VPC endpoints (Optional)](#4-vpc-endpoint-deployment-for-s3-secret-manager-kms-ec2-dms-rds-and-iam-and-security-group-for-all-vpc-endpoints-optional)
@@ -37,9 +38,6 @@
   - [Application Discovery](#application-discovery)
   - [Steps to Perform Assessment in INFIO](#steps-to-perform-assessment-in-infio)
   - [Generating the Summary Report](#generating-the-summary-report)
-    - [Migration Assessment Report Covers](#migration-assessment-report-covers)
-    - [Report Sections Overview](#report-sections-overview)
-    - [Key Insights from TCO Analysis](#key-insights-from-tco-analysis)
   - [Export Server Metrics](#export-server-metrics)
 - [Monitoring](#monitoring)
 - [Recovery and Backup](#recovery-and-backup)
@@ -236,7 +234,7 @@ To get the most recent and accurate cost estimate for your AWS architecture, you
 ### Security  
 
 #### IAM Roles  
-AWS Identity and Access Management (IAM) roles allow you to assign granular access policies and permissions to services and users in the AWS Cloud. This solution creates IAM roles that grant INFIO EC2 instance access to the other AWS services used in this solution.  
+AWS Identity and Access Management (IAM) roles allow you to assign granular access policies and permissions to services and users in the AWS Cloud. INFIO solution creates IAM roles that grant INFIO EC2 instance access to the other AWS services used in this solution.  
 
 #### AWS VPC Endpoints 
 To enhance security when accessing AWS services from the INFIO EC2 instance, INFIO recommends using VPC Endpoints. This allows the INFIO application to securely communicate with AWS services without requiring public internet access, reducing the potential attack surface and mitigating the risk of unauthorized access to sensitive data.
@@ -406,7 +404,7 @@ Use the following command to deploy the stack from the **INFIO EC2 instance comm
 1. Access the **Desktop** drive of the **INFIO EC2 instance**.
 2. Navigate to the folder containing the **INFIO Assessment Tool**.  
    - Inside, locate the `aws-infra-setup` folder.
-   - Find the template file: `INFIO-S3-KMS-SM-DMS-EC2-RDS-IAM-VPCEndpoints.json`.
+   - Find the template file: `INFIO-S3-KMS-SM-DMS-EC2-RDS-IAM-VPCEndpoints-CF.json`.
    - Open the command prompt from the `aws-infra-setup` folder and run the below command.
 
 ```bash
@@ -467,6 +465,33 @@ The `--endpoint-url` parameter is **optional**. Utilize it only if you created a
 
 ---
 
+### Required SQL Server Database Permissions for Running the INFIO Tool
+
+1. **SQL Server Credentials with permissions**  
+To connect to your SQL Server instance, ensure the following:  
+
+- **Access Credentials**:  
+  - Have valid access credentials (username and password) for your SQL Server instance.  
+  - Ensure that INFIO EC2 instance IP address is authorized with SQL Server instance.  
+
+- **Read-Only Access**:  
+  - The SQL Server username must have read-only access with the `db_datareader` role on all databases, including system databases which is mandatory, to run the INFIO tool; otherwise, an error will occur.
+  - These permissions ensure the user can only retrieve data without making any modifications to the database.
+  
+2. **Required Database Roles for INFIO tool**  
+The following **server roles** must be assigned to the SQL Server user to successfully run the INFIO tool:  
+
+  ```plaintext
+  ##MS_DatabaseConnector##  
+  ##MS_DefinitionReader##  
+  ##MS_PerformanceDefinitionReader##  
+  ##MS_SecurityDefinitionReader##  
+  ##MS_ServerPerformanceStateReader##  
+  ##MS_ServerSecurityStateReader##  
+  ##MS_ServerStateReader##  
+  public  
+  ```
+
 ### INFIO Assessment Tool Usage Guide
 
 1. Before running the INFIO Assessment Tool, you must complete the CloudFormation template steps outlined above to create the necessary INFIO resources and ensure the tool runs successfully.
@@ -475,13 +500,11 @@ The `--endpoint-url` parameter is **optional**. Utilize it only if you created a
     - `aws-infra-setup`
     - `infio`
     - `infio-plugin`
-4. Open the `infio` folder. Inside this folder, locate and run the **start_infio batch file** to start the application. It will run the INFIO tool in Google Chrome browser.
-5. If you encounter the error "License validation failed. The app cannot be started," please contact Cornerstone Support for assistance with license validation at info@cornerstone-consulting.io.
+4. Open the `infio` folder. Inside this folder, locate and double click on the **start_infio batch file** to start the INFIO application. It will run the INFIO tool in Microsoft edge browser.
+5. If you encounter the error **"License validation failed. The app cannot be started,"** please contact **Cornerstone Support** for assistance with license validation at **info@cornerstone-consulting.io**. Make sure to provide your **INFIO EC2 instance ID** to the Cornerstone Support team for license validation.  
 6. Once the tool is launched, go to the `Home` page where INFIO will prompt you dashboard page. If your company name is not available in the list, you can enter the company name.
 
 #### Infio Dashboard Overview
-
-- When you opens tool, Infio directed to the **Dashboard** as the homepage.
 
 ![application-discovery](images/home(dashboard).PNG)
 
@@ -500,14 +523,16 @@ Displays the current status of applications across different stages:
 
 **Left Navigation Panel**
 The sidebar contains the following options:  
-- **🏠 Home** - Redirects to the dashboard.  
-- **⚙️ Configure** - Allows users to set up configurations.  
-- **🔍 Discover** - Helps in identifying available applications.  
+- **🏠 Home** - Redirects to the dashboard which provides overview of key metrics related to application assessments.  
+- **⚙️ Configure** - Allows users to set up configurations of various server details.  
+- **🔍 Discover** - Allows users to input applications details, associated servers, etc.  
 - **📊 Assess** - Facilitates running assessments on discovered applications.  
-- **📄 Reports** - Contains generated reports and their details.  
+- **📄 Reports** - Allows users to generate database assessment reports for respective application and company.  
   - Expandable submenu for detailed report views.  
 - **🚀 Deploy** - Deployment-related functionality.  
 - **🔄 Migrate** - Migration-related functionality.
+
+- To access deploy and migrate features, please contact cornerstone support team at **[info@cornerstone-consulting.io](mailto:info@cornerstone-consulting.io)** for more information and assistance.  
 
 After dashboard page, you need to go to the configure page setup.
 
@@ -542,8 +567,9 @@ Follow these steps to configuer your application:
    - **Delete (🗑️)** a secret.
 
 **Actions**
-- **Cancel**: Discard changes.
-- **Submit**: Save the configuration of all databases.
+- **Add server**: Users can **add up to five configurations** by clicking the Add Server button, enabling multiple server configurations.
+- **Cancel**: Discard changes. 
+- **Submit**: Save the configurations of all databases.
 
 ![add configure](images/add%20new%20configure.PNG)
 
@@ -638,43 +664,52 @@ After that on the left sidebar, click on **Assess** under the "Discover" section
 
 **1. Offline Mode**
 
-- **Purpose**: Ideal for scenarios requiring manual collection of DMS, DDL, and object dependencies files using the INFIO plugin, which can then be uploaded to an S3 bucket.
+- **Purpose**: Designed for scenarios where users need to manually generate and upload necessary files such as DMS assessor, DDL, and Object dependency files for assessment by running the INFIO plugin.
 - **Functionality**:
-    - The INFIO plugin collects:
-        - Data Definition Language (DDL) input files.
-        - DMS Assessor input files.
-        - Object Dependency input files.
-    - **Manual Effort Required**: Profiler Extended Events must be manually collected from the source SQL server.
+    - Users must generate the following files from the SQL Server by running the INFIO plugin:
+      - Data Definition Language (DDL) input files.
+      - DMS Assessor input files.
+      - Object Dependency input files.
+      - For running INFIO Plugin, refer to the [INFIO Plugin Documentation](https://github.com/cornerstone-consulting/INFIODocs/blob/main/infio-plugin.md).
+    - Users are also required to have performed specific steps in SQL Server Management Studio (SSMS) to collect Profiler Extended Events from the source SQL Server. For generating profiler events XML file from SQL Server, refer to the [Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md).
+    - If users prefer not to create a Profiler Events file from SQL Server manually, they can generate an Extended Events file instead by running the INFIO plugin and and upload file into either S3 bucket or the INFIO EC2 instance directory.
+    - The generated files should be uploaded to either a designated S3 bucket or INFIO EC2 instance directory. Refers to these steps to upload necessary generated files into S3 bucket or INFIO instance directory, which is mandatory to run assessment for database migration. Follow the [uploading files process here](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instance-directory).
+      
 
 **2. Mixed Mode**
 
-- **Purpose**: Combines automated and manual file collection, providing flexibility in how files are gathered.
+- **Purpose**:  Designed for users who want to leverage both automatic and manual capabilities for assessment in INFIO. Mixed Mode provides two options that allow users to partially automate the collection of assessment data while still requiring manual steps for certain components.
 - **Functionality**:
   - **Option 1: Split Collection of files between INFIO Plugin and INFIO Tool**:
-    - The INFIO plugin collects:
-      - Data Definition Language (DDL) input files.
-    - The INFIO tool collects:
+    - In this option, INFIO will automatically collect DMS Assessor and Object Dependency input data. However, users must manually collect Data Definition Language (DDL) files using INFIO plugin and Profiler Events from the source SQL Server.
+    - INFIO automatically gathers:
       - DMS Assessor input files.
       - Object Dependency input files.
-
-  - **Option 2: All Files Collected by INFIO Plugin**:
     - The INFIO plugin collects:
       - Data Definition Language (DDL) input files.
-      - DMS Assessor input files.
-      - Object Dependency input files.
+    - Users must manually generate:
+      - Profiler events from SQL Server.
+    
+    - For running INFIO Plugin, refer to the [INFIO Plugin Documentation](https://github.com/cornerstone-consulting/INFIODocs/blob/main/infio-plugin.md).
+    - For collecting Profiler Events into XML file, refer to the [Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md).
+    - If users prefer not to create a Profiler Events file from SQL Server manually, they can generate an Extended Events file instead by running the INFIO plugin and upload file into either S3 bucket or the INFIO EC2 instance directory.
+    - Once collected, users must upload the files to either a designated S3 bucket or the INFIO EC2 instance directory. Follow the [uploading process here](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instance-directory).
+    
 
-- **Manual Effort Required**:
-  - In both approaches, Profiler Extended Events must be manually collected from the source SQL Server.
+  - **Option 2: All Files Collected by INFIO Tool**:
+    - The INFIO plugin collects:
+      - This option automates the collection of DDL, DMS Assessor, and Object Dependency input file. However, users must manually collect Profiler Extended Events from the source SQL Server.
+      - INFIO automatically gathers:
+        - Data Definition Language(DDL) input files.
+        - DMS Assessor input files.
+        - Object Dependency input files.
+      - Users must manually generate:
+        - Profiler events from SQL Server.
+    
+    - For collecting Profiler Events into XML file, refer to the [Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md).
+    - If users prefer not to create a Profiler Events file from SQL Server manually, they can generate an Extended Events file instead by running the INFIO plugin and upload file into either S3 bucket or the INFIO EC2 instance directory.
+    - Once collected, users must upload the files to either a designated S3 bucket or the INFIO EC2 instance directory. Follow the [uploading process here](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instance-directory).
 
-> **Note**: Before running an assessment and generating reports, you need to run the INFIO plugin and upload the files on S3 bucket based on the selected assessment mode.  
-> For more details, refer to the [INFIO Plugin Documentation](https://github.com/cornerstone-consulting/INFIODocs/blob/main/infio-plugin.md).
-
-**Summary**
-
-- **Offline Mode** relies on the INFIO plugin for broader file collection.
-- **Mixed Mode** distributes the workload between the INFIO plugin and the INFIO tool.
-
-> **Important Note**: Make sure SQL Server is accessible from the INFIO EC2 instance security group.
 
 **5. Review Database Configurations**
 - Verify the displayed details:
@@ -724,53 +759,6 @@ After that on the left sidebar, click on **Assess** under the "Discover" section
 
 ---
 
-##### Migration Assessment Report Covers
-The report evaluates the migration process by:  
-- **Assessing Compatibility**: Identifies which database components are supported, unsupported, or require modifications.  
-- **Estimating Migration Effort**: Highlights the level of effort needed for conversion, including schema changes and manual adjustments.  
-- **Identifying Potential Issues**: Lists unsupported features and provides possible workarounds.  
-- **Providing Schema and Code Analysis**: Examines the database structure, stored procedures, and application logic for compatibility gaps.  
-- **Analyzing Cost (TCO)**: Compares cost estimates for different deployment models, helping businesses optimize infrastructure and licensing expenses.  
-
-##### Report Sections Overview  
-
-**1. Executive Summary**
-- Summarizes the overall **migration feasibility** based on compatibility analysis.  
-- Provides a **migration effort estimate** (low, medium, or high).  
-- Highlights key database areas that need **manual review or modifications**.  
-
-**2. Compatibility Analysis**  
-- Presents **graphical insights** (charts, percentages) on the **schema compatibility**.  
-- Breaks down database components into **fully compatible, partially compatible, or unsupported** categories.  
-
-**3. Conversion Effort Matrix**
-- Categorizes database objects based on **migration readiness**.  
-- Identifies **stored procedures, triggers, constraints, and data types** that may require modifications.  
-- Helps users estimate the level of effort required for successful migration.  
-
-**4. Unsupported Features & Workarounds**  
-- Lists **SQL Server features** that are not directly supported by Babelfish.  
-- Suggests **possible solutions or changes** to adapt the database structure.  
-- Highlights whether the required effort is **low, medium, or high**.  
-
-**5. Schema and Object-Level Assessment**  
-- Analyzes the **database structure**, including **tables, indexes, constraints, and keys**.  
-- Identifies **potential performance issues** or missing optimizations.  
-- Reports on any database objects that require changes before migration.  
-
-**6. Total Cost of Ownership (TCO) Analysis**
-The **TCO section** in the INFIO report provides an estimate of **migration costs** based on different deployment models. It helps organizations evaluate the **financial impact** of moving from **SQL Server to Babelfish for Aurora PostgreSQL** or other AWS-managed services.  
-
-##### Key Insights from TCO Analysis  
-- **Cost Comparison**: Evaluates multiple deployment options, comparing the estimated **monthly and yearly costs** across configurations.  
-- **SQL Server Compute Resource Overview**: Analyzes the existing **infrastructure usage**, including instance count and compute resource allocation.  
-- **TCO Bar Chart – Cost Breakdown**: Provides **graphical insights** into cost distribution among different AWS services.  
-- **Key Assumptions**: Details **instance types, storage configurations, licensing models**, and estimated I/O usage, ensuring businesses make **informed financial decisions**.  
-
-This section allows decision-makers to compare costs and choose the **most cost-effective migration strategy** based on licensing, infrastructure, and long-term operational expenses.  
-
----
-
 ##### Export Server Metrics
 
 Server Metrics provide detailed insights into the SQL Server instance running in your environment. It includes information about enabled/disabled features such as:  SQL Server Analysis Services (SSAS), SQL Server Integration Services (SSIS), SQL Server Reporting Services (SSRS), Microsoft Distributed Transaction Coordinator (MSDTC), and etc.  
@@ -797,7 +785,7 @@ You can now use this CSV file for further assessment and reporting.
 For monitoring purposes, the logs contain entries for errors, application startup events, and other activity logs. These logs are organized by month and can be found in the following directory:
 
 ```bash
-Users/user_name/infio/logs/
+Users/administrator/infio/logs/
 ```
 ![image](https://github.com/user-attachments/assets/5aa8fe3a-0fb4-40ed-9b76-4d051e6ac55e)
 
