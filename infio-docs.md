@@ -461,7 +461,7 @@ aws cloudformation create-stack --stack-name INFIOVPCEndpoints \
        --template-body file://C:/Users/Administrator/Desktop/INFIO%20Assessment%20Tool/aws-infra-setup/INFIO-Setup-CF.json \
        --endpoint-url <cloudformation_endpoint_url>
    ```
-The `--endpoint-url` parameter is **optional**. Utilize it only if you created a **CloudFormation endpoint** in the step number [3](#3-vpc-endpoint-deployment-for-cloudformation-service-optional). If not, please omit this parameter from the command line. To locate the cloudformation endpoint url, follow the same steps which is mentioned in the previous step number [4](#4-vpc-endpoint-deployment-for-s3-secret-manager-kms-ec2-dms-rds-and-iam-and-security-group-for-all-vpc-endpoints-optional).
+The `--endpoint-url` parameter is **optional**. Utilize it only if you created a **CloudFormation endpoint** in the [step number 3](#3-vpc-endpoint-deployment-for-cloudformation-service-optional). If not, please omit this parameter from the command line. To locate the cloudformation endpoint url, follow the same steps which is mentioned in the previous [step number 4](#4-vpc-endpoint-deployment-for-s3-secret-manager-kms-ec2-dms-rds-and-iam-and-security-group-for-all-vpc-endpoints-optional).
 
 ---
 
@@ -477,7 +477,7 @@ To connect to your SQL Server instance, ensure the following:
 - **Read-Only Access**:  
   - The SQL Server username must have read-only access with the `db_datareader` role on all databases, including system databases which is mandatory, to run the INFIO tool; otherwise, an error will occur.
   - These permissions ensure the user can only retrieve data without making any modifications to the database.
-  
+
 2. **Required Database Roles for INFIO tool**  
 The following **server roles** must be assigned to the SQL Server user to successfully run the INFIO tool:  
 
@@ -491,6 +491,8 @@ The following **server roles** must be assigned to the SQL Server user to succes
   ##MS_ServerStateReader##  
   public  
   ```
+
+---
 
 ### INFIO Assessment Tool Usage Guide
 
