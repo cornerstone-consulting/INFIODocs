@@ -279,9 +279,9 @@ To deploy the solution successfully, the following skills and knowledge are requ
 > **Important Note**: The INFIO does not require the use of AWS account root privileges for deployment or operation.
 
 
-#### 2. Verify IAM role permissions after deploying INFIO EC2 instance
+#### 2. Verify IAM role attached with INFIO EC2 instance after deploying INFIO EC2 instance
 
-The INFIO EC2 instance role is preconfigured with all necessary IAM permissions required to run seamlessly. These permissions are included in the IAM role attached to the INFIO EC2 instance named "infio-ec2-dms-role", ensuring it has access to EC2, CloudFormation, KMS, Secrets Manager, S3, CloudWatch Logs, License Manager, AWS DMS, RDS, and IAM services. Verify that the IAM role is correctly attached to the INFIO EC2 instance to ensure smooth operation without permission issues.
+The INFIO EC2 instance role is preconfigured with all necessary IAM permissions required to run seamlessly. These permissions are included in the IAM role attached to the INFIO EC2 instance named "infio-ec2-dms-role", ensuring it has access to EC2, CloudFormation, KMS, Secrets Manager, S3, CloudWatch Logs, License Manager, AWS DMS, RDS, and IAM services. Verify that the IAM role is correctly attached to the INFIO EC2 instance just after performing [deployment step number 1](#1-deployment-of-ec2-instance-from-infio-amiaws-marketplace) to ensure smooth operation without permission issues.
 
 ---
 
@@ -321,7 +321,9 @@ The INFIO EC2 instance role is preconfigured with all necessary IAM permissions 
 
 **DMS Instance Profile (Required by Schema Conversion)**  
 - A **DMS (Database Migration Service) instance profile** is created.  
-- This is required by **Schema conversion (SC)** for **securely managing migration-related tasks**.  
+- This is required by **Schema conversion (SC)** for **securely managing migration-related tasks**.
+
+> Note: After following deployment process of INFIO EC2 instance, [verify IAM role attached with INFIO EC2 instance](#2-verify-iam-role-attached-with-infio-ec2-instance-after-deploying-infio-ec2-instance). 
 --- 
 
 ### 2. Log in to a Windows INFIO EC2 Instance in a Private Subnet Using a Bastion Host (Optional)
