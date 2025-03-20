@@ -290,9 +290,9 @@ Please wait for a while; this process might take some time to complete.
       Here application name is application name that you entered while creating application in the INFIO tool.
 
 
-      > Note: If users prefer not to manually create the SQL Server Profiler Events file, they can use the INFIO plugin to generate an Extended Events file. To upload the generated Extended Events file to an S3 bucket, follow the steps up to step 6. In step 7, instead of the Profiler Events file, upload the Extended Events file from: `C:\Users\Administrator\infio-plugin\<application-name>\source\extended_events\`
-      to the target S3 directory: `s3://infio-private-bucket/<application-name>/source/sql_statements/`.
-      This eliminates the need to follow step 7 as mentioned in the table below.
+  > Note: If users prefer not to manually create the SQL Server Profiler Events file, they can use the INFIO plugin to generate an Extended Events file. To upload the generated Extended Events file to an S3 bucket, follow the steps up to step 6. In step 7, instead of the Profiler Events file, upload the Extended Events file from: `C:\Users\Administrator\infio-plugin\<application-name>\source\extended_events\`
+  to the target S3 directory: `s3://infio-private-bucket/<application-name>/source/sql_statements/`.
+  This eliminates the need to follow step 7 as mentioned in the table below.
       
 
       | **Step** | **Action** | **Source Directory (INFIO EC2 Instance's INFIO Plugin directory)** | **Target Directory (S3 Bucket)** |
@@ -310,7 +310,7 @@ Please wait for a while; this process might take some time to complete.
       - Navigate to each folder (`ddl`, `dms`, `object_dependency_sql_files` and `sql_statements`) in the S3 bucket.
       - Confirm that the files have been uploaded successfully.
 
-- **Option 2: Upload file to INFIO EC2 instance**:
+- **Option 2: Upload file to INFIO EC2 instance's INFIO directory**:
 
   1. **Locate the Source Directories**
   - Before copying files, users must **run the INFIO plugin** to generate the required files based on the selected assessment mode.  
