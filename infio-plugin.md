@@ -110,7 +110,7 @@ The **INFIO Plugin** offers different modes to accommodate various data collecti
   - **Database Migration Service (DMS) Assessor Tool**  
   - **Object Dependency analysis files**  
 - **Manually executed**:  
-  - **Profiler Events Collection**  
+  - **SQL Server Profiler Events File Generation**  
 
 
 #### **2️⃣ Mixed Mode**  
@@ -119,7 +119,7 @@ The **INFIO Plugin** offers different modes to accommodate various data collecti
 - **Automatically executed**:  
   - **Data Definition Language (DDL) Tool to collect DDL files**  
 - **Manually executed**:  
-  - **Profiler Events Collection**  
+  - **SQL Server Profiler Events File Generation**  
 
 
 #### **3️⃣ Online Mode**  
@@ -141,7 +141,10 @@ The **INFIO Plugin** offers different modes to accommodate various data collecti
 
 Once an assessment mode is selected, the **INFIO Plugin** will:  
 - Execute **automated data collection tasks** based on the selected mode.  
-- Provide **detailed instructions** for any **manual steps** required to capture **Profiler Extended Events** from SQL Server.  
+- For collecting SQL Server Profiler Events into XML file, refer to the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md).
+
+
+After generating all the required files based on the selected assessment mode, users must upload them to either a designated S3 bucket or the INFIO EC2 instance's INFIO directory. Follow the [file upload process here](#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-infio-directory) for detailed instructions.
 
 ---
 
@@ -214,7 +217,6 @@ Once the configuration is completed, the plugin will display updates in the term
 - "Running DDL Tool..."
 - "Running Extended events Tool..."
 - "SQL file saved at: C:\Users\<user_name>\infio-plugin\<application_name>\source\database_dependency\sql_server_database_dependencies.sql"
-- After the tools are executed, you will receive detailed instructions for the manual step of collecting **Profiler Extended Events** and [uploading these files to an S3 bucket](#uploading-files-to-an-s3-bucket).
 
 ---
 
@@ -292,7 +294,7 @@ Please wait for a while; this process might take some time to complete.
       to the target S3 directory: `s3://infio-private-bucket/<application-name>/source/sql_statements/`.
       This eliminates the need to follow step 7 as mentioned in the table below.
       
-      
+
       | **Step** | **Action** | **Source Directory (INFIO EC2 Instance's INFIO Plugin directory)** | **Target Directory (S3 Bucket)** |
       |----------|-----------|--------------------------------------------|----------------------------------|
       | **1** | Navigate to the **target folder** in S3 | - | `s3://infio-private-bucket/<application-name>/source/ddl/` |
