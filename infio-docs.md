@@ -252,7 +252,7 @@ The EC2 instances created in this solution support the ability to disable **Inst
 
 ---
 Note: 
-As an additional layer of security we have security groups, it is adifferent networl layer of protection. Should that be mentioned?
+As an additional layer of security we have security groups, it is adifferent network layer of protection. Should that be mentioned?
 
 
 #### Supported AWS Regions  
@@ -473,7 +473,7 @@ aws cloudformation create-stack --stack-name INFIOVPCEndpoints \
     - Verify the status of the stack in the **AWS Console** under **CloudFormation services** to confirm that the stack is fully deployed and all resources have been created.
 
 ---
-Note: We could merge section 3. VPC Endpoint Deployment for CloudFormation Service (Optional) and VPC Endpoint Deployment for S3, Secret manager, KMS, EC2, DMS, RDS, and IAM and security group for all VPC endpoints (Optional) - just to make the document a bit shorter, and telling them that the first stack shpudl be deployed through console only if they want to deploy the second stack through teh EC2, alternatively they can deploy the second stack through AWS console and that is all.
+Note: We could merge section 3. VPC Endpoint Deployment for CloudFormation Service (Optional) and VPC Endpoint Deployment for S3, Secret manager, KMS, EC2, DMS, RDS, and IAM and security group for all VPC endpoints (Optional) - just to make the document a bit shorter, and telling them that the first stack should be deployed through console only if they want to deploy the second stack through teh EC2, alternatively they can deploy the second stack through AWS console and that is all.
 
 ### 5. Steps for setting up AWS Resources for INFIO EC2 instance
 
