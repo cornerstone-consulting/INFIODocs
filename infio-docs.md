@@ -323,7 +323,7 @@ The INFIO EC2 instance role is preconfigured with all necessary IAM permissions 
 - A **DMS (Database Migration Service) instance profile** is created.  
 - This is required by **Schema conversion (SC)** for **securely managing migration-related tasks**.
 
-> Note: After following deployment process of INFIO EC2 instance, [verify IAM role attached with INFIO EC2 instance](#2-verify-iam-role-attached-with-infio-ec2-instance-after-deploying-infio-ec2-instance). 
+> Note: After completing the INFIO EC2 instance deployment, make sure to [verify IAM role attached with INFIO EC2 instance](#2-verify-iam-role-attached-with-infio-ec2-instance-after-deploying-infio-ec2-instance). 
 --- 
 
 ### 2. Log in to a Windows INFIO EC2 Instance in a Private Subnet Using a Bastion Host (Optional)
@@ -676,8 +676,9 @@ After that on the left sidebar, click on **Assess** under the "Discover" section
       - Object Dependency input files.
       - For running INFIO Plugin, refer to the [INFIO Plugin Documentation](https://github.com/cornerstone-consulting/INFIODocs/blob/main/infio-plugin.md).
     - Users are also required to have performed specific steps in SQL Server Management Studio (SSMS) to collect SQL Server Profiler Events from the source SQL Server. For generating profiler events XML file from SQL Server, refer to the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md).
-    - If users prefer not to create a SQL Servr Profiler Events file from SQL Server manually, they can generate an Extended Events file instead by running the INFIO plugin and upload file into either S3 bucket or the INFIO EC2 instance directory.
-    - The generated files should be uploaded to either a designated S3 bucket or INFIO EC2 instance INFIO directory. Refers to these steps to upload necessary generated files into S3 bucket or INFIO instance directory, which is mandatory to run assessment for database migration. Follow the [uploading files process here](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instance-directory).
+    - The generated files should be uploaded to either a designated S3 bucket or INFIO EC2 instance's INFIO directory. Follow the [file upload process](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-directory) to ensure all required files are uploaded correctly, as this is mandatory for running the assessment.
+
+    > Note: If users prefer not to manually create the SQL Server Profiler Events file, they can use the INFIO plugin to generate an Extended Events file. The same upload process mentioned above should be followed to transfer the file to either the designated S3 bucket or the INFIO EC2 instance's INFIO directory.
       
 
 **2. Mixed Mode**
@@ -692,27 +693,29 @@ After that on the left sidebar, click on **Assess** under the "Discover" section
     - The INFIO plugin collects:
       - Data Definition Language (DDL) input files.
     - Users must manually generate:
-      - Profiler events from SQL Server.
+      - SQL Server Profiler events from SQL Server.
     
     - For running INFIO Plugin, refer to the [INFIO Plugin Documentation](https://github.com/cornerstone-consulting/INFIODocs/blob/main/infio-plugin.md).
-    - For collecting Profiler Events into XML file, refer to the [Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md).
-    - If users prefer not to create a SQL Server Profiler Events file from SQL Server manually, they can generate an Extended Events file instead by running the INFIO plugin and upload file into either S3 bucket or the INFIO EC2 instance directory.
-    - Once collected, users must upload the files to either a designated S3 bucket or the INFIO EC2 instance INFIO directory. Follow the [uploading process here](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instance-directory).
+    - For collecting SQL Server Profiler Events into XML file, refer to the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md).
+    - Once collected, users must upload the files to either a designated S3 bucket or the INFIO EC2 instance's INFIO directory. Follow the [file upload process here](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-directory).
+
+    > Note: If users prefer not to manually create the SQL Server Profiler Events file, they can use the INFIO plugin to generate an Extended Events file. The same upload process mentioned above should be followed to transfer the file to either the designated S3 bucket or the INFIO EC2 instance's INFIO directory.
     
 
   - **Option 2: All Files Collected by INFIO Tool**:
     - The INFIO plugin collects:
-      - This option automates the collection of DDL, DMS Assessor, and Object Dependency input file. However, users must manually collect Profiler Extended Events from the source SQL Server.
+      - This option automates the collection of DDL, DMS Assessor, and Object Dependency input file. However, users must manually collect SQL Server Profiler Extended Events from the source SQL Server.
       - INFIO automatically gathers:
         - Data Definition Language(DDL) input files.
         - DMS Assessor input files.
         - Object Dependency input files.
       - Users must manually generate:
-        - Profiler events from SQL Server.
+        - SQL Server Profiler events from SQL Server.
     
-    - For collecting Profiler Events into XML file, refer to the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md).
-    - If users prefer not to create a SQL Server Profiler Events file from SQL Server manually, they can generate an Extended Events file instead by running the INFIO plugin and upload file into either S3 bucket or the INFIO EC2 instance directory.
-    - Once collected, users must upload the files to either a designated S3 bucket or the INFIO EC2 instance INFIO directory. Follow the [uploading process here](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instance-directory).
+    - For collecting SQL Server Profiler Events into XML file, refer to the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md).
+    - Once collected, users must upload the files to either a designated S3 bucket or the INFIO EC2 instance's INFIO directory. Follow the [uploading process here](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-directory).
+
+    > Note: If users prefer not to manually create the SQL Server Profiler Events file, they can use the INFIO plugin to generate an Extended Events file. The same upload process mentioned above should be followed to transfer the file to either the designated S3 bucket or the INFIO EC2 instance's INFIO directory. For running INFIO Plugin, refer to the [INFIO Plugin Documentation](https://github.com/cornerstone-consulting/INFIODocs/blob/main/infio-plugin.md).
 
 
 **5. Review Database Configurations**
