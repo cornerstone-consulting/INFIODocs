@@ -206,7 +206,9 @@ Without a VPC Endpoint, a private INFIO EC2 instance must use a NAT Gateway (ext
 - **AWS Key Management Service (Supporting)**: Manages encryption keys used to protect data and resources.
 - **AWS CloudFormation (Supporting)**: Accelerates AWS resource provisioning with infrastructure as code.
 - **VPC Endpoints (Optional & Supporting)**: Provide secure, private connectivity between your VPC and AWS services.
-
+---
+Note: 
+Would we need to mention DMS instance profile and the IAM role for the INFIO EC2 and DMS instance profile?
 ---
 
 ### Rotating Programmatic Credentials and Cryptographic Keys
@@ -249,6 +251,9 @@ The EC2 instances created in this solution support the ability to disable **Inst
 - Using the latest versions of AWS SDKs, we align with AWS security standards, allowing customers to disable IMDSv1 as an option.  
 
 ---
+Note: 
+As an additional layer of security we have security groups, it is adifferent networl layer of protection. Should that be mentioned?
+---
 
 #### Supported AWS Regions  
 INFIO on AWS is available in the following AWS Regions:  
@@ -261,6 +266,10 @@ INFIO on AWS is available in the following AWS Regions:
 
 ### AWS CloudFormation Quotas  
 Your AWS account has CloudFormation quotas that you should be aware of when launching the stack for this solution. By understanding these quotas, you can avoid limitation errors that would prevent you from deploying this solution successfully.  
+
+___
+Note:
+Maybe we would not need to mention the CF Quota? This probably happens rarely. 
 
 ---
 ### Prerequisites
@@ -284,6 +293,9 @@ To deploy the solution successfully, the following skills and knowledge are requ
 The INFIO EC2 instance role is preconfigured with all necessary IAM permissions required to run seamlessly. These permissions are included in the IAM role attached to the INFIO EC2 instance named "infio-ec2-dms-role", ensuring it has access to EC2, CloudFormation, KMS, Secrets Manager, S3, CloudWatch Logs, License Manager, AWS DMS, RDS, and IAM services. Verify that the IAM role is correctly attached to the INFIO EC2 instance just after performing [deployment step number 1](#1-deployment-of-ec2-instance-from-infio-amiaws-marketplace) to ensure smooth operation without permission issues.
 
 ---
+Note: 
+Do we need to stecify to ckeck the IAM role attachment as a prerequisite. If we do the we probably want to mention the SG requirements. If that did not work the deployment probably failed already. We could mention that they should have full connectivity to S3, KMS, DMS, Secrets Manager, EC2, IAM, CloudFormation and VPC services, and if their network setup does not have that they could deploy endpoints in a private network setting, or have a private network setup with exit to internet. 
+___
 
 ## Deployment steps of INFIO EC2 instance
 
@@ -306,8 +318,17 @@ The INFIO EC2 instance role is preconfigured with all necessary IAM permissions 
 > **Note on Availability of INFIO** : INFIO does not necessitate high availability at this stage. The nature of our workload and the expected patterns indicate that a single AZ deployment will adequately support our operational needs without compromising performance.
 
 > **Note on Deployment Time**: The deployment time for INFIO tool will be around 15 minutes at most, enabling us to move forward with our tool timelines efficiently.
+-----
+Note: 
+Is this true, woudl we need to tell them that they will need to wait around 20 minutes foe the password to become available and windoes user profile needs additional 20-30 minutes to be ready. 
+------
 
 > **Important Note for INFIO EC2 login password**: When the INFIO EC2 instance is deployed, a PEM key will be automatically generated. Download this key to retrieve the Administrator password for the EC2 instance. You will need the PEM key to decrypt the password in order to RDP or connect to INFIO EC2 instance.
+
+----
+Note: 
+We should tell them that the key is in Parameter Store.
+--------
 
 3. When an **INFIO EC2 instance** is deployed from the **INFIO AMI from AWS Marketplace**, the following additional resources are automatically created:
 
@@ -330,9 +351,20 @@ The INFIO EC2 instance role is preconfigured with all necessary IAM permissions 
 
 > Note: If you have passed subnet ID of private subnet during the configuration of the INFIO EC2 instance, you will need a bastion host instance to log in to the INFIO private EC2 instance. However, if you have chosen a public subnet, you can directly access the INFIO EC2 instance without a bastion host and skip this step.
 
+-------
+Note: 
+This is not necessarily true, it again depends on their network setup, they could have the EC2 in the private subnet and still have a Private Link to the VPN of their company where everyone can RDP into the instances without Bastion host.
+--------
+
 1. **Ensure the Bastion Host Instance Setup**  
    - Place the bastion host instance in a **public subnet** with a public IP address.  
 
+------
+Note: 
+Maybe we do not need to tell them how to setup a bastion host. They should already be experienced with accessing the rest of their instances. It is a nice to have, yet we don't have to explain. 
+
+We could remove this section: 2. Log in to a Windows INFIO EC2 Instance in a Private Subnet Using a Bastion Host (Optional)
+-------
 2. **Configure Security Groups**:
    - **Note**: The bastion host can run on any operating system (Linux or Windows). Ensure the security group rules are configured according to the OS being used for the bastion host, and follow the next steps for that.   
    - **Bastion Host Security Group**:  
@@ -441,10 +473,16 @@ aws cloudformation create-stack --stack-name INFIOVPCEndpoints \
     - Verify the status of the stack in the **AWS Console** under **CloudFormation services** to confirm that the stack is fully deployed and all resources have been created.
 
 ---
-
+Note: We could merge section 3. VPC Endpoint Deployment for CloudFormation Service (Optional) and VPC Endpoint Deployment for S3, Secret manager, KMS, EC2, DMS, RDS, and IAM and security group for all VPC endpoints (Optional) - just to make the document a bit shorter, and telling them that the first stack shpudl be deployed through console only if they want to deploy the second stack through teh EC2, alternatively they can deploy the second stack through AWS console and that is all.
+---
 ### 5. Steps for setting up AWS Resources for INFIO EC2 instance
 
 - Purpose: This stack deploys Secrets Manager Secrets, a KMS Key, and a private S3 bucket, which are essential for the INFIO Assessment Tool. These resources ensure secure data storage, encryption, and controlled access, leveraging AWS security best practices. The Secrets Manager secrets securely store credentials of SQL Servers, facilitating secure and seamless data migration operations. S3 bucket store assessment report generated by INFIO tool. 
+
+--------
+Note: 
+We could say that this is the step that requires connectivity to other AWS services, and we could put this step before explaining endpoint deployment. We could also tell them that they can alternatively depoy this through AWS console and that IAM role of the EC2 has all the permissions to do this in case their IAM user does not therefore they can do it through CLI.
+--------
 
 **Deploy the Stack Using AWS CLI:**
 - Use the following command to deploy the stack from the **INFIO EC2 instance command prompt**:  
