@@ -16,7 +16,7 @@
 
 ### Infio Plugin Overview
 
-The **Infio Plugin** simplifies migration from **SQL Server** to **PostgreSQL** using **Babelfish**. It automates the creation of essential dependency, assessor input files, helping you assess compatibility and identify issues during migration. 
+The **Infio Plugin** simplifies migration from **SQL Server** to **Babelfish for Aurora PostgreSQL**. It automates the creation of essential dependency, assessor input files, helping you assess compatibility and identify issues during migration. 
 
 ---
 
@@ -32,26 +32,8 @@ The **Infio Plugin** simplifies migration from **SQL Server** to **PostgreSQL** 
 ### Prerequisites for Using the INFIO Plugin  
 
 Before using the INFIO Plugin, ensure the following requirements are met:  
-
-#### 1. **Python Installation**  
-To use the INFIO Plugin, Python must be installed on your machine:  
-- **Version Required**: Python 3.12.7  
-- **Download Python**:  
-  If Python is not installed, download and install it from the official Python website:  
-  [Download Python 3.12.7](https://www.python.org/downloads/release/python-3127/)  
-
-- **Add Python to PATH**:  
-  During the installation, make sure to check the option to add Python to your system's environment PATH. This ensures seamless usage from the terminal or command prompt.
-
-#### 2. **Install Required Python Package**  
-After installing Python, you need to install the **mssql-scripter** package:  
-- Open a terminal or command prompt.  
-- Run the following command:  
-  ```bash
-  pip install mssql-scripter
-  ```
   
-#### 3. **SQL Server Credentials**  
+#### 1. **SQL Server Credentials**  
 To connect to your SQL Server instance, ensure the following:  
 
 - **Access Credentials**:  
@@ -62,7 +44,7 @@ To connect to your SQL Server instance, ensure the following:
   - The SQL Server username must have read-only access with the `db_datareader` role on all databases, including system databases to run Infio-plugin. Additionally, the msdb database, which is a system database, must have the `SQLAgentUserRole`, `SQLAgentReaderRole` and `SQLAgentOperatorRole` as these SQL agent roles are needed to run extended event tool and generate extended events xml file. 
   - This ensures only data retrieval operations are allowed, preventing changes to the database. 
 
-#### 4. **Server Role Permissions**  
+#### 2. **Server Role Permissions**  
 The following server roles are required to run the INFIO Plugin:  
 
 ```plaintext
@@ -76,7 +58,7 @@ The following server roles are required to run the INFIO Plugin:
 public
 ```
 
-#### 5. **Granting Server-Level Permission: `ALTER ANY EVENT SESSION`**
+#### 3. **Granting Server-Level Permission: `ALTER ANY EVENT SESSION`**
 
 To enable the user to create, modify, and delete **Extended Events** sessions to get extended events, grant the `ALTER ANY EVENT SESSION` permission.
 
@@ -290,9 +272,9 @@ Please wait for a while; this process might take some time to complete.
       Here application name is application name that you entered while creating application in the INFIO tool.
 
 
-  > Note: If users prefer not to manually create the SQL Server Profiler Events file, they can use the INFIO plugin to generate an Extended Events file. To upload the generated Extended Events file to an S3 bucket, follow the steps up to step 6. In step 7, instead of the Profiler Events file, upload the Extended Events file from: `C:\Users\Administrator\infio-plugin\<application-name>\source\extended_events\`
-  to the target S3 directory: `s3://infio-private-bucket/<application-name>/source/sql_statements/`.
-  This eliminates the need to follow step 7 as mentioned in the table below.
+      > Note: If users prefer not to manually create the SQL Server Profiler Events file, they can use the INFIO plugin to generate an Extended Events file. To upload the generated Extended Events file to an S3 bucket, follow the steps up to step 6. In step 7, instead of the Profiler Events file, upload the Extended Events file from: `C:\Users\Administrator\infio-plugin\<application-name>\source\extended_events\`
+      to the target S3 directory: `s3://infio-private-bucket/<application-name>/source/sql_statements/`.
+      This eliminates the need to follow step 7 as mentioned in the table below.
       
 
       | **Step** | **Action** | **Source Directory (INFIO EC2 Instance's INFIO Plugin directory)** | **Target Directory (S3 Bucket)** |
