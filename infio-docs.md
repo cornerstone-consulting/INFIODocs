@@ -461,7 +461,7 @@ The `--endpoint-url` parameter is **optional**. Utilize it only if you created a
 
 ---
 
-### Required SQL Server Database Permissions for Running the INFIO Tool
+### 6. Required SQL Server Database Permissions for Running the INFIO Tool
 
 > Note: These SQL Server Database permissions on all databases, including system databases, are required to run the INFIO tool. Without these permissions, the tool will not function properly.
 
