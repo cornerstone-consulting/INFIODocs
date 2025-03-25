@@ -100,7 +100,7 @@ INFIO provides a **comprehensive evaluation of SQL Server to Babelfish for Auror
   Highlights features that require **manual review**, including **primary key constraints, indexing issues, and stored procedures**.  
 
 - **Additional Compatibility Issues**  
-  Detects **Babelfish-specific limitations**, such as unsupported **data types, DML operations, and schema differences**.  
+  Detects additional compatibility issues related to data types and data migrations. 
 
 - **Assessment Exclusions**  
   Filters out **non-essential database features** to focus only on migration-relevant components.  
