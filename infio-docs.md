@@ -103,7 +103,7 @@ INFIO provides a **comprehensive evaluation of SQL Server to Babelfish for Auror
   Detects additional compatibility issues related to data types and data migrations. 
 
 - **Assessment Exclusions**  
-  Filters out **non-essential database features** to focus only on migration-relevant components.  
+  This process selectively excludes T-SQL compatibility issues deemed non-essential, thereby concentrating resources on the resolution of **core discrepancies**.
 
 - **Database Objects Requiring Conversion**  
   Lists **database objects that need modifications**, helping in migration planning.  
@@ -118,9 +118,8 @@ INFIO provides a **comprehensive evaluation of SQL Server to Babelfish for Auror
   Maps dependencies between **tables, views, stored procedures, and sequences** to prevent data integrity issues.  
 
 - **Total Cost of Ownership (TCO) Analysis**  
-  - Estimates **migration costs**, including storage, computing, and database operations.  
-  - Evaluates the cost impact of **unsupported features requiring modifications**.  
-  - Suggests **cost-optimization strategies** to minimize migration expenses.  
+  - Determines infrastructure TCO by evaluating migration path and **deployment pattern variances**, omitting secondary cost considerations.  
+
 
 ---
 
