@@ -118,7 +118,7 @@ INFIO provides a **comprehensive evaluation of SQL Server to Babelfish for Auror
   Maps dependencies between **tables, views, stored procedures, and sequences** to prevent data integrity issues.  
 
 - **Total Cost of Ownership (TCO) Analysis**  
-  - Determines infrastructure TCO by evaluating migration path and **deployment pattern variances**, omitting secondary cost considerations.  
+  Determines infrastructure TCO by evaluating migration path and **deployment pattern variances**, omitting secondary cost considerations.  
 
 
 ---
@@ -135,16 +135,13 @@ INFIO provides a **comprehensive evaluation of SQL Server to Babelfish for Auror
   Identifies areas that need **manual intervention**, such as **schema changes, indexing adjustments, and stored procedure compatibility**.  
 
 - **DMS Migration Feasibility**  
-  Assesses whether **AWS DMS is a viable option** and highlights **alternative migration approaches if needed**.  
+  Assesses whether **AWS DMS is a viable option** for data migration.  
 
 - **Data Integrity & Dependency Insights**  
   Ensures that object dependencies are maintained to **prevent migration failures**.  
 
-- **Optimization Strategies**  
-  Provides **performance and cost-optimization recommendations**, including reducing **unnecessary features and improving database efficiency**.  
-
 - **TCO Insights**  
-  Helps estimate the **financial impact of migration**, ensuring **cost-effective deployment** in AWS.  
+  Helps estimate the **Total Cost of Ownership**, ensuring **cost-effective deployment** in AWS.  
 
 
 ---
@@ -306,7 +303,7 @@ The INFIO EC2 instance role is preconfigured with all necessary IAM permissions 
 
 > **Note on Deployment Time**: The deployment time for INFIO tool will be around 15 minutes at most, enabling us to move forward with our tool timelines efficiently.
 
-> **Important Note for INFIO EC2 login password**: When the INFIO EC2 instance is deployed, a PEM key will be automatically generated. Download this key to retrieve the Administrator password for the EC2 instance. You will need the PEM key to decrypt the password in order to RDP or connect to INFIO EC2 instance.
+> **Important Note for INFIO EC2 login password**: When the INFIO EC2 instance is deployed, a PEM key will be automatically generated and stored in AWS Systems Manager Parameter Store. Download and use this key to retrieve the Administrator password for the EC2 instance. You will need the PEM key to decrypt the password in order to RDP or connect to INFIO EC2 instance.
 
 3. When an **INFIO EC2 instance** is deployed from the **INFIO AMI from AWS Marketplace**, the following additional resources are automatically created:
 
@@ -356,7 +353,7 @@ The INFIO EC2 instance role is preconfigured with all necessary IAM permissions 
 
 ### 3. VPC Endpoint Deployment for CloudFormation Service (Optional):
 
-> Note: You can skip this step, if your INFIO EC2 instance is deployed in a public subnet, it already has internet access and does not need a VPC Endpoint. If your private EC2 instance is deployed in private subnet and it has a NAT Gateway attached, it can access CloudFormation via the internet, making the VPC Endpoint unnecessary.
+> Note: You can skip this step, if your INFIO EC2 instance is deployed in a public subnet, it already has internet access and does not need a VPC Endpoint. Additionally, if your INFIO EC2 instance is deployed in a private subnet and has a NAT Gateway attached, it can access CloudFormation services via the internet, making the deployment of VPC Endpoint unnecessary.
 
 **Purpose**:
 From the AWS Console in the same account where you have deployed the **INFIO EC2 instance**, you can deploy an AWS VPC Endpoint for CloudFormation service. This step is necessary if your **VPC landing zone** does not support EC2 instances hosted in a private subnet to connect to AWS services (e.g., when EC2 instance in private subnets cannot access CloudFormation service). Access to the CloudFormation Service is required to deploy additional AWS resources from the **INFIO EC2 instance**. 
@@ -392,7 +389,7 @@ This cloudformation template will deploy cloudformation endpoint for INFIO EC2 i
 
 ### 4. VPC Endpoint Deployment for S3, Secret manager, KMS, EC2, DMS, RDS, and IAM and security group for all VPC endpoints (Optional):
 
-> Note: You can skip this step, if your INFIO EC2 instance is deployed in a public subnet, it already has internet access and does not need a VPC Endpoint for S3, Secret manager, KMS, EC2, DMS, RDS and IAM services. If your private EC2 instance is deployed in private subnet and it has a NAT Gateway attached, it can access mentioned AWS services via the internet, making the VPC Endpoint unnecessary.
+> Note: You can skip this step, if your INFIO EC2 instance is deployed in a public subnet, it already has internet access and does not need a VPC Endpoint for S3, Secret manager, KMS, EC2, DMS, RDS and IAM services. If your INFIO EC2 instance is deployed in a private subnet and it has a NAT Gateway attached, it can access mentioned AWS services via the internet, making the deployment of VPC Endpoint unnecessary.
 
 **Purpose:** 
 - This deployment is necessary if your **VPC landing zone** does not support **EC2 instances hosted in a private subnet** to connect with AWS services. The provided **CloudFormation template** creates a secure environment for the INFIO assessment tool within an AWS VPC. It establishes **VPC endpoints** for **S3**, **Secrets Manager**, **KMS**, **EC2**, **DMS**, **RDS**, and **IAM** services, enabling secure access from the INFIO EC2 instance, in which EC2, DMS, RDS and IAM service endpoints are being used for AWS schema conversion.
