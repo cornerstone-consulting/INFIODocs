@@ -301,7 +301,7 @@ The INFIO EC2 instance role is preconfigured with all necessary IAM permissions 
 
 > **Note on Availability of INFIO** : INFIO does not necessitate high availability at this stage. The nature of our workload and the expected patterns indicate that a single AZ deployment will adequately support our operational needs without compromising performance.
 
-> **Note on Deployment Time**: The deployment time for INFIO tool will be around 15 minutes at most, enabling us to move forward with our tool timelines efficiently.
+> **Note on Deployment Time**: The deployment of the INFIO tool generally takes up to 15 minutes. The password may take around 20 minutes to become available, and the Windows user profile could take an additional 15-20 minutes to be fully set up, though these times may vary.
 
 > **Important Note for INFIO EC2 login password**: When the INFIO EC2 instance is deployed, a PEM key will be automatically generated and stored in AWS Systems Manager Parameter Store. Download and use this key to retrieve the Administrator password for the EC2 instance. You will need the PEM key to decrypt the password in order to RDP or connect to INFIO EC2 instance.
 
