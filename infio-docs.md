@@ -477,14 +477,14 @@ To connect to your SQL Server instance, ensure the following:
   - These permissions ensure the user can only retrieve data without making any modifications to the database.
 
 2. **Required Database Roles for SQL Server user**  
--- **Server-Level Permissions**
+- **Server-Level Permissions**
   Following permissions must be granted at the server level to allow the user to connect to the SQL Server instance and view necessary metadata and server state: 
     ```sql
     GRANT CONNECT SQL TO [<UserName>];  
     GRANT VIEW ANY DEFINITION TO [<UserName>];  
     GRANT VIEW SERVER STATE TO [<UserName>];
     ```
--- **Database-Level Permissions**
+- **Database-Level Permissions**
    ```sql
     ALTER ROLE [db_datareader] ADD MEMBER [<UserName>];  
     GRANT CONNECT TO [<UserName>];  
