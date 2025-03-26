@@ -477,64 +477,21 @@ To connect to your SQL Server instance, ensure the following:
   - These permissions ensure the user can only retrieve data without making any modifications to the database.
 
 2. **Required Database Roles for INFIO tool**  
-The following **server roles** must be assigned to the SQL Server user to successfully run the INFIO tool:  
-
-  ```plaintext
-  ##MS_DatabaseConnector##  
-  ##MS_DefinitionReader##  
-  ##MS_PerformanceDefinitionReader##  
-  ##MS_SecurityDefinitionReader##  
-  ##MS_ServerPerformanceStateReader##  
-  ##MS_ServerSecurityStateReader##  
-  ##MS_ServerStateReader##  
-  public  
-  ```
+The following **permissions** must be granted to the SQL Server user to successfully run the INFIO tool:  
+**Server-Level Permissions**
+The following permissions must be granted at the server level to allow the user to connect to the SQL Server instance and view necessary metadata and server state:
   ```sql
-    use master 
-    go
-    declare @sql nvarchar(max)
-    declare @loginname varchar(50)
-    declare @password varchar(50)
-    
-    set @loginname ='dmsuser1'
-    set @password = 'dmsuser@1433'
-    
-    set @sql = '
-    USE master ;
-    IF NOT EXISTS (SELECT loginname FROM master.dbo.syslogins WHERE name = ''' + @loginname + ''') 
-    CREATE LOGIN [' + @loginname + '] WITH PASSWORD =  ''' + @password + ''', DEFAULT_DATABASE = [master], CHECK_POLICY = OFF, CHECK_EXPIRATION = OFF, DEFAULT_LANGUAGE = [us_english] ;
-    Grant CONNECT SQL TO [' + @loginname + ']  ;
-    Grant VIEW ANY DEFINITION TO [' + @loginname + '];  
-    Grant VIEW SERVER STATE TO [' + @loginname + '] ;
-    '
-    exec sp_executesql @sql
-    DECLARE @name VARCHAR(50) -- database name
-    declare db_read cursor for 
-    SELECT name 
-    FROM sys.databases 
-    --where name in ('tempdb' ,'Admin','BankersToolboxSmartRules')
-    order by name
-    open db_read
-    fetch next  from db_read into @name
-    while @@fetch_status=0
-    BEGIN
-    	
-    	set @sql = '
-    	use ['+ @name +'];
-    	IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = ''' + @loginname + ''') 
-    	CREATE USER [' + @loginname + '] FOR LOGIN [' + @loginname + '] WITH DEFAULT_SCHEMA=[dbo] ;
-    	ALTER ROLE [db_datareader] ADD MEMBER [' + @loginname + '] ;
-    	Grant CONNECT TO [' + @loginname + ']  AS [dbo];
-    	Grant VIEW DATABASE STATE TO [' + @loginname + ']  AS [dbo] ;
-    	GRANT SELECT ON OBJECT::[sys].[sql_expression_dependencies] TO [' + @loginname + ']  AS [dbo];
-    	'
-    	--print @sql
-    	exec sp_executesql @sql
-    
-    	FETCH NEXT FROM db_read INTO @name 
-    END
-    CLOSE db_read 
-    DEALLOCATE db_read
+  GRANT CONNECT SQL TO [<UserName>];  
+  GRANT VIEW ANY DEFINITION TO [<UserName>];  
+  GRANT VIEW SERVER STATE TO [<UserName>];  
+  ```
+**Database-Level Permissions**
+The following permissions must be granted at the database level to enable the user to query relevant system objects and view database state:
+  ```sql
+  ALTER ROLE [db_datareader] ADD MEMBER [<UserName>];  
+  GRANT CONNECT TO [<UserName>];  
+  GRANT VIEW DATABASE STATE TO [<UserName>];  
+  GRANT SELECT ON OBJECT::[sys].[sql_expression_dependencies] TO [<UserName>];  
   ```
 ---
 
