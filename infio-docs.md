@@ -478,6 +478,7 @@ To connect to your SQL Server instance, ensure the following:
 
 2. **Required Database Roles for SQL Server user**  
 - **Server-Level Permissions**
+  
   Following permissions must be granted at the server level to allow the user to connect to the SQL Server instance and view necessary metadata and server state: 
     ```sql
     GRANT CONNECT SQL TO [<UserName>];  
@@ -485,6 +486,8 @@ To connect to your SQL Server instance, ensure the following:
     GRANT VIEW SERVER STATE TO [<UserName>];
     ```
 - **Database-Level Permissions**
+  
+  Following permissions must be granted at the database level to enable the user to query relevant system objects and view database state:
    ```sql
     ALTER ROLE [db_datareader] ADD MEMBER [<UserName>];  
     GRANT CONNECT TO [<UserName>];  
