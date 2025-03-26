@@ -470,21 +470,27 @@ To connect to your SQL Server instance, ensure the following:
 
 - **Access Credentials**:  
   - Have valid access credentials (username and password) for your SQL Server instance.  
-  - Ensure that INFIO EC2 instance IP address is authorized with SQL Server instance.  
+  - Ensure that INFIO EC2 instance IP address is authorized to connect to SQL Server instance.  
 
 - **Read-Only Access**:  
-  - The SQL Server username must have read-only access only with the `db_datareader` role on all databases, including system databases which is mandatory, to run the INFIO tool; otherwise, an error will occur.
+  - The SQL Server username must have read-only access with the db_datareader role on all databases, including system databases (mandatory), to successfully run the INFIO tool. Failure to meet this requirement will result in an error..
   - These permissions ensure the user can only retrieve data without making any modifications to the database.
 
-2. **Required Database Roles for INFIO tool**  
-- **Server-Level Permissions**
+2. **Required Database Roles for SQL Server user**  
+-- **Server-Level Permissions**
   Following permissions must be granted at the server level to allow the user to connect to the SQL Server instance and view necessary metadata and server state: 
     ```sql
     GRANT CONNECT SQL TO [<UserName>];  
     GRANT VIEW ANY DEFINITION TO [<UserName>];  
     GRANT VIEW SERVER STATE TO [<UserName>];
     ```
-  
+-- **Database-Level Permissions**
+   ```sql
+    ALTER ROLE [db_datareader] ADD MEMBER [<UserName>];  
+    GRANT CONNECT TO [<UserName>];  
+    GRANT VIEW DATABASE STATE TO [<UserName>];  
+    GRANT SELECT ON OBJECT::[sys].[sql_expression_dependencies] TO [<UserName>];
+   ```
 ---
 
 ### INFIO Assessment Tool Usage Guide
