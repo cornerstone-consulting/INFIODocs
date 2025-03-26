@@ -477,7 +477,8 @@ To connect to your SQL Server instance, ensure the following:
   - These permissions ensure the user can only retrieve data without making any modifications to the database.
 
 2. **Required Database Roles for INFIO tool**  
-The following **permissions** must be granted to the SQL Server user to successfully run the INFIO tool: 
+The following **permissions** must be granted to the SQL Server user to successfully run the INFIO tool:
+
   **Server-Level Permissions**
   Following permissions must be granted at the server level to allow the user to connect to the SQL Server instance and view necessary metadata and server state: 
     ```sql
@@ -485,14 +486,7 @@ The following **permissions** must be granted to the SQL Server user to successf
     GRANT VIEW ANY DEFINITION TO [<UserName>];  
     GRANT VIEW SERVER STATE TO [<UserName>];
     ```
-  **Database-Level Permissions**
-  Following permissions must be granted at the database level to enable the user to query relevant system objects and view database state:
-    ```sql
-    ALTER ROLE [db_datareader] ADD MEMBER [<UserName>];  
-    GRANT CONNECT TO [<UserName>];  
-    GRANT VIEW DATABASE STATE TO [<UserName>];  
-    GRANT SELECT ON OBJECT::[sys].[sql_expression_dependencies] TO [<UserName>];  
-  ```
+  
 ---
 
 ### INFIO Assessment Tool Usage Guide
