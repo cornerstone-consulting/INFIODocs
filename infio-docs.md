@@ -473,7 +473,7 @@ To connect to your SQL Server instance, ensure the following:
   - Ensure that INFIO EC2 instance IP address is authorized with SQL Server instance.  
 
 - **Read-Only Access**:  
-  - The SQL Server username must have read-only access with the `db_datareader` role on all databases, including system databases which is mandatory, to run the INFIO tool; otherwise, an error will occur.
+  - The SQL Server username must have read-only access only with the `db_datareader` role on all databases, including system databases which is mandatory, to run the INFIO tool; otherwise, an error will occur.
   - These permissions ensure the user can only retrieve data without making any modifications to the database.
 
 2. **Required Database Roles for INFIO tool**  
@@ -489,7 +489,53 @@ The following **server roles** must be assigned to the SQL Server user to succes
   ##MS_ServerStateReader##  
   public  
   ```
-
+  ```sql
+    use master 
+    go
+    declare @sql nvarchar(max)
+    declare @loginname varchar(50)
+    declare @password varchar(50)
+    
+    set @loginname ='dmsuser1'
+    set @password = 'dmsuser@1433'
+    
+    set @sql = '
+    USE master ;
+    IF NOT EXISTS (SELECT loginname FROM master.dbo.syslogins WHERE name = ''' + @loginname + ''') 
+    CREATE LOGIN [' + @loginname + '] WITH PASSWORD =  ''' + @password + ''', DEFAULT_DATABASE = [master], CHECK_POLICY = OFF, CHECK_EXPIRATION = OFF, DEFAULT_LANGUAGE = [us_english] ;
+    Grant CONNECT SQL TO [' + @loginname + ']  ;
+    Grant VIEW ANY DEFINITION TO [' + @loginname + '];  
+    Grant VIEW SERVER STATE TO [' + @loginname + '] ;
+    '
+    exec sp_executesql @sql
+    DECLARE @name VARCHAR(50) -- database name
+    declare db_read cursor for 
+    SELECT name 
+    FROM sys.databases 
+    --where name in ('tempdb' ,'Admin','BankersToolboxSmartRules')
+    order by name
+    open db_read
+    fetch next  from db_read into @name
+    while @@fetch_status=0
+    BEGIN
+    	
+    	set @sql = '
+    	use ['+ @name +'];
+    	IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = ''' + @loginname + ''') 
+    	CREATE USER [' + @loginname + '] FOR LOGIN [' + @loginname + '] WITH DEFAULT_SCHEMA=[dbo] ;
+    	ALTER ROLE [db_datareader] ADD MEMBER [' + @loginname + '] ;
+    	Grant CONNECT TO [' + @loginname + ']  AS [dbo];
+    	Grant VIEW DATABASE STATE TO [' + @loginname + ']  AS [dbo] ;
+    	GRANT SELECT ON OBJECT::[sys].[sql_expression_dependencies] TO [' + @loginname + ']  AS [dbo];
+    	'
+    	--print @sql
+    	exec sp_executesql @sql
+    
+    	FETCH NEXT FROM db_read INTO @name 
+    END
+    CLOSE db_read 
+    DEALLOCATE db_read
+  ```
 ---
 
 ### INFIO Assessment Tool Usage Guide
