@@ -3,6 +3,10 @@
 # Table of Contents
 
 - [Solution Overview](#solution-overview)
+  - [Multi Assessment Approach](#multi-assessment-approach)
+    1. [SQL Server to Babelfish for Aurora PostgreSQL Assessment](#1-sql-server-to-babelfish-for-aurora-postgresql-assessment)
+    2. [SQL Server to Aurora PostgreSQL Assessment](#2-sql-server-to-aurora-postgresql-assessment)
+    3. [NET Application to .NET Core Migration Assessment](#3-net-application-to-net-core-migration-assessment)
 - [Purpose of This Document](#purpose-of-this-document)
 - [Target Audience](#target-audience)
 - [Features and Benefits](#features-and-benefits)
@@ -31,12 +35,15 @@
   - [3. VPC Endpoint Deployment for CloudFormation Service (Optional)](#3-vpc-endpoint-deployment-for-cloudformation-service-optional)
   - [4. VPC Endpoint Deployment for S3, Secret manager, KMS, EC2, DMS, RDS, and IAM and security group for all VPC endpoints (Optional)](#4-vpc-endpoint-deployment-for-s3-secret-manager-kms-ec2-dms-rds-and-iam-and-security-group-for-all-vpc-endpoints-optional)
   - [5. Steps for setting up AWS Resources for INFIO EC2 instance](#5-steps-for-setting-up-aws-resources-for-infio-ec2-instance)
-- [Required SQL Server Database Permissions for Running the INFIO Tool](#required-sql-server-database-permissions-for-running-the-infio-tool)
+  - [6. Required SQL Server Database Permissions for Running the INFIO Tool](#6-required-sql-server-database-permissions-for-running-the-infio-tool)
 - [INFIO Assessment Tool Usage Guide](#infio-assessment-tool-usage-guide)
   - [Infio Dashboard Overview](#infio-dashboard-overview)
   - [Configuration Page Setup](#configuration-page-setup)
   - [Application Discovery](#application-discovery)
   - [Steps to Perform Assessment in INFIO](#steps-to-perform-assessment-in-infio)
+    - [SQL Server to Babelfish](#1-sql-server-to-babelfish)
+    - [SQL Server to Aurora PostgreSQL](#2-sql-server-to-aurora-postgresql)
+    - [.NET Assessment](#3-net-assessment)
   - [Generating the Summary Report](#generating-the-summary-report)
   - [Export Server Metrics](#export-server-metrics)
 - [Monitoring](#monitoring)
@@ -49,9 +56,42 @@
 ---
 ### Solution Overview
 
-INFIO is a specialized tool developed by Cornerstone Consulting Group to streamline and automate the database migration assessment process in AWS, ensuring a smooth and secure transition for complex database systems. Unlike traditional assessment tools that primarily focus on code compatibility, INFIO takes a migration-centric approach, providing a more comprehensive evaluation of the challenges and feasibility of migrating **SQL Server** to **Babelfish for Aurora PostgreSQL**. 
+INFIO is a specialized tool developed by Cornerstone Consulting Group to streamline and automate the database and application migration assessment process in AWS. It provides a comprehensive evaluation of migration feasibility, covering SQL Server to Babelfish for Aurora PostgreSQL, SQL Server to Aurora PostgreSQL, and .NET applications migrating to .NET Core. Unlike traditional assessment tools that focus primarily on code compatibility, INFIO takes a migration-centric approach, offering detailed insights into compatibility, conversion efforts, and potential challenges across databases and application stacks.
 
-INFIO generates a Database Migration Assessment Report that evaluates the compatibility of SQL Server with Babelfish for Aurora PostgreSQL. The report provides an overall compatibility summary, categorizing features as fully supported, conditionally supported, or unsupported. It includes a detailed compatibility analysis using charts to visualize database schema and application code compatibility. Additionally, it breaks down database-level compatibility, highlighting support levels for each database. The report identifies non-supported features, suggests workarounds, and estimates the effort required for necessary modifications. It also highlights conditionally supported features that require manual review before migration. Beyond standard assessments, the report detects additional compatibility issues and filters out non-essential features for clarity. It further identifies database objects needing conversion, evaluates DMS compatibility concerning recovery models, data types, tables, and backup configurations, and highlights potential migration challenges such as missing primary keys. Also, it maps database object dependencies to ensure structural integrity. Lastly, it compares cost estimates for different deployment models, helping businesses optimize infrastructure and licensing expenses.  which is comprehensive assessment for a seamless migration process.
+### Multi Assessment Approach
+
+INFIO runs three distinct assessments to facilitate different migration scenarios:
+1. SQL Server to Babelfish for Aurora PostgreSQL Assessment
+2. SQL Server to Aurora PostgreSQL Assessment
+3. .NET Application to .NET Core Migration Assessment
+
+#### 1. SQL Server to Babelfish for Aurora PostgreSQL Assessment
+
+INFIO generates a Database Migration Assessment Report that evaluates the compatibility of SQL Server with Babelfish for Aurora PostgreSQL. The report provides an overall compatibility summary, categorizing features as fully supported, conditionally supported, or unsupported. It includes a detailed compatibility analysis using charts to visualize database schema and application code compatibility. Additionally, it breaks down database-level compatibility, highlighting support levels for each database. 
+
+The report identifies non-supported features, suggests workarounds, and estimates the effort required for necessary modifications. It also highlights conditionally supported features that require manual review before migration. Beyond standard assessments, the report detects additional compatibility issues and filters out non-essential features for clarity. It further identifies database objects needing conversion, evaluates DMS compatibility concerning recovery models, data types, tables, and backup configurations, and highlights potential migration challenges such as missing primary keys. Also, it maps database object dependencies to ensure structural integrity. Lastly, it compares cost estimates for different deployment models, helping businesses optimize infrastructure and licensing expenses.  which is comprehensive assessment for a seamless migration process.
+
+
+#### 2. SQL Server to Aurora PostgreSQL Assessment
+
+This database migration report is the report it generates to facilitate schema transformation. This database migration assessment report summarizes all schema conversion tasks and provides detailed action items for database objects that cannot be converted automatically.
+
+The migration assessment report includes:
+- An Executive Summary.
+- Recommendations, including conversion of server objects, backup strategies, and linked server modifications.
+- Effort Estimates, showing the work required to manually rewrite database elements that are incompatible with Aurora PostgreSQL.
+
+
+#### 3. .NET Application to .NET Core Migration Assessment
+
+INFIO also facilitates the migration of .NET applications  to .NET Core for .NET. This tool scans .NET projects, analyzes source code and package dependencies, and generates an assessment report that highlights incompatible APIs and NuGet/Microsoft Core packages.
+
+Key aspects of the .NET assessment report includes:
+- Identification of incompatible APIs and packages.
+- Suggestions for replacement components to facilitate migration.
+- Detection of unsupported components that require alternative solutions
+- Effort estimation for manual code changes required for full compatibility
+- Automated conversion of .NET project references to their .NET Core equivalent with updated package details
 
 The solution provides deep insights into the existing database environment while adhering to **AWS best practices** for cloud migration. It emphasizes **security**, **scalability**, **reliability**, and **cost optimization** throughout the process.
 
@@ -74,8 +114,9 @@ This guide is intended for:
 - **IT professionals**
 - **Database administrators**
 - **Cloud engineers**
+- **.NET developers**
 
-who are responsible for assessing database compatibility for migration purposes.
+who are responsible for assessing database compatibility and .NET applications for migration purposes.
 
 ---
 
@@ -149,8 +190,8 @@ INFIO provides a **comprehensive evaluation of SQL Server to Babelfish for Auror
 ### Use Cases
 INFIO can be used to:
 
-- **Assess large-scale heterogeneous database migrations to AWS**: Enable a single-pane-of-glass view for large-scale database workload migration assessments to AWS.
-- **Provide prebuilt automation and reporting**: Utilize role-based access via a single web interface designed specifically for database migration assessments.
+- **Assess large-scale heterogeneous database & .NET application migrations**: Enable a single-pane-of-glass view for large-scale database workload migration assessments.
+- **Provide prebuilt automation and reporting**: Utilize role-based access via a single web interface designed specifically for migration assessments.
 
 ---
 
@@ -178,6 +219,7 @@ This section describes key concepts and defines terminology specific to this sol
   - Optional if your INFIO EC2 is in a public subnet or has a NAT Gateway.
   - Required if your INFIO EC2 is in a private subnet (no internet access) and needs AWS service access.
 Without a VPC Endpoint, a private INFIO EC2 instance must use a NAT Gateway (extra cost) or be moved to a public subnet.
+- **DMS**: DMS is generating assessment report that it generates to help you convert your schema. This database migration assessment report summarizes all of the schema conversion tasks. It also details the action items for schema that can't be converted to the DB engine of your target DB instance of Aurora postgreSQL. 
 
 ---
 
@@ -202,6 +244,7 @@ Without a VPC Endpoint, a private INFIO EC2 instance must use a NAT Gateway (ext
 - **AWS Key Management Service (Supporting)**: Manages encryption keys used to protect data and resources.
 - **AWS CloudFormation (Supporting)**: Accelerates AWS resource provisioning with infrastructure as code.
 - **VPC Endpoints (Optional & Supporting)**: Provide secure, private connectivity between your VPC and AWS services.
+- **AWS DMS(Supporting)**: Provides assessment report for schema conversion. 
 
 ---
 
@@ -223,6 +266,7 @@ To get the most recent and accurate cost estimate for your AWS architecture, you
 | **AWS Secrets Manager** | 5 secrets per month x 1 month x 0.40 USD per secret per month   | $2.00                 |
 | **AWS EC2**           | m6a.large, 10GB EBS - 1 instances x 0.1784 USD On Demand hourly cost x 730 hours in a month                  | $130.232  |
 | **AWS Key Management Service (KMS)** | 2 CMK x Number of symmetric requests (1000) | $2.00 |
+| **DMS**  | - | $0.00 | 
 
 
 ---
@@ -270,7 +314,7 @@ To deploy the solution successfully, the following skills and knowledge are requ
 - Familiarity with AWS.
 - Proficiency in AWS CLI and various AWS services (such as S3, EC2, VPC, CloudFormation, KMS, DMS and Secrets Manager).
 - Familiarity with database migration processes and schema conversions.
-- Basic understanding of PostgreSQL and SQL Server.
+- Basic understanding of Aurora PostgreSQL, SQL Server, .NET application and .NET core.
 
 > **Important Note**: The INFIO does not require the use of AWS account root privileges for deployment or operation.
 
@@ -286,18 +330,25 @@ The INFIO EC2 instance role is preconfigured with all necessary IAM permissions 
 ### 1. Deployment of EC2 instance from INFIO AMI(AWS Marketplace)
 
 1.  Navigate to the [AWS Marketplace](https://signin.aws.amazon.com/signin?redirect_uri=https%3A%2F%2Faws.amazon.com%2Fmarketplace%3F%26isauthcode%3Dtrue&client_id=arn%3Aaws%3Aiam%3A%3A015428540659%3Auser%2Fawsmp-contessa&forceMobileApp=0) to download the INFIO AMI. During this process, you will be prompted to answer several necessary questions, detailed below:
+    - **ImageId**: Specifies the INFIO AMI ID used for deploying the INFIO EC2 instance.
+    - **INFIOIsDeployed**: Specify "Yes" or "No" to indicate whether one or more INFIO EC2 stacks have already been deployed in this account from the AWS Marketplace. If specified as "No," the EC2 IAM role, EC2 profile, EC2 security group, EC2 key pair, and DMS instance profile will be attempted to be created again. If resources with the same names already exist, the deployment will fail.
+    - **INFIOSequence**: Specifies the deployment sequence number. If you have already deployed INFIO resources once, enter "02" for the second instance, "03" for the third, and so on. For the first deployment, enter "01".
     - **EC2InstanceType**: Specifies the EC2 instance type. Default is `m6a.large`.  
     - **SubnetID**: The ID of the subnet where the Infio EC2 instance will be deployed, you can pass public subnet id or private subnet id.  
-    - **DMSSubnetGroupSubnetIDs**: A comma-separated list of subnet IDs for the source SQL Server and target Auroa PostgreSQL is already deployed.  
+    - **DMSSubnetGroupSubnetIDs**: A comma-separated list of subnet IDs for the source SQL Server and target Auroa PostgreSQL is already deployed. This list should hold the subnet(s) of the source SQL Server and destination Aurora PostgreSQL database.
     - **SourceSQLServerPort**: The port number used by the source SQL Server. Default is `1433`.  
     - **SourceSQLServerIP**: The IP address of the source SQL Server in `x.x.x.x/32` format.  
     - **TargetPGServerSG**: The Security Group ID attached to the target Aurora PostgreSQL database.  
     - **InfioEC2EncryptionKeyAlias**: The KMS encryption key alias used to encrypt the Infio EC2 instance. Default is `aws/ebs`.  
-    - **VPCCIDR**: The CIDR of the VPC where the Infio EC2 instance will be deployed.  
+    - **VPCCIDR**: The CIDR of the V PC where the Infio EC2 instance will be deployed.  
     - **VPCID**: The VPC ID where the Infio EC2 instance will be deployed.  
-    - **InboundCIDRIP**: The CIDR or IP address allowed for RDP access to the Infio EC2 instance. Must be in `xx.xx.xx.xx/xx` format.  
+    - **InboundCIDRIP**: The CIDR or IP address allowed for RDP access to the Infio EC2 instance. Must be in `xx.xx.xx.xx/xx` format.
 
-2. After completing the questionnaire, AWS Marketplace will deploy an EC2 instance based on your selected choice, whether in a public or private subnet.
+  > Note: If you are deploying INFIO EC2 instance more than once and are not using the same subnets, VPC, or security group rules, you must update the environment variable by running the following command:
+  `setx INFIO_DMS_INSTANCE_PROFILE <DMS_INSTANCE_PROFILE_NAME>` change DMS instance profile name that you want to use. 
+ 
+
+2. After completing the questionnaire, AWS Marktetplace will deploy an EC2 instance based on your selected choice, whether in a public or private subnet.
 
 > **Note on Availability of INFIO** : INFIO does not necessitate high availability at this stage. The nature of our workload and the expected patterns indicate that a single AZ deployment will adequately support our operational needs without compromising performance.
 
@@ -508,23 +559,6 @@ To connect to your SQL Server instance, ensure the following:
 5. If you encounter the error **"License validation failed. The app cannot be started,"** please contact **Cornerstone Support** for assistance with license validation at **info@cornerstone-consulting.io**. Make sure to provide your **INFIO EC2 instance ID** to the Cornerstone Support team for license validation.  
 6. Once the tool is launched, go to the `Home` page where INFIO will prompt you dashboard page. If your company name is not available in the list, you can enter the company name.
 
-#### Infio Dashboard Overview
-
-![application-discovery](images/home(dashboard).PNG)
-
-**Dashboard Sections**
-The dashboard provides an overview of key metrics related to application assessments:  
-- **Submitted Applications**: Number of applications submitted.  
-- **Assessment Discovered**: Number of assessments identified.  
-- **Assessments Run**: Number of assessments executed.  
-- **Reports Generated**: Number of reports created based on assessments.  
-
-**Application Status Table**
-Displays the current status of applications across different stages:  
-| Applications | Assessment Discovered | Assessments Run | Reports Generated |
-|-------------|----------------------|----------------|------------------|
-| 0 | 0 | 0 | 0 |
-
 **Left Navigation Panel**
 The sidebar contains the following options:  
 - **🏠 Home** - Redirects to the dashboard which provides overview of key metrics related to application assessments.  
@@ -536,7 +570,35 @@ The sidebar contains the following options:
 - **🚀 Deploy** - Deployment-related functionality.  
 - **🔄 Migrate** - Migration-related functionality.
 
-- To access deploy and migrate features, please contact cornerstone support team at **[info@cornerstone-consulting.io](mailto:info@cornerstone-consulting.io)** for more information and assistance.  
+- To access deploy and migrate features, please contact cornerstone support team at **[info@cornerstone-consulting.io](mailto:info@cornerstone-consulting.io)** for more information and assistance.
+
+#### Infio Dashboard Overview
+
+![application-discovery](images/home(dashboard).PNG)
+
+The INFIO Assessment Dashboard provides a comprehensive view of the assessment status of applications and databases. It helps users track the progress of their database and application compatibility assessments, ensuring a smooth migration process.
+
+The database assessment includes compatibility checks with Babelfish and Aurora PostgreSQL, while the application assessment focuses on .NET compatibility. The dashboard ensures a structured evaluation process, enabling smooth database and application migration.
+
+**Assessment Status:**
+The assessment status section provides a summary of the overall assessment progress, including:
+1. Number of Applications Submitted
+2. Application Server Discovery Completed
+3. Application Compatibility Assessment Completed
+4. Application Compatibility Report Generated
+
+**Database Code Assessment:**
+The database code assessment evaluates the compatibility of the database with Babelfish and Aurora PostgreSQL.
+1. Database Server Discovery: Confirms the discovery of the database server.
+2. Babelfish Compatibility Assessment: Evaluates compatiblity of SQL server with Babelfish.
+3. Babelfish Compatibility Report: Generates a report for SQL server to Babelfish for Aurora PostgreSQL compatibility.
+4. Aurora PostgreSQL Compatibility Assessment: Evaluates compatibility with Aurora PostgreSQL.
+5. Aurora PostgreSQL Compatibility Report: Generates a report for Aurora PostgreSQL compatibility.
+
+**Application Code Assessment:**
+The application code assessment evaluates the compatibility of the .NET applications with .NET core.
+1. .NET Compatibility Assessment: Confirms whether .NET application is compatible with .NET core.
+2. .NET Compatibility Report: Generates a report on the .NET compatibility assessment.  
 
 After dashboard page, you need to go to the configure page setup.
 
@@ -546,47 +608,53 @@ After dashboard page, you need to go to the configure page setup.
 
 On the configuration page, you need to click on the `create new config` button, where you will be prompted to provide information for various components.
 
-For more reference you can see snapshot of configuration page.
-![configure](images/configure.PNG)
+For more reference you can see snapshot of configure application page.
+![configure-application](images/configure%20-%20application%20configure.jpg)
 
-Follow these steps to configuer your application:
+Follow these steps to configure your application:
 
-**Configure Application**
-1. **Add New Company** or **Choose an Existing Company**.
-2. Enter **Company Name**.
-3. Enter **Application Name**.
+**Configure Application:**
+1. Add New Company or Choose an Existing Company if you already created company.
+2. If you choose the Add New Company option, enter the Company Name in the provided field.
+3. Enter the Application Name, ensuring it does not exceed 16 characters.
+4. Provide the .NET Application Project Repository if you are evaluating .NET portability. This step is required only for .NET applications to .NET core portability.
+5. If the Private Repository checkbox is selected, you must provide and select the appropriate Repository Secret for authentication.
+6. Configure Secret Configurations for authentication of private repository:
+- Click the ➕ (Add) button to add a new secret.
+- Click the ✏️ (Edit) button to modify an existing secret.
+- Click the 🗑️ (Delete) button to remove a secret.
+7. If the Private Repository checkbox is not selected, you do not need to provide a Repository Secret for authentication. The repository will be considered public, and the system will proceed without requiring additional credentials.
 
-**Configure Database**
-1. Click **Add Server** to configure a new database.
+
+**Configure Database:**
+
+Follow these steps to configure database based on the provided Configure Database snapshot.
+
+![configure-database](images/configure%20-%20database%20configure.PNG)
+
+Follow these steps to configure your database:
+
+1. Click Add Server to configure a new database for database assessment.
 2. Fill in the following details:
-   - **Source DB Server Name**: Enter the database host name.
-   - **Port**: Default is `1433` or you can enter your custom port number.
-   - **Source Secret**: Choose from available secrets or you can add, edit, and delete existing secrets from drop down.
-   - **Workload Type**: Select **PRODUCTION** or **NON-PRODUCTION**.
-   - **Database to Include**: After entering the Source DB Server Name, click the Refresh button located just below the Secret Configurations section. This will load all the databases available on your source database server. Alternatively, you can leave this field empty to include all databases.
-   - **Database to Exclude**: Select the databases you want to exclude. If left empty, the default system databases (master, model, msdb, tempdb) will be excluded automatically.
-3. Click on **Secret Configurations** to:
-   - **Add (+)** a new secret. When you add a secret, ensure that secret name should start with "infio" keyword.
-   - **Edit (✏️)** an existing secret.
-   - **Delete (🗑️)** a secret.
+   - Source DB Server Name: Enter the database host name.
+   - Port: Default is `1433` or you can enter your custom port number.
+   - Source Secret: Choose from available secrets or you can add, edit, and delete existing secrets from drop down.
+   - Workload Type: Select PRODUCTION or NON-PRODUCTION.
+   - Database to Include: After entering the Source DB Server Name, click the Refresh button located just below the Secret Configurations section. This will load all the databases available on your source database server. Alternatively, you can leave this field empty to include all databases.
+   - Database to Exclude: Select the databases you want to exclude. If left empty, the default system databases (master, model, msdb, tempdb) will be excluded automatically.
+3. Click on Secret Configurations to:
+   - Add (+) a new secret. When you add a secret, ensure that secret name should start with "infio" keyword.
+   - Edit (✏️) an existing secret.
+   - Delete (🗑️) a secret.
+4. To assess SQL Server to Aurora PostgreSQL portability, provide the Aurora PostgreSQL Database Server Name, Port Number, and the Secret Name for target database authentication. You can also add, edit, or delete secret configurations as needed.
+5. Click Submit to save the configuration of application and database both or Cancel to discard changes.
 
-**Actions**
-- **Add server**: Users can **add up to five configurations** by clicking the Add Server button, enabling multiple server configurations.
-- **Cancel**: Discard changes. 
-- **Submit**: Save the configurations of all databases.
 
-![add configure](images/add%20new%20configure.PNG)
+> Note: Users can **add up to five configurations** by clicking the Add Server button, enabling multiple server configurations.
 
-> Note: You can add up to a total of 5 server databases within a single application.
+Once the configuration is saved, you can see the all the information that you have entered at the top of the page: 
 
-Once the configuration is saved, users will see the following information at the top of the page:
-
-- Application Name: Displays the name of the configured application.
-- Company Name: Shows the name of the organization associated with the application.
-- Bucket Name: Indicates the S3 bucket used for storing related data.
-- Number of Servers: Specifies how many database servers are included in this configuration.
-
-You can make necessary adjustments using the edit or delete options, ensuring that database configurations align with your requirements.
+![view-configure](images/view%20configure.PNG)
 
 After that on the left sidebar, click on **Discover** to access the **Application Discovery** page.
 
@@ -605,7 +673,7 @@ After that on the left sidebar, click on **Discover** to access the **Applicatio
 - Ensure that the required servers have been added in the **Configure** section before proceeding.
 
 **3. Is your application a third-party or Commercial Off-the-Shelf (COTS) Solution? (Dropdown)**
-- Select **Yes** if your application is a third-party or off-the-shelf solution.
+- Select **Yes** if your application is a third-party or off-the-shelf solution. If yes, please verify with the vendor that it supports Babelfish before proceeding.
 - Select **No** if the application is custom-built or proprietary.
 
 **4. Is there any additional information you would like to provide about your application? (Text Box)**
@@ -652,7 +720,18 @@ After that on the left sidebar, click on **Assess** under the "Discover" section
 
 ### Steps to Perform Assessment in INFIO
 
-![assessment](images/Assessment.png)
+You can choose one or multiple assessment types based on your requirements:
+
+1. SQL Server to Babelfish – Evaluates the compatibility of migrating from SQL Server to Babelfish for Aurora PostgreSQL.
+
+2. SQL Server to Aurora PostgreSQL – Assesses the feasibility of migrating SQL Server databases to Aurora PostgreSQL.
+
+3. .NET Application Assessment – Analyzes the compatibility of .NET applications when migrating to .NET Core.
+
+
+#### 1. SQL Server to Babelfish
+
+![sql to babelfish assessment](images/assessment%20-%20sql%20to%20babelfish.PNG)
 
 **1. Select the Target State**
 - Ensure that the checkbox **"SQL Server to Babelfish"** is selected.
@@ -723,24 +802,58 @@ After that on the left sidebar, click on **Assess** under the "Discover" section
 
 **6. Run the Assessment**
 - Click the **"Run Assessment"** button to start the assessment process.
+
+
+#### 2. SQL Server to Aurora PostgreSQL
+
+![SQL Server to Aurora PostgreSQL assessment](images/assessment%20-%20sql%20to%20aurora.PNG)
+
+1. Ensure that the checkbox "SQL Server to Aurora PostgreSQL" is selected.
+
+2. In the "Select Application" dropdown, choose the relevant application (e.g., `northwind`).
+
+3. Click on the "Select Servers" dropdown and choose the appropriate server from the list (e.g., `ec2-1-23-456-789.compute-1.amazonaws.com`).
+
+4. Click the Pre-Assessment button to provision all necessary AWS resources required for running the SQL Server to Aurora PostgreSQL assessment. (Refer to the resources list for details.) To verify resource creation, click the Refresh button next to the Assessment button.
+
+5. Once the Pre-Assessment is successfully completed, click the Assessment button to begin the evaluation process.This process analyzes the database for compatibility and may take some time to complete. You can monitor the assessment status by clicking the Refresh button next to the Assessment button.
+
+
+#### 3. .NET Assessment
+
+![.NET Assessment](images/assessment%20-%20net%20assessment.PNG)
+
+1. Ensure that the checkbox ".NET Assessment" is selected.
+
+2. In the "Select Application" dropdown, choose the relevant application (e.g., `northwind`).
+
+3. Click on the "Select Servers" dropdown and choose the appropriate server from the list (e.g., `ec2-1-23-456-789.compute-1.amazonaws.com`).
+
+4. Click the Assessment button to begin the evaluation process.This process analyzes the .NET application compatibility with .NET Core.
  
- After successfully running assessment process on the left sidebar, click **Reports** and then select **Reports Overview**.
+Once the assessment process is successfully completed, navigate to the left sidebar, click on **Reports**, and then select Assessment reports to generate all the reports related to the respective assessments.
  
 ---
 
-#### Generating the Summary Report
+#### Generating the Assessment Report
 
-![individual report](images/generate%20individual%20report.PNG)
+![individual report](images/report.PNG)
 
-**Step 1: Select Report Generation Mode**
-  - `Individual`: An individual report provides a comprehensive analysis of the feasibility and compatibility of migrating an existing **SQL Server database** to **Babelfish for Aurora PostgreSQL** or other AWS services for single application that you have selected. This report helps users understand potential migration challenges, highlights areas that require manual intervention, and offers insights to ensure a smooth transition.  
+**Step 1: Select the Target State(s)**
+  - Choose one or multiple assessment options by checking the respective boxes:
+    - SQL Server to Babelfish
+    - SQL Server to Aurora PostgreSQL
+    - .NET Assessment
+    You can select a single option or multiple options. If multiple options are selected, reports for all chosen assessments will be generated.
+
+**Step 2: Select Report Generation Mode**
+  - `Individual`: An individual report provides a comprehensive analysis of the feasibility and compatibility for each selected assessment for single application that you have selected. This report helps users understand potential migration challenges, highlights areas that require manual intervention, and offers insights to ensure a smooth transition.  
   - `Consolidated`: A **Consolidated Report** provides a unified summary of report results across multiple applications within a specific company. This report combines data from individual application assessments, offering a comprehensive overview of database compatibility, migration readiness, and potential issues. It is particularly useful for organizations managing multiple applications and needing a holistic view of their migration landscape.
 
-**Step 2: Select the Application and/or company**
+**Step 3: Select the Application and/or company**
   - Select an application if you selected individual report generation mode or select company if you selected consolidated report generation for multiple applications within a specific company.
 
-
-**Step 3: Generate the Report**
+**Step 4: Generate the Report**
    - To generate the generate the reports, click the `Generate Report` button to create the report for the selected application.
 
 **Step 4: Report Storage Locations**
@@ -761,12 +874,12 @@ After that on the left sidebar, click on **Assess** under the "Discover" section
   - This consolidated report enables users to review and analyze the overall migration strategy for all applications within the company efficiently.
 
 **Step 5: Download and review**
-    - You can download the summary report from the S3 bucket or INFIO EC2 instance.
-    - Review the individual or consolidated summary reports of your applications of respective company.
+  - You can download the summary report from the S3 bucket or INFIO EC2 instance.
+  - Review the individual or consolidated summary reports of your applications of respective company.
 
 ---
 
-##### Export Server Metrics
+#### Export Server Metrics
 
 Server Metrics provide detailed insights into the SQL Server instance running in your environment. It includes information about enabled/disabled features such as:  SQL Server Analysis Services (SSAS), SQL Server Integration Services (SSIS), SQL Server Reporting Services (SSRS), Microsoft Distributed Transaction Coordinator (MSDTC), and etc.  
 
