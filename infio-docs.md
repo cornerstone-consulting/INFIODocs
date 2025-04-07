@@ -4,14 +4,12 @@
 
 - [Solution Overview](#solution-overview)
   - [Multi Assessment Approach](#multi-assessment-approach)
-    1. [SQL Server to Babelfish for Aurora PostgreSQL Assessment](#1-sql-server-to-babelfish-for-aurora-postgresql-assessment)
+    1. [SQL Server to Babelfish](#1-sql-server-to-babelfish-for-aurora-postgresql-assessment)
     2. [SQL Server to Aurora PostgreSQL Assessment](#2-sql-server-to-aurora-postgresql-assessment)
     3. [NET Application to .NET Core Migration Assessment](#3-net-application-to-net-core-migration-assessment)
 - [Purpose of This Document](#purpose-of-this-document)
 - [Target Audience](#target-audience)
-- [Features and Benefits](#features-and-benefits)
-  - [INFIO Assessment Covers](#infio-assessment-covers)
-  - [Key Assessment Outcomes](#key-assessment-outcomes)
+- [INFIO Assessments Report covers](#infio-assessments-report-covers)
 - [Use Cases](#use-cases)
 - [Concepts and Definitions](#concepts-and-definitions)
 - [Architecture Overview](#architecture-overview)
@@ -61,11 +59,11 @@ INFIO is a specialized tool developed by Cornerstone Consulting Group to streaml
 ### Multi Assessment Approach
 
 INFIO runs three distinct assessments to facilitate different migration scenarios:
-1. SQL Server to Babelfish for Aurora PostgreSQL Assessment
+1. SQL Server to Babelfish
 2. SQL Server to Aurora PostgreSQL Assessment
 3. .NET Application to .NET Core Migration Assessment
 
-#### 1. SQL Server to Babelfish for Aurora PostgreSQL Assessment
+#### 1. SQL Server to Babelfish
 
 INFIO generates a Database Migration Assessment Report that evaluates the compatibility of SQL Server with Babelfish for Aurora PostgreSQL. The report provides an overall compatibility summary, categorizing features as fully supported, conditionally supported, or unsupported. It includes a detailed compatibility analysis using charts to visualize database schema and application code compatibility. Additionally, it breaks down database-level compatibility, highlighting support levels for each database. 
 
@@ -118,12 +116,16 @@ This guide is intended for:
 
 who are responsible for assessing database compatibility and .NET applications for migration purposes.
 
----
+--- 
 
-### Features and Benefits 
+### INFIO Assessments Report covers
 
-#### INFIO Assessment Covers  
-INFIO provides a **comprehensive evaluation of SQL Server to Babelfish for Aurora PostgreSQL migration**, covering various technical, compatibility, and cost-related factors. The assessment report includes:  
+INFIO runs three distinct assessments to facilitate different migration scenarios and provide comprehensive analysis and reports tailored to each target environment: 
+1. SQL Server to Babelfish
+2. SQL Server to Aurora PostgreSQL Assessment
+3. .NET Application to .NET Core Migration Assessment
+
+#### 1.  SQL Server to Babelfish
 
 - **Overall Compatibility Evaluation**  
   Determines the **percentage of fully supported, conditionally supported, and unsupported features**, assessing how much modification is required for migration.  
@@ -159,30 +161,53 @@ INFIO provides a **comprehensive evaluation of SQL Server to Babelfish for Auror
   Maps dependencies between **tables, views, stored procedures, and sequences** to prevent data integrity issues.  
 
 - **Total Cost of Ownership (TCO) Analysis**  
-  Determines infrastructure TCO by evaluating migration path and **deployment pattern variances**, omitting secondary cost considerations.  
+  Determines infrastructure TCO by evaluating migration path and **deployment pattern variances**, omitting secondary cost considerations.  ### Features and Benefits 
 
+#### 2. SQL Server to Aurora PostgreSQL Assessment
 
----
+- **Schema Transformation Summary**  
+  Provides a high-level overview of schema conversion tasks required for migration.
 
-#### Key Assessment Outcomes  
+- **Executive Summary**  
+  Presents conversion readiness, key findings, and compatibility metrics.
 
-- **High Compatibility Rate**  
-  The assessment provides a **detailed compatibility percentage**, indicating the **effort required for migration**.  
+- **Unsupported Object Identification**  
+  Lists objects (functions, triggers, stored procedures, etc.) not directly convertible to Aurora PostgreSQL.
 
-- **Identification of Unsupported Features**  
-  Lists features that need **modification or workarounds**, including the **estimated effort required**.  
+- **Manual Conversion Effort Estimation**  
+  Estimates manual effort required to rewrite incompatible SQL Server objects.
 
-- **Manual Review Recommendations**  
-  Identifies areas that need **manual intervention**, such as **schema changes, indexing adjustments, and stored procedure compatibility**.  
+- **Conversion Recommendations**  
+  Offers alternatives for features like linked servers, table hints, and special indexes.
 
-- **DMS Migration Feasibility**  
-  Assesses whether **AWS DMS is a viable option** for data migration.  
+- **Detailed Object Conversion Report**  
+  Breaks down compatibility for tables, constraints, sequences, indexes, and views.
 
-- **Data Integrity & Dependency Insights**  
-  Ensures that object dependencies are maintained to **prevent migration failures**.  
+- **Dependency Mapping**  
+  Ensures integrity by mapping dependencies between related objects.
 
-- **TCO Insights**  
-  Helps estimate the **Total Cost of Ownership**, ensuring **cost-effective deployment** in AWS.  
+- **Backup & Recovery Model Analysis**  
+  Reviews backup models and suggests Aurora PostgreSQL-compatible alternatives.
+
+- **DMS Integration Readiness**  
+  Validates AWS DMS support and flags configuration blockers.
+
+#### 3. .NET Application to .NET Core Migration Assessment
+
+- **API & Package Compatibility Analysis**  
+  Identifies incompatible .NET Framework APIs and NuGet packages not supported in .NET Core.
+
+- **Replacement Component Suggestions**  
+  Recommends suitable .NET Core alternatives for deprecated or unsupported libraries.
+
+- **Unsupported Component Detection**  
+  Highlights elements that cannot be migrated directly and require manual intervention.
+
+- **Manual Effort Estimation**  
+  Provides effort estimates for code changes needed to achieve full compatibility.
+
+- **Project File Conversion Automation**  
+  Converts .NET Framework project references to .NET Core format with updated package details.
 
 
 ---
@@ -413,28 +438,33 @@ This cloudformation template will deploy cloudformation endpoint for INFIO EC2 i
 
 **Deployment Steps:**
 
-1. **Create the Stack in AWS Console**  
-   - Open **CloudFormation** in the AWS Console.  
-   - Navigate to the **Stacks** section and click on the **Create stack** button.  
-   - Choose **With new resources (standard)** from the dropdown.  
+Use the following command to deploy the stack from the **INFIO EC2 instance command prompt**:  
 
-2. **Upload the Template**  
-   - Under the **Prepare template** option, select **Choose an existing template**.  
-   - Click on the **Upload a template file** button.
-   - For the upload file, go to the `Desktop` of the Windows EC2 instance (**INFIO EC2 instance**).  
-   - Locate the folder containing the **INFIO Assessment Tool**. Inside, you'll find the `aws-infra-setup` folder, which contains the `INFIO-CF-VPCEndpoint_EndpointSG-CF.json` CloudFormation template.  
-   - Click **Next** to proceed.
+1. Access the **Desktop** drive of the **INFIO EC2 instance**.
 
-4. **Configure the Stack**  
-   - Enter `INFIOCFVPCEndpoints` as the stack name in the **Stack name** field.  
-   - Provide the parameter values as described below and click the **Next** button:  
-     - **SecurityGroupID**: Specify the ID of the security group that is alreay attached to your INFIO EC2 instance.  
-     - **SubnetID**: Specify the subnet id where the INFIO EC2 instance is deployed.  
-     - **VPCCIDR**: Provide the CIDR block of the VPC where the INFIO EC2 instance is deployed.  
-     - **VPCID**: Provide the ID of the VPC where the INFIO EC2 instance is deployed.  
+2. Navigate to the folder containing the **INFIO Assessment Tool**.  
+  - Inside, locate the `aws-infra-setup` folder.
+  - Find the template file: `INFIO-CF-VPCEndpoint_EndpointSG-CF.json`.
+  - Open the command prompt from the `aws-infra-setup` folder and run the below command.
 
-5. **Complete Deployment**  
-   - In the **Configure stack options** section, click **Next**, then click the **Submit** button to deploy the stack.
+```bash
+aws cloudformation create-stack --stack-name INFIOCloudFormationEndpoints \
+    --template-body file://C:/Users/Administrator/Desktop/INFIO%20Assessment%20Tool/aws-infra-setup/INFIO-CF-VPCEndpoint_EndpointSG-CF.json \
+    --parameters ParameterKey=VPCID,ParameterValue=<ParameterValue1> \
+                ParameterKey=VPCCIDR,ParameterValue=<ParameterValue2> \
+                ParameterKey=SecurityGroupID,ParameterValue=<ParameterValue3> \
+                ParameterKey=SubnetID,ParameterValue=<ParameterValue4>
+```
+> Note: Follow the next steps for parameter values.
+
+3. Change the following parameter values according to your specific details:
+  - **ParameterValue1**: Your **VPC ID** where INFIO EC2 instance is deployed.
+  - **ParameterValue2**: Your **VPC CIDR block** where INFIO EC2 instance is deployed.
+  - **ParameterValue3**: Your **Security Group ID** already attached to INFIO EC2 instance.
+  - **ParameterValue4**: Your **Subnet ID** where the INFIO EC2 instance is deployed.
+
+4. Final Verification
+  - Verify the status of the stack in the **AWS Console** under **CloudFormation services** to confirm that the stack is fully deployed and all resources have been created.
 
 ---
 
@@ -471,7 +501,7 @@ aws cloudformation create-stack --stack-name INFIOVPCEndpoints \
       - **ParameterValue2**: Your **VPC CIDR block** where INFIO EC2 instance is deployed.
       - **ParameterValue3**: Your **Security Group ID** already attached to INFIO EC2 instance.
       - **ParameterValue4**: Your **Subnet ID** where the INFIO EC2 instance is deployed.
-      - **RouteTableIDs**: Your **comma-separated list of Route Table IDs** associated with the subnet where the INFIO EC2 instance is deployed. 
+      - **ParameterValue5**: Your **comma-separated list of Route Table IDs** associated with the subnet where the INFIO EC2 instance is deployed. 
 
 
 5. Find the CloudFormation Endpoint URL:
