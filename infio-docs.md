@@ -161,7 +161,7 @@ INFIO runs three distinct assessments to facilitate different migration scenario
   Maps dependencies between **tables, views, stored procedures, and sequences** to prevent data integrity issues.  
 
 - **Total Cost of Ownership (TCO) Analysis**  
-  Determines infrastructure TCO by evaluating migration path and **deployment pattern variances**, omitting secondary cost considerations.  ### Features and Benefits 
+  Determines infrastructure TCO by evaluating migration path and **deployment pattern variances**, omitting secondary cost considerations. 
 
 #### 2. SQL Server to Aurora PostgreSQL Assessment
 
