@@ -138,6 +138,7 @@ If you choose any of the options (1, 2, or 3), you will be prompted to provide t
 - **SQL Server Name**: Hostname or IP address of the SQL Server instance. 
 - **Username**: Your SQL Server username. 
 - **Password**: Your SQL Server password.
+- **Port**: Your SQL Server port number, you can press enter to keep default one which is 1433.
 - **Databases to Include**: Comma-separated list of databases to analyze, you can press enter to include all databases in the SQL Server.
 - **Databases to Exclude**: Comma-separated list of databases to exclude from analysis, you can press enter to keep the default excluded databases only (master, model, msdb, tempdb).
 
@@ -151,7 +152,8 @@ Example input:
 Enter Application Name (should be the same as the one you entered during Infio tool setup): db-migration-test
 Enter SQL Server Name: ec2-12-34-567-890.compute-1.amazonaws.com
 Enter SQL Server Username: admin
-Enter SQL Server Password: 
+Enter SQL Server Password:
+Enter SQL Server Port Number. Press enter to keep the default Port number (1433): 1234
 Enter Databases to Include (comma-separated) Press enter to include all databases in the SQL Server: db1, db2
 Enter Databases to Exclude (comma-separated) Press enter to keep the default excluded databases only (master, model, msdb, tempdb):
 ```

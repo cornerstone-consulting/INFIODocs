@@ -34,6 +34,7 @@
   - [4. VPC Endpoint Deployment for S3, Secret manager, KMS, EC2, DMS, RDS, and IAM and security group for all VPC endpoints (Optional)](#4-vpc-endpoint-deployment-for-s3-secret-manager-kms-ec2-dms-rds-and-iam-and-security-group-for-all-vpc-endpoints-optional)
   - [5. Steps for setting up AWS Resources for INFIO EC2 instance](#5-steps-for-setting-up-aws-resources-for-infio-ec2-instance)
   - [6. Required SQL Server Database Permissions for Running the INFIO Tool](#6-required-sql-server-database-permissions-for-running-the-infio-tool)
+  - [7. Update Environment Variables for Multiple Deployments of INFIO EC2 Instace (Optional)](#7-update-environment-variables-for-multiple-deployments-of-infio-ec2-instace-optional)
 - [INFIO Assessment Tool Usage Guide](#infio-assessment-tool-usage-guide)
   - [Infio Dashboard Overview](#infio-dashboard-overview)
   - [Configuration Page Setup](#configuration-page-setup)
@@ -85,10 +86,10 @@ The migration assessment report includes:
 INFIO also facilitates the migration of .NET applications  to .NET Core for .NET. This tool scans .NET projects, analyzes source code and package dependencies, and generates an assessment report that highlights incompatible APIs and NuGet/Microsoft Core packages.
 
 Key aspects of the .NET assessment report includes:
-- Identification of incompatible APIs and packages.
-- Suggestions for replacement components to facilitate migration.
-- Detection of unsupported components that require alternative solutions
-- Effort estimation for manual code changes required for full compatibility
+- Analysis of Project and Package Compatibility.
+- Detection of Incompatible or Deprecated APIs.
+- Migration Guidance for Third-Party Dependencies.
+- Effort Estimation for Porting Tasks.
 - Automated conversion of .NET project references to their .NET Core equivalent with updated package details
 
 The solution provides deep insights into the existing database environment while adhering to **AWS best practices** for cloud migration. It emphasizes **security**, **scalability**, **reliability**, and **cost optimization** throughout the process.
@@ -195,10 +196,13 @@ INFIO runs three distinct assessments to facilitate different migration scenario
 #### 3. .NET Application to .NET Core Migration Assessment
 
 - **API & Package Compatibility Analysis**  
-  Identifies incompatible .NET Framework APIs and NuGet packages not supported in .NET Core.
+  Identifies incompatible .NET Framework APIs and NuGet packages not supported in targeted .NET Core versions.
 
 - **Replacement Component Suggestions**  
   Recommends suitable .NET Core alternatives for deprecated or unsupported libraries.
+
+- **Unknown Features Detection**
+  Identifies unknown features that not migrated directly to targeted .NET core versions. 
 
 - **Unsupported Component Detection**  
   Highlights elements that cannot be migrated directly and require manual intervention.
@@ -208,7 +212,6 @@ INFIO runs three distinct assessments to facilitate different migration scenario
 
 - **Project File Conversion Automation**  
   Converts .NET Framework project references to .NET Core format with updated package details.
-
 
 ---
 
@@ -352,12 +355,60 @@ The INFIO EC2 instance role is preconfigured with all necessary IAM permissions 
 
 ## Deployment steps of INFIO EC2 instance
 
+Before you deploy the INFIO EC2 instance, it's important to understand **how the INFIO EC2 instance deployment behaves** based on your deployment context. This helps avoid duplicate resources and ensures smooth provisioning.
+The template is **intelligent and reusable**, and it adjusts automatically based on the following scenarios:
+
+
+**Case 1: First-Time Deployment (No Previous INFIO EC2 instance)**
+
+- If you're deploying INFIO INstance from INFIO AMI for the very first time in your AWS account:
+- It will create all required resources from scratch, including:
+  - IAM Role
+  - EC2 Instance Profile
+  - EC2 Security Group
+  - Key Pair
+  - DMS Subnet Group & Instance Profile
+  - EC2 Instance
+- All resources will be named as per the documentation.
+- Use `INFIOSequence = 01` and `INFIOIsDeployed = No` parameter values in [step number 1 of deployment](#1-deployment-of-ec2-instance-from-infio-amiaws-marketplace).
+
+**Case 2: Re-deployment of INFIO EC2 instance in the Same VPC**
+
+- If you're deploying INFIO EC2 instance again in the same VPC:
+- The template will reuse existing global resources:
+  - IAM Role
+  - Security Group
+  - Key Pair
+  - DMS-related resources
+- Only a new EC2 instance will be created.
+- Use the next INFIOSequence number like `02`, `03`, etc and set `INFIOIsDeployed = Yes` parameter values in [step number 1 of deployment](#1-deployment-of-ec2-instance-from-infio-amiaws-marketplace).
+
+**Case 3: First-Time Deployment in a New VPC (Already deployed once in other VPC)**
+
+- Deploying INFIO EC2 instance for the first time in a second or third VPC:
+- It will reuse global resources (IAM Role, EC2 Profile)
+- It will create new VPC-specific resources:
+  - EC2 Security Group
+  - EC2 Key Pair
+  - DMS Subnet Group & Instance Profile
+  - EC2 Instance
+- The new resources will include a numeric suffix (e.g., `-02`, `-03`) to differentiate by VPC.
+- Use `INFIOSequence = 02`, `03`, etc, and set `INFIOIsDeployed = Yes` parameter values in [step number 1 of deployment](#1-deployment-of-ec2-instance-from-infio-amiaws-marketplace).
+
+**Case 4: Re-deployment in a New VPC (Already Deployed Once)**
+
+- If you're re-deploying in a second/third VPC where INFIO EC2 instance was already deployed once:
+
+- Global resources like IAM Role and EC2 Profile are reused.
+- VPC-specific resources (Key, Security Group) with matching suffixes (`-02`, `-03`) parameter values in [step number 1 of deployment](#1-deployment-of-ec2-instance-from-infio-amiaws-marketplace) are also reused. 
+- Only the EC2 instance will be newly created.
+
 ### 1. Deployment of EC2 instance from INFIO AMI(AWS Marketplace)
 
 1.  Navigate to the [AWS Marketplace](https://signin.aws.amazon.com/signin?redirect_uri=https%3A%2F%2Faws.amazon.com%2Fmarketplace%3F%26isauthcode%3Dtrue&client_id=arn%3Aaws%3Aiam%3A%3A015428540659%3Auser%2Fawsmp-contessa&forceMobileApp=0) to download the INFIO AMI. During this process, you will be prompted to answer several necessary questions, detailed below:
     - **ImageId**: Specifies the INFIO AMI ID used for deploying the INFIO EC2 instance.
-    - **INFIOIsDeployed**: Specify "Yes" or "No" to indicate whether one or more INFIO EC2 stacks have already been deployed in this account from the AWS Marketplace. If specified as "No," the EC2 IAM role, EC2 profile, EC2 security group, EC2 key pair, and DMS instance profile will be attempted to be created again. If resources with the same names already exist, the deployment will fail.
-    - **INFIOSequence**: Specifies the deployment sequence number. If you have already deployed INFIO resources once, enter "02" for the second instance, "03" for the third, and so on. For the first deployment, enter "01".
+    - **INFIOIsDeployed**: Specify "Yes" or "No" to indicate whether one or more INFIO EC2 stacks have already been deployed in this account from the AWS Marketplace. If specified as "No," the EC2 IAM role, EC2 profile, EC2 security group, EC2 key pair, and DMS instance profile will be attempted to be created again. If resources with the same names already exist, the deployment will fail. Before entering parameter values, carefully review the [deployment scenarios above](#deployment-steps-of-infio-ec2-instance) to identify which case applies to you. Choose your inputs accordingly to ensure a successful deployment.
+    - **INFIOSequence**: Specifies the deployment sequence number. If you have already deployed INFIO resources once, enter "02" for the second instance, "03" for the third, and so on. For the first deployment, enter "01". Before entering parameter values, carefully review the [deployment scenarios above](#deployment-steps-of-infio-ec2-instance) to identify which case applies to you. Choose your inputs accordingly to ensure a successful deployment.
     - **EC2InstanceType**: Specifies the EC2 instance type. Default is `m6a.large`.  
     - **SubnetID**: The ID of the subnet where the Infio EC2 instance will be deployed, you can pass public subnet id or private subnet id.  
     - **DMSSubnetGroupSubnetIDs**: A comma-separated list of subnet IDs for the source SQL Server and target Auroa PostgreSQL is already deployed. This list should hold the subnet(s) of the source SQL Server and destination Aurora PostgreSQL database.
@@ -368,11 +419,7 @@ The INFIO EC2 instance role is preconfigured with all necessary IAM permissions 
     - **VPCCIDR**: The CIDR of the V PC where the Infio EC2 instance will be deployed.  
     - **VPCID**: The VPC ID where the Infio EC2 instance will be deployed.  
     - **InboundCIDRIP**: The CIDR or IP address allowed for RDP access to the Infio EC2 instance. Must be in `xx.xx.xx.xx/xx` format.
-
-  > Note: If you are deploying INFIO EC2 instance more than once and are not using the same subnets, VPC, or security group rules, you must update the environment variable by running the following command:
-  `setx INFIO_DMS_INSTANCE_PROFILE <DMS_INSTANCE_PROFILE_NAME>` change DMS instance profile name that you want to use. 
- 
-
+     
 2. After completing the questionnaire, AWS Marktetplace will deploy an EC2 instance based on your selected choice, whether in a public or private subnet.
 
 > **Note on Availability of INFIO** : INFIO does not necessitate high availability at this stage. The nature of our workload and the expected patterns indicate that a single AZ deployment will adequately support our operational needs without compromising performance.
@@ -575,6 +622,26 @@ To connect to your SQL Server instance, ensure the following:
     GRANT VIEW DATABASE STATE TO [<UserName>];  
     GRANT SELECT ON OBJECT::[sys].[sql_expression_dependencies] TO [<UserName>];
    ```
+
+#### 7. Update Environment Variables for Multiple Deployments of INFIO EC2 Instace (Optional):
+
+> Note: Skip this step if this is your first deployment of INFIO EC2 instance. This step is only required when you deploy the INFIO EC2 instance more than once (i.e., second deployment onwards in the different VPC).
+
+If you are deploying the INFIO EC2 instance multiple times—such as in different subnets, VPCs, or with different security group rules — you must update the environment variable to point to the correct DMS instance profile and DMS IAM role. 
+
+In these scenarios, new DMS instance profile and DMS IAM role created with suffixes like -02, -03, etc. To ensure your assessment tooling uses the correct profile, run the following command in command prompt of INFIO EC2 instance:
+```bash
+setx INFIO_DMS_INSTANCE_PROFILE <DMS_INSTANCE_PROFILE_NAME>
+setx INFIO_DMS_IAM_ROLE <DMS_INSTANCE_PROFILE_NAME>
+```
+For example:
+```bash
+setx INFIO_DMS_INSTANCE_PROFILE infio-dms-instance-profile-02
+setx INFIO_DMS_IAM_ROLE infio-dms-instance-profile-02
+```
+
+You should update the DMS instance profile name by using the same suffix as the value you specified for the INFIOSequence parameter in [Step 1 of deployment process](#1-deployment-of-ec2-instance-from-infio-amiaws-marketplace).
+
 ---
 
 ### INFIO Assessment Tool Usage Guide
@@ -654,13 +721,14 @@ Follow these steps to configure your application:
 - Click the ✏️ (Edit) button to modify an existing secret.
 - Click the 🗑️ (Delete) button to remove a secret.
 7. If the Private Repository checkbox is not selected, you do not need to provide a Repository Secret for authentication. The repository will be considered public, and the system will proceed without requiring additional credentials.
+8. Select the target .NET core version from dropdown that you want to assess.  
 
 
 **Configure Database:**
 
 Follow these steps to configure database based on the provided Configure Database snapshot.
 
-![configure-database](images/configure%20-%20database%20configure.PNG)
+![configure-database](images/configure%20-%20application%20configure.png)
 
 Follow these steps to configure your database:
 
