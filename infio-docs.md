@@ -721,8 +721,7 @@ Follow these steps to configure your application:
 - Click the ✏️ (Edit) button to modify an existing secret.
 - Click the 🗑️ (Delete) button to remove a secret.
 7. If the Private Repository checkbox is not selected, you do not need to provide a Repository Secret for authentication. The repository will be considered public, and the system will proceed without requiring additional credentials.
-8. Select the target .NET core version from dropdown that you want to assess.  
-
+8. From the dropdown menu, choose the target .NET Core you wish to use for compatibility assessment.
 
 **Configure Database:**
 
