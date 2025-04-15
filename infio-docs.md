@@ -706,7 +706,7 @@ After dashboard page, you need to go to the configure page setup.
 On the configuration page, you need to click on the `create new config` button, where you will be prompted to provide information for various components.
 
 For more reference you can see snapshot of configure application page.
-![configure-application](images/configure%20-%20application%20configure.jpg)
+![configure-application](images/configure%20-%20application%20configure.png)
 
 Follow these steps to configure your application:
 
