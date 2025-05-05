@@ -1135,7 +1135,7 @@ If a migration project fails, you need to delete the existing migration project 
 **Q22: If the Schema Conversion (SC) runs multiple times, what happens to the files in S3?**  
 If the SC process runs multiple times, the files in S3 get overwritten with the latest output. The existing files are replaced with the newly generated schema conversion results. To retain previous versions, consider enabling versioning on the S3 bucket or manually saving copies before rerunning the SC process.  
 
-**Q23: How to clean up all INFIO resources after completing the assessment work?** 
+**Q23: How to clean up all INFIO resources after completing the assessment work?**  
 INFIO resources are deployed through AWS CloudFormation stacks. Navigating to the AWS CloudFormation service and deleting the stacks will result in the deletion of the deployed resources. If deployed, it is recommended to delete the Endpoint CloudFormation stacks first due to the security group resource attachment dependency.  
 
 ---
