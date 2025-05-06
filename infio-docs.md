@@ -319,7 +319,7 @@ The EC2 instances created in this solution support the ability to disable **Inst
 ---
 
 #### Supported AWS Regions  
-INFIO on AWS is available available in **all** AWS regions **except** AWS GovCloud (US).  
+INFIO on AWS is available in **all** AWS regions **except** AWS GovCloud (US).  
 
 | Unsupported Region Name          |
 |-----------------------|
