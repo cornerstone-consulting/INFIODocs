@@ -326,6 +326,13 @@ INFIO on AWS is available in **all** AWS regions **except** AWS GovCloud (US).
 | **US-East (AWS GovCloud)** |
 | **US-West (AWS GovCloud)** |
 
+
+To configure the AWS Region on your INFIO EC2 instance, run the following command in the terminal:
+```bash
+setx AWS_REGION <your_aws_region>
+```
+Replace <your_aws_region> with the appropriate region code (e.g., us-east-1, eu-west-1, etc.).
+
 ---
 
 ### AWS CloudFormation Quotas  
