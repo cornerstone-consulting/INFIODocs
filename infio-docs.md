@@ -689,9 +689,6 @@ To connect to your SQL Server instance, ensure the following:
 
     -- Grant required permissions
     ALTER ROLE [db_datareader] ADD MEMBER [USERNAME];  
-    GRANT CONNECT TO [USERNAME];  
-    GRANT VIEW DATABASE STATE TO [USERNAME];  
-    GRANT SELECT ON OBJECT::[sys].[sql_expression_dependencies] TO [USERNAME];
     ```
     > Notes: Replace [YourDatabaseName] with your target DB name. Replace [USERNAME] with the database username (usually same as login).
 
