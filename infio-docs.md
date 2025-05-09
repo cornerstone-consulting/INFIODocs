@@ -612,7 +612,7 @@ To connect to your SQL Server instance, ensure the following:
   - The SQL Server username must have read-only access with the db_datareader role on all databases, including system databases (mandatory), to successfully run the INFIO tool. Failure to meet this requirement will result in an error..
   - These permissions ensure the user can only retrieve data without making any modifications to the database.
 
-2. **Required Database Roles for SQL Server user**  
+2. **Required permissions for SQL Server user**  
 - **Server-Level Permissions**
   
   Following permissions must be granted at the server level to allow the user to connect to the SQL Server instance and view necessary metadata and server state: 
@@ -620,16 +620,80 @@ To connect to your SQL Server instance, ensure the following:
     GRANT CONNECT SQL TO [<UserName>];  
     GRANT VIEW ANY DEFINITION TO [<UserName>];  
     GRANT VIEW SERVER STATE TO [<UserName>];
+    ALTER SERVER ROLE [##MS_DatabaseConnector##] ADD MEMBER [<UserName>];
+    ALTER SERVER ROLE [##MS_DefinitionReader##] ADD MEMBER [<UserName>];
+    ALTER SERVER ROLE [##MS_PerformanceDefinitionReader##] ADD MEMBER [<UserName>];
+    ALTER SERVER ROLE [##MS_SecurityDefinitionReader##] ADD MEMBER [<UserName>];
+    ALTER SERVER ROLE [##MS_ServerPerformanceStateReader##] ADD MEMBER [<UserName>];
+    ALTER SERVER ROLE [##MS_ServerSecurityStateReader##] ADD MEMBER [<UserName>];
+    ALTER SERVER ROLE [##MS_ServerStateReader##] ADD MEMBER [<UserName>];
     ```
-- **Database-Level Permissions**
+    > Note: Replace `UserName` with your actual SQL Server login name (the server-level login).
+     
+- **Database-Level Permissions (All Databases Including System)**
   
   Following permissions must be granted at the database level to enable the user to query relevant system objects and view database state:
+
+  - Add the user to each database
+  - Grant `db_datareader` role
+  - Apply required read-only permissions
    ```sql
-    ALTER ROLE [db_datareader] ADD MEMBER [<UserName>];  
-    GRANT CONNECT TO [<UserName>];  
-    GRANT VIEW DATABASE STATE TO [<UserName>];  
-    GRANT SELECT ON OBJECT::[sys].[sql_expression_dependencies] TO [<UserName>];
-   ```
+    DECLARE @DBName NVARCHAR(200);
+    DECLARE @SQL NVARCHAR(MAX);
+    DECLARE @LoginName NVARCHAR(100) = '<USERNAME>';  -- Replace with actual login
+
+    DECLARE db_cursor CURSOR FOR
+    SELECT name 
+    FROM sys.databases 
+    WHERE state_desc = 'ONLINE';
+
+    OPEN db_cursor  
+    FETCH NEXT FROM db_cursor INTO @DBName  
+
+    WHILE @@FETCH_STATUS = 0  
+    BEGIN  
+        SET @SQL = '
+        USE [' + @DBName + '];
+
+        IF NOT EXISTS (
+            SELECT 1 FROM sys.database_principals WHERE name = ''' + @LoginName + '''
+        )
+        BEGIN
+            CREATE USER [' + @LoginName + '] FOR LOGIN [' + @LoginName + '];
+        END;
+
+        -- Grant db_datareader role
+        IF NOT EXISTS (
+            SELECT 1 
+            FROM sys.database_role_members drm
+            JOIN sys.database_principals r ON drm.role_principal_id = r.principal_id
+            JOIN sys.database_principals m ON drm.member_principal_id = m.principal_id
+            WHERE r.name = ''db_datareader'' AND m.name = ''' + @LoginName + '''
+        )
+        BEGIN
+            EXEC sp_addrolemember ''db_datareader'', ''' + @LoginName + ''';
+        END;
+
+        -- Grant required read-only access
+        GRANT CONNECT TO [' + @LoginName + '];
+        GRANT VIEW DATABASE STATE TO [' + @LoginName + '];
+
+        -- Grant SELECT permission on system view
+        IF OBJECT_ID(''sys.sql_expression_dependencies'') IS NOT NULL
+        BEGIN
+            GRANT SELECT ON OBJECT::[sys].[sql_expression_dependencies] TO [' + @LoginName + '];
+        END;
+        ';
+
+        EXEC sp_executesql @SQL;  
+        FETCH NEXT FROM db_cursor INTO @DBName;  
+    END;  
+
+    CLOSE db_cursor;  
+    DEALLOCATE db_cursor;
+  ```
+  > Note: Replace `USERNAME` with your actual SQL Server login name (the server-level login). 
+
 
 #### 7. Update Environment Variables for Multiple Deployments of INFIO EC2 Instace (Optional):
 
