@@ -681,7 +681,7 @@ To connect to your SQL Server instance, ensure the following:
   ```
   > Note: Replace `USERNAME` with your actual SQL Server login name (the server-level login). 
 
-  To grant the specified permissions to a user in a single database, you can run the following SQL query (You can skip this step if you already performed above query for all databases): 
+  To grant the specified permissions to a user in a single database, you can run the following SQL query: 
 
     ```sql
     USE [YourDatabaseName];  -- Replace with your actual database name
