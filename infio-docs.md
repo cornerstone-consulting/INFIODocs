@@ -493,7 +493,7 @@ This cloudformation template will deploy cloudformation endpoint for INFIO EC2 i
 
 **Deployment Steps:**
 
-Use the following command to deploy the stack from the **INFIO EC2 instance command prompt**:  
+Use the following command to deploy the stack from the **AWS Console**.:  
 
 1. Log in to AWS Console from INFIO EC2 instance.
 - Visit [https://console.aws.amazon.com/](https://console.aws.amazon.com/)
