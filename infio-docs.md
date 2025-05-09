@@ -638,14 +638,14 @@ To connect to your SQL Server instance, ensure the following:
   - Grant `db_datareader` role
   - Apply required read-only permissions
    ```sql
-    DECLARE @DBName NVARCHAR(200);
-    DECLARE @SQL NVARCHAR(MAX);
-    DECLARE @LoginName NVARCHAR(100) = '<USERNAME>';  -- Replace with actual login
+    DECLARE @DBName NVARCHAR(200)
+    DECLARE @SQL NVARCHAR(MAX)
+    DECLARE @LoginName NVARCHAR(100) = '<USERNAME>'  -- Change USERNAME according to your username
 
     DECLARE db_cursor CURSOR FOR
     SELECT name 
     FROM sys.databases 
-    WHERE state_desc = 'ONLINE';
+    WHERE state_desc = 'ONLINE'
 
     OPEN db_cursor  
     FETCH NEXT FROM db_cursor INTO @DBName  
@@ -655,14 +655,11 @@ To connect to your SQL Server instance, ensure the following:
         SET @SQL = '
         USE [' + @DBName + '];
 
-        IF NOT EXISTS (
-            SELECT 1 FROM sys.database_principals WHERE name = ''' + @LoginName + '''
-        )
+        IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = ''' + @LoginName + ''')
         BEGIN
             CREATE USER [' + @LoginName + '] FOR LOGIN [' + @LoginName + '];
         END;
 
-        -- Grant db_datareader role
         IF NOT EXISTS (
             SELECT 1 
             FROM sys.database_role_members drm
@@ -673,24 +670,14 @@ To connect to your SQL Server instance, ensure the following:
         BEGIN
             EXEC sp_addrolemember ''db_datareader'', ''' + @LoginName + ''';
         END;
+        '
 
-        -- Grant required read-only access
-        GRANT CONNECT TO [' + @LoginName + '];
-        GRANT VIEW DATABASE STATE TO [' + @LoginName + '];
+        EXEC sp_executesql @SQL  
+        FETCH NEXT FROM db_cursor INTO @DBName  
+    END  
 
-        -- Grant SELECT permission on system view
-        IF OBJECT_ID(''sys.sql_expression_dependencies'') IS NOT NULL
-        BEGIN
-            GRANT SELECT ON OBJECT::[sys].[sql_expression_dependencies] TO [' + @LoginName + '];
-        END;
-        ';
-
-        EXEC sp_executesql @SQL;  
-        FETCH NEXT FROM db_cursor INTO @DBName;  
-    END;  
-
-    CLOSE db_cursor;  
-    DEALLOCATE db_cursor;
+    CLOSE db_cursor  
+    DEALLOCATE db_cursor;  
   ```
   > Note: Replace `USERNAME` with your actual SQL Server login name (the server-level login). 
 
