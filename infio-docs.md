@@ -292,7 +292,7 @@ To get the most recent and accurate cost estimate for your AWS architecture, you
 |------------------------|------------------------------------------|------------------------|
 | **Amazon S3**         | Storage (10GB) & 500 get and put requests/month | $0.23                 |
 | **AWS Secrets Manager** | 5 secrets per month x 1 month x 0.40 USD per secret per month   | $2.00                 |
-| **AWS EC2**           | m6a.large, 10GB EBS - 1 instances x 0.1784 USD On Demand hourly cost x 730 hours in a month                  | $130.232  |
+| **AWS EC2**           | m6a.large, 125GB EBS - 1 instances x 0.1784 USD On Demand hourly cost x 730 hours in a month                  | $140.32  |
 | **AWS Key Management Service (KMS)** | 2 CMK x Number of symmetric requests (1000) | $2.00 |
 | **DMS**  | - | $0.00 | 
 
@@ -495,31 +495,47 @@ This cloudformation template will deploy cloudformation endpoint for INFIO EC2 i
 
 Use the following command to deploy the stack from the **INFIO EC2 instance command prompt**:  
 
-1. Access the **Desktop** drive of the **INFIO EC2 instance**.
+1. Log in to AWS Console from INFIO EC2 instance.
+- Visit [https://console.aws.amazon.com/](https://console.aws.amazon.com/)
+- Use the same **account and region** as the deployed **INFIO EC2 instance**
 
-2. Navigate to the folder containing the **INFIO Assessment Tool**.  
-  - Inside, locate the `aws-infra-setup` folder.
-  - Find the template file: `INFIO-CF-VPCEndpoint_EndpointSG-CF.json`.
-  - Open the command prompt from the `aws-infra-setup` folder and run the below command.
+2. Open CloudFormation Console.
+- Go to Services > CloudFormation
+- Click Create stack → With new resources (standard)
 
-```bash
-aws cloudformation create-stack --stack-name INFIOCloudFormationEndpoints \
-    --template-body file://C:/Users/Administrator/Desktop/INFIO%20Assessment%20Tool/aws-infra-setup/INFIO-CF-VPCEndpoint_EndpointSG-CF.json \
-    --parameters ParameterKey=VPCID,ParameterValue=<ParameterValue1> \
-                ParameterKey=VPCCIDR,ParameterValue=<ParameterValue2> \
-                ParameterKey=SecurityGroupID,ParameterValue=<ParameterValue3> \
-                ParameterKey=SubnetID,ParameterValue=<ParameterValue4>
-```
-> Note: Follow the next steps for parameter values.
+3. Specify Template.
+- Under Specify template:
+  - Choose Upload a template file.
+  - Click Choose file and upload:
+    ```
+    INFIO-CF-VPCEndpoint_EndpointSG-CF.json
+    ```
+    *(Location: `C:/Users/Administrator/Desktop/INFIO Assessment Tool/aws-infra-setup/`)*
 
-3. Change the following parameter values according to your specific details:
-  - **ParameterValue1**: Your **VPC ID** where INFIO EC2 instance is deployed.
-  - **ParameterValue2**: Your **VPC CIDR block** where INFIO EC2 instance is deployed.
-  - **ParameterValue3**: Your **Security Group ID** already attached to INFIO EC2 instance.
-  - **ParameterValue4**: Your **Subnet ID** where the INFIO EC2 instance is deployed.
+- Click Next.
 
-4. Final Verification
-  - Verify the status of the stack in the **AWS Console** under **CloudFormation services** to confirm that the stack is fully deployed and all resources have been created.
+4. Specify Stack Details.
+- Stack name: `INFIOCloudFormationEndpoints`
+- Parameters (replace with your values):
+  - `VPCID`: `vpc-xxxxxxxx` Your VPC ID where INFIO EC2 instance is deployed.
+  - `VPCCIDR`: `10.0.0.0/16` Your VPC CIDR block where INFIO EC2 instance is deployed.
+  - `SecurityGroupID`: `sg-xxxxxxxx` Your Security Group ID already attached to INFIO EC2 instance.
+  - `SubnetID`: `subnet-xxxxxxxx` Your Subnet ID where the INFIO EC2 instance is deployed.
+- Click Next.
+
+5. Configure Stack Options.
+- Leave all options as default
+- Click Next.
+
+6. Review and Deploy.
+- Review all configurations.
+- Acknowledge IAM resource creation (if asked).
+- Click Create stack.
+
+7. Monitor the Stack.
+- Go to CloudFormation Dashboard.
+- Look for stack `INFIOCloudFormationEndpoints`.
+- Wait until Status is `CREATE_COMPLETE`.
 
 ---
 
@@ -541,7 +557,7 @@ Use the following command to deploy the stack from the **INFIO EC2 instance comm
 
 ```bash
 aws cloudformation create-stack --stack-name INFIOVPCEndpoints \
-    --template-body file://C:/Users/Administrator/Desktop/INFIO%20Assessment%20Tool/aws-infra-setup/INFIO-S3-KMS-SM-DMS-EC2-RDS-IAM-VPCEndpoints-CF.json \
+    --template-body "file://C:/Users/Administrator/Desktop/INFIO Assessment Tool/aws-infra-setup/INFIO-S3-KMS-SM-DMS-EC2-RDS-IAM-VPCEndpoints-CF.json" \
     --parameters ParameterKey=VPCID,ParameterValue=<ParameterValue1> \
                 ParameterKey=VPCCIDR,ParameterValue=<ParameterValue2> \
                 ParameterKey=SecurityGroupID,ParameterValue=<ParameterValue3> \
@@ -590,7 +606,7 @@ aws cloudformation create-stack --stack-name INFIOVPCEndpoints \
 
    ```bash
    aws cloudformation create-stack --stack-name INFIOResources \
-       --template-body file://C:/Users/Administrator/Desktop/INFIO%20Assessment%20Tool/aws-infra-setup/INFIO-Setup-CF.json \
+       --template-body "file://C:/Users/Administrator/Desktop/INFIO Assessment Tool/aws-infra-setup/INFIO-Setup-CF.json" \
        --endpoint-url <cloudformation_endpoint_url>
    ```
 The `--endpoint-url` parameter is **optional**. Utilize it only if you created a **CloudFormation endpoint** in the [step number 3](#3-vpc-endpoint-deployment-for-cloudformation-service-optional). If not, please omit this parameter from the command line. To locate the cloudformation endpoint url, follow the same steps which is mentioned in the previous [step number 4](#4-vpc-endpoint-deployment-for-s3-secret-manager-kms-ec2-dms-rds-and-iam-and-security-group-for-all-vpc-endpoints-optional).
