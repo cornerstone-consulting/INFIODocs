@@ -629,7 +629,7 @@ To connect to your SQL Server instance, ensure the following:
     ALTER SERVER ROLE [##MS_ServerStateReader##] ADD MEMBER [<UserName>];
     ```
     > Note: Replace `UserName` with your actual SQL Server login name (the server-level login).
-     
+
 - **Database-Level Permissions (All Databases Including System)**
   
   Following permissions must be granted at the database level to enable the user to query relevant system objects and view database state:
@@ -693,6 +693,21 @@ To connect to your SQL Server instance, ensure the following:
     DEALLOCATE db_cursor;
   ```
   > Note: Replace `USERNAME` with your actual SQL Server login name (the server-level login). 
+
+  To grant the specified permissions to a user in a single database, you can run the following SQL query (You can skip this step if you already performed above query for all databases): 
+
+    ```sql
+    USE [YourDatabaseName];  -- Replace with your actual database name
+    GO
+
+    -- Grant required permissions
+    ALTER ROLE [db_datareader] ADD MEMBER [USERNAME];  
+    GRANT CONNECT TO [USERNAME];  
+    GRANT VIEW DATABASE STATE TO [USERNAME];  
+    GRANT SELECT ON OBJECT::[sys].[sql_expression_dependencies] TO [USERNAME];
+    ```
+    > Notes: Replace [YourDatabaseName] with your target DB name. Replace [USERNAME] with the database username (usually same as login).
+
 
 
 #### 7. Update Environment Variables for Multiple Deployments of INFIO EC2 Instace (Optional):
