@@ -418,8 +418,6 @@ We recommend following AWS VPC security best practices, including:
 ### How do you ensure that the AMI is secure before deployment?
 The AMI undergoes extensive testing, including:
 - Vulnerability scanning.
-- Penetration testing.
-- Security audits.
 
 We follow strict guidelines for patch management and secure software development practices.
 
