@@ -135,175 +135,252 @@ The security of INFIO is of the highest priority. Below are the key security bes
 #### IAM Policy Attached to EC2 Role
 
 ```json
+"Policies": [
 {
-  "Policies": [
-    {
-      "PolicyName": "infio-ec2-dms-role-policy",
-      "PolicyDocument": {
-        "Version": "2012-10-17",
-        "Statement": [
-          {
-            "Sid": "CloudFormationPermissionsForInfioEC2Instance",
+  "PolicyName": "infio-ec2-dms-role-policy",
+  "PolicyDocument": {
+    "Version": "2012-10-17",
+    "Statement": [
+            {
+              "Sid": "CloudFormationPermissionsForInfioEC2Instance",
+              "Effect": "Allow",
+              "Action": [
+                "cloudformation:DescribeStacks",
+                "cloudformation:DescribeStackEvents",
+                "cloudformation:DescribeStackResources",
+                "cloudformation:GetTemplate",
+                "cloudformation:ValidateTemplate" 
+              ],
+              "Resource": {
+                    "Fn::Join": [ ":", [ "arn:aws:cloudformation", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "stack/*" ] ]
+                  }
+            },
+            {
+              "Sid": "CloudFormationCreatePermissionsForInfioEC2Instance",
+              "Effect": "Allow",
+              "Action": [
+                "cloudformation:CreateStack"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Sid": "KMSPermissionsForInfioEC2Instance",
+              "Effect": "Allow",
+              "Action": [
+                "kms:DescribeKey",
+                "kms:EnableKeyRotation",
+                "kms:TagResource",
+                "kms:Decrypt",
+                "kms:Encrypt",
+                "kms:GenerateDataKey"
+              ],
+              "Resource": {
+                "Fn::Join": [ ":", [ "arn:aws:kms", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "key/*" ] ]
+              }
+            },
+            {
+              "Sid": "KMSCreatePermissionsForInfioEC2Instance",
+              "Effect": "Allow",
+              "Action": [
+                  "kms:CreateKey",
+                  "kms:CreateAlias"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Sid": "SecretsManagerPermissionsForInfioEC2Instance",
+              "Effect": "Allow",
+              "Action": [
+                "secretsmanager:UpdateSecret",
+                "secretsmanager:TagResource",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DeleteSecret",
+                "secretsmanager:CreateSecret"        
+              ],
+              "Resource": [{
+                "Fn::Join": [ ":", [ "arn:aws:secretsmanager", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "secret:infio-source-db-credentials*" ] ]
+              },
+              {
+                "Fn::Join": [ ":", [ "arn:aws:secretsmanager", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "secret:infio-target-db-credentials*" ] ]
+              },
+              {
+                "Fn::Join": [ ":", [ "arn:aws:secretsmanager", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "secret:infio-repository-credentials*" ] ]
+              },
+              {
+                "Fn::Join": [ ":", [ "arn:aws:secretsmanager", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "secret:infio*" ] ]
+              }],
+              "Condition": {
+                  "StringEquals": {
+                  "aws:ResourceTag/Purpose": "infio"
+                  }
+              }
+            },
+            {
+              "Sid": "ListAllS3Buckets",
+              "Effect": "Allow",
+              "Action": [
+                "s3:ListBucket",
+                "s3:ListAllMyBuckets"
+              ],
+              "Resource": [ "*" ]
+            },
+            {
+              "Sid": "SecretsManagerCreatePermissionsForInfioEC2Instance",
+              "Effect": "Allow",
+              "Action": [
+                "secretsmanager:CreateSecret",
+                "secretsmanager:ListSecrets",
+                "secretsmanager:GetRandomPassword",
+                "secretsmanager:DescribeSecret"
+
+              ],
+              "Resource": "*"
+            },
+            {
+              "Sid": "S3BucketPermissionsForInfioEC2Instance",
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetEncryptionConfiguration",
+                "s3:PutEncryptionConfiguration",
+                "s3:PutBucketTagging",
+                "s3:PutObjectTagging",
+                "s3:PutBucketPolicy",
+                "s3:PutBucketPublicAccessBlock",
+                "s3:GetBucketLocation",
+                "s3:ListBucket",
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:GetBucketLocation",
+                "s3:GetBucketVersioning",
+                "s3:GetObjectVersion",
+                "s3:PutBucketVersioning"
+
+              ],
+              "Resource": [{
+                "Fn::Join": [ ":", [ "arn:aws:s3::", "infio-private-bucket" ] ]
+              },
+              {
+                "Fn::Join": [ ":", [ "arn:aws:s3::", "infio-private-bucket/*" ] ]
+              }]
+            },
+            {
+              "Sid": "S3BucketCreatePermissionsForInfioEC2Instance",
+              "Effect": "Allow",
+              "Action": [
+                "s3:CreateBucket"
+
+              ],
+              "Resource": {
+                "Fn::Join": [ ":", [ "arn:aws:s3::", "infio-private-bucket" ] ]
+              }
+            },
+            {
+              "Sid": "CloudWatchLogsPermissionsForInfioEC2Instance",
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+                "logs:DescribeLogStreams",
+                "logs:CreateLogGroup",
+                "logs:DescribeLogGroups"
+              ],
+              "Resource": {
+                "Fn::Join": [ ":", [ "arn:aws:logs", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "log-group:/*" ]  ]
+              }
+            },
+            {
+            "Sid": "InfioLicenseManagerIntegrationPolicy",
             "Effect": "Allow",
             "Action": [
-              "cloudformation:DescribeStacks",
-              "cloudformation:DescribeStackEvents",
-              "cloudformation:DescribeStackResources",
-              "cloudformation:GetTemplate",
-              "cloudformation:ValidateTemplate"
-            ],
-            "Resource": {
-              "Fn::Join": [":", ["arn:aws:cloudformation", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "stack/*"]]
+                "license-manager:CheckoutLicense",
+                "license-manager:ExtendLicenseConsumption",
+                "license-manager:ListReceivedLicenses",
+                "license-manager:GetLicense"
+              ],
+            "Resource": "*"
+            },
+            {
+              "Sid": "InfioDMSPermissionSet",
+              "Effect": "Allow",
+              "Action": [
+                "dms:CreateDataProvider",
+                "dms:CreateMigrationProject",
+                "dms:CreateDataMigration",
+                "dms:CreateReplicationInstance",
+                "dms:ListDataProviders",
+                "dms:ListMigrationProjects",
+                "dms:AddTagsToResource",
+                "dms:StartDataMigration",
+                "dms:DescribeInstanceProfiles",
+                "dms:ListInstanceProfiles",
+                "dms:StartMetadataModelAssessment",
+                "dms:ListMetadataModelAssessments",
+                "dms:UpdateMigrationProject",
+                "dms:ExportMetadataModelAssessment"
+              ],
+              "Resource": "*"
+            },
+            {   
+                "Sid": "InfioDMSDeleteUpdatePermissionSet",
+                "Effect": "Allow",
+                "Action": [
+                    "dms:UpdateDataProvider",
+                    "dms:DeleteDataProvider",
+                    "dms:DeleteMigrationProject"
+                ],
+                "Resource": [{
+                  "Fn::Join": [ ":", [ "arn:aws:dms", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "migration-project:*" ]  ]
+                },
+                {
+                  "Fn::Join": [ ":", [ "arn:aws:dms", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "data-provider:*" ]  ]
+                }
+                ]
+            },
+            {
+              "Sid": "InfioRDSReadOnlyPermissions",
+              "Effect": "Allow",
+              "Action": [
+                "rds:DescribeDBClusters",
+                "rds:DescribeDBInstances",
+                "rds:DescribeDBClusterSnapshots",
+                "rds:ListTagsForResource"
+              ],
+              "Resource": [{
+                "Fn::Join": [ ":", [ "arn:aws:rds", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "cluster", "*" ]  ]
+              },
+              {
+                "Fn::Join": [ ":", [ "arn:aws:rds", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "db", "*" ]  ]
+              },
+              {
+                "Fn::Join": [ ":", [ "arn:aws:rds", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "*" ]  ]
+              }]
+            },
+            {
+              "Sid": "InfioAbilityToPassAndGetTheRoleRequiredByDMS",
+              "Effect": "Allow",
+              "Action": [
+                "iam:PassRole",
+                "iam:GetRole"
+              ],
+              "Resource": {
+                "Fn::Join": [ ":", [ "arn:aws:iam:", { "Ref": "AWS::AccountId" }, "role/infio-ec2-dms-role" ]  ]
+              }
+            },
+            {
+              "Sid": "InfioAbilityToListRolesRequiredByInfioUI",
+              "Effect": "Allow",
+              "Action": [
+                "iam:ListRoles"
+              ],
+              "Resource": {
+                "Fn::Join": [ ":", [ "arn:aws:iam:", { "Ref": "AWS::AccountId" }, "role/*" ]  ]
+              }
             }
-          },
-          {
-            "Sid": "CloudFormationCreatePermissionsForInfioEC2Instance",
-            "Effect": "Allow",
-            "Action": ["cloudformation:CreateStack"],
-            "Resource": "*"
-          },
-          {
-            "Sid": "KMSPermissionsForInfioEC2Instance",
-            "Effect": "Allow",
-            "Action": [
-              "kms:DescribeKey",
-              "kms:EnableKeyRotation",
-              "kms:TagResource",
-              "kms:Decrypt",
-              "kms:Encrypt",
-              "kms:GenerateDataKey"
-            ],
-            "Resource": {
-              "Fn::Join": [":", ["arn:aws:kms", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "key/*"]]
-            }
-          },
-          {
-            "Sid": "KMSCreatePermissionsForInfioEC2Instance",
-            "Effect": "Allow",
-            "Action": [
-              "kms:CreateKey",
-              "kms:CreateAlias"
-            ],
-            "Resource": "*"
-          },
-          {
-            "Sid": "SecretsManagerPermissionsForInfioEC2Instance",
-            "Effect": "Allow",
-            "Action": [
-              "secretsmanager:UpdateSecret",
-              "secretsmanager:TagResource",
-              "secretsmanager:GetSecretValue",
-              "secretsmanager:DeleteSecret",
-              "secretsmanager:CreateSecret"
-            ],
-            "Resource": [
-              {
-                "Fn::Join": [":", ["arn:aws:secretsmanager", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "secret:infio-source-db-credentials*"]]
-              },
-              {
-                "Fn::Join": [":", ["arn:aws:secretsmanager", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "secret:infio-target-db-credentials*"]]
-              },
-              {
-                "Fn::Join": [":", ["arn:aws:secretsmanager", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "secret:infio*"]]
-              }
-            ],
-            "Condition": {
-              "StringEquals": {
-                "aws:ResourceTag/Purpose": "infio"
-              }
-            }
-          },
-          {
-            "Sid": "ListAllS3Buckets",
-            "Effect": "Allow",
-            "Action": [
-              "s3:ListBucket",
-              "s3:ListAllMyBuckets"
-            ],
-            "Resource": "*"
-          },
-          {
-            "Sid": "SecretsManagerCreatePermissionsForInfioEC2Instance",
-            "Effect": "Allow",
-            "Action": [
-              "secretsmanager:CreateSecret",
-              "secretsmanager:ListSecrets",
-              "secretsmanager:GetRandomPassword",
-              "secretsmanager:DescribeSecret"
-            ],
-            "Resource": "*"
-          },
-          {
-            "Sid": "S3BucketPermissionsForInfioEC2Instance",
-            "Effect": "Allow",
-            "Action": [
-              "s3:GetEncryptionConfiguration",
-              "s3:PutEncryptionConfiguration",
-              "s3:PutBucketTagging",
-              "s3:PutObjectTagging",
-              "s3:PutBucketPolicy",
-              "s3:PutBucketPublicAccessBlock",
-              "s3:GetBucketLocation",
-              "s3:ListBucket",
-              "s3:GetObject",
-              "s3:PutObject",
-              "s3:GetBucketVersioning",
-              "s3:GetObjectVersion",
-              "s3:PutBucketVersioning"
-            ],
-            "Resource": [
-              {
-                "Fn::Join": [":", ["arn:aws:s3::", "infio-private-bucket"]]
-              },
-              {
-                "Fn::Join": [":", ["arn:aws:s3::", "infio-private-bucket/*"]]
-              }
-            ]
-          },
-          {
-            "Sid": "InfioDMSPermissionSet",
-            "Effect": "Allow",
-            "Action": [
-              "dms:CreateDataProvider",
-              "dms:CreateMigrationProject",
-              "dms:CreateDataMigration",
-              "dms:CreateReplicationInstance",
-              "dms:ListDataProviders",
-              "dms:ListMigrationProjects",
-              "dms:AddTagsToResource",
-              "dms:StartDataMigration",
-              "dms:DescribeInstanceProfiles",
-              "dms:ListInstanceProfiles",
-              "dms:StartMetadataModelAssessment",
-              "dms:ListMetadataModelAssessments",
-              "dms:UpdateMigrationProject",
-              "dms:ExportMetadataModelAssessment"
-            ],
-            "Resource": "*"
-          },
-          {
-            "Sid": "InfioRDSReadOnlyPermissions",
-            "Effect": "Allow",
-            "Action": [
-              "rds:DescribeDBClusters",
-              "rds:DescribeDBInstances",
-              "rds:DescribeDBClusterSnapshots",
-              "rds:ListTagsForResource"
-            ],
-            "Resource": [
-              {
-                "Fn::Join": [":", ["arn:aws:rds", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "cluster", "*"]]
-              },
-              {
-                "Fn::Join": [":", ["arn:aws:rds", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "db", "*"]]
-              }
-            ]
-          }
-        ]
+          ]
+        }
       }
-    }
-  ]
-}
+]
 ```
 
 ## Customer IAM Roles
