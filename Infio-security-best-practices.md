@@ -114,13 +114,11 @@ The security of INFIO is of the highest priority. Below are the key security bes
 
 ### Encryption in Transit
 
-- Data exchanged between INFIO and the SQL Server is encrypted using SSL/TLS protocols, preventing interception and man-in-the-middle (MITM) attacks.
 - All communication between the EC2 instance and AWS services (such as S3, Secrets Manager, and KMS) uses AWS secure private connection.
 
 ### Encryption at Rest
 
 - Any data written to disk during the assessment (such as temporary logs or configuration files) is encrypted using AWS Key Management Service (KMS).
-- PostgreSQL data storage on the instance, if applicable, is encrypted using Transparent Data Encryption (TDE) for protection against unauthorized disk access.
 
 ---
 
