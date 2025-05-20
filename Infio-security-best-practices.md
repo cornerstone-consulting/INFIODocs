@@ -9,7 +9,6 @@
 - [Network Security](#network-security)
   - [VPC and Subnet Isolation](#vpc-and-subnet-isolation)
   - [Security Groups](#security-groups)
-  - [Private Key Encryption](#private-key-encryption)
 - [Data Security](#data-security)
   - [No Persistent Storage](#no-persistent-storage)
   - [Encryption in Transit](#encryption-in-transit)
@@ -31,11 +30,9 @@
   - [Secrets Management](#secrets-management)
 - [Frequently Asked Questions (FAQ)](#frequently-asked-questions-faq)
   - [How does INFIO ensure secure communication with my SQL Server?](#how-does-infio-ensure-secure-communication-with-my-sql-server)
-  - [How is the EC2 instance secured from external access?](#how-is-the-ec2-instance-secured-from-external-access)
   - [Can I access the EC2 instance via RDP?](#can-i-access-the-ec2-instance-via-rdp)
   - [What kind of data is stored on the EC2 instance?](#what-kind-of-data-is-stored-on-the-ec2-instance)
   - [Are logs from the EC2 instance available to me?](#are-logs-from-the-ec2-instance-available-to-me)
-  - [How is access to the tool controlled?](#how-is-access-to-the-tool-controlled)
   - [What happens if vulnerabilities are discovered in the tool?](#what-happens-if-vulnerabilities-are-discovered-in-the-tool)
   - [How can I ensure that my VPC and EC2 instance are secure?](#how-can-i-ensure-that-my-vpc-and-ec2-instance-are-secure)
   - [How do you ensure that the AMI is secure before deployment?](#how-do-you-ensure-that-the-ami-is-secure-before-deployment)
@@ -105,9 +102,6 @@ The security of INFIO is of the highest priority. Below are the key security bes
   - Port 443/80 (HTTP/S) are restricted to private IP ranges within the same subnet.
 - Outbound traffic is limited to essential services, and any unwanted outgoing communication is blocked.
 
-### Private Key Encryption
-
-- Access to the EC2 instance is restricted to those with a key pair. The private key is securely stored by the customer, and access logs are reviewed periodically to detect any unauthorized access attempts.
 
 ---
 
@@ -330,12 +324,6 @@ Enforce **MFA** for:
 
 ### Activity Logging
 - **Detailed Logs**: Activities such as script executions, database connections, and file transfers are stored in INFIO log files.
-- **CloudWatch Notifications**: 
-  - Custom metrics and alerts detect suspicious activities (e.g., unauthorized access, abnormal traffic spikes).
-- **CloudWatch Logs**: Additional logging for EC2 instance actions, such as:
-  - Instance start/stop.
-  - IAM role changes.
-  - Network configurations.
 
 ### Vulnerability Management
 - **Regular Scans**: Continuous vulnerability scanning ensures no known vulnerabilities in the AMI system or software components.
@@ -385,9 +373,6 @@ Enforce **MFA** for:
 ### How does INFIO ensure secure communication with my SQL Server?
 INFIO uses the **AWS network** to securely connect and communicate with the source SQL Server. By deploying the INFIO instance within a **private subnet**, direct access to the SQL Server is isolated from public networks.
 
-### How is the EC2 instance secured from external access?
-The EC2 instance is deployed in a **private subnet** without direct access to the public internet. Only authorized internal resources, such as your database server within the VPC, can communicate with the instance through configured security groups.
-
 ### Can I access the EC2 instance via RDP?
 Yes, RDP access is allowed but limited to **specific IP addresses**, and only **key-based authentication** is supported. You must use a securely stored private key to access the instance. We recommend regularly rotating keys and disabling RDP access when not needed.
 
@@ -402,9 +387,6 @@ This data can be temporarily written to disk but is **deleted after the assessme
 
 ### Are logs from the EC2 instance available to me?
 Yes, all activity and access logs can be streamed to your **AWS CloudWatch** account, where you can monitor them in real-time. These logs provide insight into tool performance, user activity, and any security-related events.
-
-### How is access to the tool controlled?
-Access is controlled via **AWS IAM roles** and security groups. The principle of least privilege is applied, ensuring that the instance has minimal permissions. You can modify the IAM role assigned to the instance to restrict or expand its access to AWS services.
 
 ### What happens if vulnerabilities are discovered in the tool?
 We continuously monitor the AMI for new vulnerabilities and apply patches when necessary. If vulnerabilities are discovered, a new version of the AMI is released, and customers are notified to update their instances.
