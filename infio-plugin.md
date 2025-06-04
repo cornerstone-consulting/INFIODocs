@@ -31,9 +31,20 @@ The **Infio Plugin** simplifies migration from **SQL Server** to **Babelfish for
 
 ### Prerequisites for Using the INFIO Plugin  
 
-Before using the INFIO Plugin, ensure the following requirements are met:  
+Before using the INFIO Plugin, ensure the following requirements are met:
+#### 1. **Python and mssql-scripter**
+
+If you are running the INFIO Plugin directly from a **SQL Server machine**, please make sure the dependencies below are installed.  
+If you are running the plugin from the **INFIO EC2 instance**, all required dependencies are **pre-installed** and you can skip.
+
+- **Python 3.8+** is required to execute the INFIO Plugin. You can download it from the official Python website: [Download Python](https://www.python.org/downloads/)
+- After installing Python, install `mssql-scripter` using pip in command prompt of SQL Server machine:
+
+  ```bash
+  pip install mssql-scripter
+  ```
   
-#### 1. **SQL Server Credentials**  
+#### 2. **SQL Server Credentials**  
 To connect to your SQL Server instance, ensure the following:  
 
 - **Access Credentials**:  
@@ -44,7 +55,7 @@ To connect to your SQL Server instance, ensure the following:
   - The SQL Server username must have read-only access with the `db_datareader` role on all databases, including system databases to run Infio-plugin. Additionally, the msdb database, which is a system database, must have the `SQLAgentUserRole`, `SQLAgentReaderRole` and `SQLAgentOperatorRole` as these SQL agent roles are needed to run extended event tool and generate extended events xml file. 
   - This ensures only data retrieval operations are allowed, preventing changes to the database. 
 
-#### 2. **Server Role Permissions**  
+#### 3. **Server Role Permissions**  
 The following server roles are required to run the INFIO Plugin:  
 
 ```plaintext
@@ -58,7 +69,7 @@ The following server roles are required to run the INFIO Plugin:
 public
 ```
 
-#### 3. **Granting Server-Level Permission: `ALTER ANY EVENT SESSION`**
+#### 4. **Granting Server-Level Permission: `ALTER ANY EVENT SESSION`**
 
 To enable the user to create, modify, and delete **Extended Events** sessions to get extended events, grant the `ALTER ANY EVENT SESSION` permission.
 
