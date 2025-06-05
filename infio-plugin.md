@@ -2,40 +2,74 @@
 
 ## Table of Contents
 - [Infio Plugin Overview](#infio-plugin-overview)
-  - [Features](#features)
-  - [Prerequisites](#prerequisites-for-using-the-infio-plugin)
-  - [Modes of Operation](#modes-of-operation)
-    - [Offline Mode](#1️⃣-offline-mode)
-    - [Mixed Mode](#2️⃣-mixed-mode)
-    - [Online Mode](#3️⃣-online-mode)
-    - [Collect XML File from Extended Events Session](#4️⃣-collect-xml-file-from-extended-events-session)
-  - [Configuration](#configuration)
-    - [Extended Events Scheduler (Online Mode Only)](#extended-events-scheduler-online-mode-only)
-    - [Extended Events XML File Retrieval Guide](#extended-events-xml-file-retrieval-guide)
-  - [Uploading Files to an S3 Bucket or INFIO EC2 instance's INFIO directory](#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-infio-directory)
+- [Infio Plugin Collects](#infio-plugin-collects)
+- [Use cases for the Infio Plugin](#use-cases-for-the-infio-plugin)
+- [Key Benefits](#key-benefits)
+- [Prerequisites](#prerequisites-for-using-the-infio-plugin)
+- [Modes of Operation](#modes-of-operation)
+- [Infio plugin Usage Guide](#infio-plugin-usage-guide)
+- [Uploading Files to an S3 Bucket or INFIO EC2 instance's INFIO directory](#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-infio-directory)
 
 ### Infio Plugin Overview
 
-The **Infio Plugin** simplifies migration from **SQL Server** to **Babelfish for Aurora PostgreSQL**. It automates the creation of essential dependency, assessor input files, helping you assess compatibility and identify issues during migration. 
+The Infio Plugin is a lightweight utility designed to extend Infio tool’s assessment capabilities by enabling seamless data collection directly from your SQL Server environment. It plays a crucial role in situations where direct integration with the SQL Server is limited or where additional insights—like real-time client side SQL query capture—are required.
 
 ---
 
-### Features
-- **Configuration Workflow**: Simple user input configuration for easy setup.
-- **Object Dependency Analysis**: Identifies Object dependencies across SQL Server databases.
-- **DMS Compatibility**: Generates DMS Assessor reports compatible with Migration Service.
-- **Schema-level Dependency Assessment**: Analyzes DDL objects and their interdependencies.
-- **Structured Output**: The outputs are saved as structured **SQL**, **HTML** and **XML** files at a predefined location specified in the INFIO plugin tool, ensuring they are easy to parse and review.
+### Infio Plugin Collects
+
+The plugin gathers key information to help evaluate the feasibility and efficiency of migrating your SQL Server databases to AWS cloud-native services like Babelfish for Aurora PostgreSQL. Specifically, it collects:
+
+1. **Schema Metadata & DDL Information:** Extracts definitions of database objects such as tables, views, indexes, stored procedures, and triggers to assess schema structure.
+
+2. **Object Dependency Mapping:** Analyzes relationships and dependencies among database objects to understand complexity.
+
+3. **DMS Assessor:** Evaluates the presence of certain data types and table features. It also checks backups, permissions, and replication setup to make sure the database is ready for AWS DMS.
+
+4. **Client side SQL query via Extended Events:** Leverages SQL Server Extended Events to capture runtime client side SQL queries from client applications, providing insights into query patterns, and frequency.
+
+---
+
+### Use Cases for the Infio Plugin
+
+The plugin is particularly useful in the following scenarios:
+
+#### 1. No Direct Connectivity to the Infio Instance
+- When your SQL Server environment is isolated or in a different network with no route to the Infio instance, the plugin acts as a bridge for local data collection and run plugin from SQL Server environment.
+
+#### 2. Limited Network Bandwidth
+- If the available network bandwidth cannot support the transfer of large volumes of data between the SQL Server and the Infio instance, the plugin helps perform the assessment locally on the SQL Server environment, reducing data transfer load.
+
+#### 3. Real-time SQL Query Capture from SQL Server
+- If you want to monitor live SQL query activity directly from the SQL Server but cannot run the plugin on the Infio instance itself, this plugin lets you capture and analyze real-time client-side queries right from the SQL Server environment.
+
+#### 4. Collecting Real-time Queries from the Infio Instance
+- In cases where the Infio instance has access to SQL Server and centralized monitoring is preferred, the plugin can securely fetch real-time client-side query activity from the Infio instance, enabling efficient and centralized query monitoring.
+
+
+> Note: For the first three use cases, the INFIO Plugin must be executed from the source SQL Server environment. This requires setting up the necessary environment and dependencies on the SQL Server side to support the plugin. In the fourth use case, the plugin executed from Infio EC2 instance and it already has all the required prerequisites installed to support this functionality.
+
+---
+
+### Key Benefits
+
+- Flexible Deployment: Works in various network configurations.
+- Real-Time client side queries: Monitor & capture real time client side Sql queries using extended event session.
+- Network Efficient: Optimized for different bandwidth and connectivity scenarios.
+
+Choose your deployment scenario based on your network setup. The INFIO Plugin adapts to your environment, ensuring you get the insights you need regardless of your technical constraints.
 
 ---
 
 ### Prerequisites for Using the INFIO Plugin  
 
 Before using the INFIO Plugin, ensure the following requirements are met:
-#### 1. **Python and mssql-scripter**
 
-If you are running the INFIO Plugin directly from a **SQL Server machine**, please make sure the dependencies below are installed.  
-If you are running the plugin from the **INFIO EC2 instance**, all required dependencies are **pre-installed** and you can skip.
+#### 1. Python and mssql-scripter
+
+- This applies specifically to use cases [1](#1-no-direct-connectivity-to-the-infio-instance), [2](#2-limited-network-bandwidth) and [3](#3-real-time-sql-query-capture-from-sql-server) only.
+- If you are running the INFIO Plugin directly from a **SQL Server machine**, please make sure the dependencies below are installed.  
+- If you are running the plugin from the **INFIO EC2 instance**, all required dependencies are **pre-installed** and you can skip.
 
 - **Python 3.8+** is required to execute the INFIO Plugin. You can download it from the official Python website: [Download Python](https://www.python.org/downloads/)
 - After installing Python, install `mssql-scripter` using pip in command prompt of SQL Server machine:
@@ -43,19 +77,36 @@ If you are running the plugin from the **INFIO EC2 instance**, all required depe
   ```bash
   pip install mssql-scripter
   ```
-  
-#### 2. **SQL Server Credentials**  
+
+#### 2. Download input zip file and copy into infio-plugin directory
+
+- Again this applies specifically to use cases [1](#1-no-direct-connectivity-to-the-infio-instance), [2](#2-limited-network-bandwidth) and [3](#3-real-time-sql-query-capture-from-sql-server) only.
+- Download the input zip file from [here](https://github.com/cornerstone-consulting/INFIODocs/blob/main/input.zip).
+- Extract the contents of the zip file and copy the extracted folder into the following path:
+```bash
+C:\Users\administrator\infio-plugin
+```
+- After copying the input folder, verify that it is located at the following path:
+```bash
+C:\Users\administrator\infio-plugin\input
+```
+
+
+#### 3. SQL Server Access: 
 To connect to your SQL Server instance, ensure the following:  
 
 - **Access Credentials**:  
-  - Have valid access credentials (username and password) for your SQL Server instance.  
-  - Ensure your IP address is authorized to connect to the SQL Server instance.  
+  - Have valid access credentials (username, password and port) for your SQL Server.  
+  - For use case [4](#4-collecting-real-time-queries-from-the-infio-instance) only, make sure your Infio EC2 instance's IP address and port are authorized to connect to the SQL Server instance.  
 
 - **Read-Only Access**:  
-  - The SQL Server username must have read-only access with the `db_datareader` role on all databases, including system databases to run Infio-plugin. Additionally, the msdb database, which is a system database, must have the `SQLAgentUserRole`, `SQLAgentReaderRole` and `SQLAgentOperatorRole` as these SQL agent roles are needed to run extended event tool and generate extended events xml file. 
+  - The SQL Server username must have read-only access with the `db_datareader` role on all databases, including system databases to run Infio-plugin. 
+  
+- **SQL Agent Role**:
+  - In addition to `db_datareader`, you must have the `SQLAgentUserRole`, `SQLAgentReaderRole` and `SQLAgentOperatorRole` roles assigned on the `msdb` system database. As these SQL agent roles are needed to run extended event tool and generate extended events `.xel` file. 
   - This ensures only data retrieval operations are allowed, preventing changes to the database. 
 
-#### 3. **Server Role Permissions**  
+#### 4. Server Role Permissions
 The following server roles are required to run the INFIO Plugin:  
 
 ```plaintext
@@ -69,7 +120,7 @@ The following server roles are required to run the INFIO Plugin:
 public
 ```
 
-#### 4. **Granting Server-Level Permission: `ALTER ANY EVENT SESSION`**
+#### 5. Granting Server-Level Permission: `ALTER ANY EVENT SESSION`
 
 To enable the user to create, modify, and delete **Extended Events** sessions to get extended events, grant the `ALTER ANY EVENT SESSION` permission.
 
@@ -92,163 +143,191 @@ These permissions allow the INFIO Plugin to retrieve necessary information from 
 
 ### Modes of operation
 
-The **INFIO Plugin** offers different modes to accommodate various data collection and assessment requirements. Choose the mode that best fits your migration needs. 
+The **INFIO Plugin** offers different modes to accommodate various data collection. Choose the mode that best fits your needs. 
+
+#### 1. **Rapid Data Collection - Offline mode**
+
+- **Purpose:** Ideal for scenarios where essential assessment related files need to be collected.
+
+Files generated by the plugin:
+- Data Definition Language (DDL) files.
+- Database Migration Service (DMS) assessor files.
+- Database Object Dependency files.
+
+#### 2. **DDL-Only Collection - Mixed mode**
+-  **Purpose:** It will generate only DDL files.  
+
+Files generated by the plugin:
+  - Data Definition Language (DDL) files.  
 
 
-#### **1️⃣ Offline Mode**  
-🔹 **Purpose:** Best for scenarios where extended events collection is handled manually.  
-🔹 **Process:**  
-- **Automatically executed**:  
-  - **Data Definition Language (DDL) Tool to collect DDL files**  
-  - **Database Migration Service (DMS) Assessor Tool**  
-  - **Object Dependency analysis files**  
-- **Manually executed**:  
-  - **SQL Server Profiler Events File Generation**  
+#### 3. **Full Data Collection - Online mode**   
+- **Purpose:** Fully data collection mode, ideal for real-time clinet side SQL qurey collection files and migration readiness analysis.
+
+Files generated by the plugin:
+  - Data Definition Language (DDL) files.
+  - Database Migration Service (DMS) assessor files.
+  - Database Object Dependency files.
+  - Create and schedule an Extended Events session on SQL Server using SQL Server Agent to run at the specified time and generate `.xel` file into SQL Server.
 
 
-#### **2️⃣ Mixed Mode**  
-🔹 **Purpose:** A combination of automated and manual processes.  
-🔹 **Process:**  
-- **Automatically executed**:  
-  - **Data Definition Language (DDL) Tool to collect DDL files**  
-- **Manually executed**:  
-  - **SQL Server Profiler Events File Generation**  
+  > Note: Running the [Extended Events Retrieval Mode](#extended-events-retrieval-mode) is mandatory after completing the Full Data Collection – Online Mode to retrieve `.xel` file and process the Extended Events data to convert into `.xml` file. 
 
 
-#### **3️⃣ Online Mode**  
-🔹 **Purpose:** Fully automated assessment, ideal for real-time data collection and migration readiness analysis.  
-🔹 **Process:**  
-- **Automatically executed**:  
-  - **Data Definition Language (DDL) Tool to collect DDL files**  
-  - **Database Migration Service (DMS) Assessor Tool**  
-  - **Object Dependency analysis files**  
-- **INFIO Plugin Action:**  
-  - Creates a **SQL Server Agent jobs** to manage **Extended Events sessions** dynamically.  
+#### 4. **Extended events Retrieval mode**  
+- **Purpose:** Retrieve and analyze the Extended Events .xel file from SQL Server, convert it to an .xml format, and store it locally for further processing.
 
-
-#### **4️⃣ Collect XML File from Extended Events Session**  
-🔹 **Purpose:** Retrieve and analyze Extended Events session data manually.  
-🔹 **Process:**  
-- **INFIO Plugin retrieves** the generated **XML file** from an **Extended Events session**.  
-- Users must **upload the XML file** to a designated location for further processing for database migration.  
-
-Once an assessment mode is selected, the **INFIO Plugin** will:  
-- Execute **automated data collection tasks** based on the selected mode.  
-- For collecting SQL Server Profiler Events into XML file, refer to the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md).
+Files generated by the plugin:
+- Get Extended events `.xel` file from SQL Server and convert it into `.xml` format file.
 
 
 After generating all the required files based on the selected assessment mode, users must upload them to either a designated S3 bucket or the INFIO EC2 instance's INFIO directory. Follow the [file upload process here](#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-infio-directory) for detailed instructions.
 
 ---
 
-### Configuration
-
-If you choose any of the options (1, 2, or 3), you will be prompted to provide the following details, some of which are mandatory.
-
-- **Application Name**: Enter the application name (should be the same as the one you entered during Infio tool setup).
-- **SQL Server Name**: Hostname or IP address of the SQL Server instance. 
-- **Username**: Your SQL Server username. 
-- **Password**: Your SQL Server password.
-- **Port**: Your SQL Server port number, you can press enter to keep default one which is 1433.
-- **Databases to Include**: Comma-separated list of databases to analyze, you can press enter to include all databases in the SQL Server.
-- **Databases to Exclude**: Comma-separated list of databases to exclude from analysis, you can press enter to keep the default excluded databases only (master, model, msdb, tempdb).
-
-> **Note**: Ensure that the SQL Server username and password provided are for a read-only access user. This ensures that only data retrieval operations are allowed, and no changes can be made to the database.
+### Infio plugin Usage Guide
 
 
-Example input:
+#### 1. Infio Plugin opening guide
 
-```plaintext
-=== Configuration ===
-Enter Application Name (should be the same as the one you entered during Infio tool setup): db-migration-test
-Enter SQL Server Name: ec2-12-34-567-890.compute-1.amazonaws.com
-Enter SQL Server Username: admin
-Enter SQL Server Password:
-Enter SQL Server Port Number. Press enter to keep the default Port number (1433): 1234
-Enter Databases to Include (comma-separated) Press enter to include all databases in the SQL Server: db1, db2
-Enter Databases to Exclude (comma-separated) Press enter to keep the default excluded databases only (master, model, msdb, tempdb):
-```
+1. This applies specifically to use case [4](#4-collecting-real-time-queries-from-the-infio-instance) only or if you are running plugin from Infio EC2 instance. Navigate to the `Desktop:\INFIO Assessment Tool` folder located on the desktop of the INFIO EC2 instance.
+2. Inside the **INFIO Assessment Tool** folder, you will find three subfolders:
+    - `aws-infra-setup`
+    - `infio`
+    - `infio-plugin`
+3. Open the `infio-plugin` folder. Inside this folder, locate and double click on the **infio-plugin.exe** to start the plugin application.
+4. If you are running plugin from SQL Server instance, you just need to locate `infio-plugin` folder and double click on the **infio-plugin.exe** to start the plugin.
 
-#### Extended Events Scheduler (Online Mode Only)  
 
-If you select **Online Mode (Option 3)**, the INFIO Plugin will prompt you to schedule the start and stop times for the **Extended Events session** just after running DDL, DML and object dependency tools. This allows for automated collection of performance data during the specified interval.  
+#### 2. Mode selection guide
 
-#### **Steps:**  
+- Upon launching the INFIO Plugin, you will be prompted to select one of the previously described modes of operation [here](#modes-of-operation).
+- After that, enter the number corresponding to your chosen mode. It could be 1/2/3/4.
 
-##### **📌 Schedule Start Time:**  
+
+#### 3. Configuration
+
+- If you choose one mode of operation 1, 2 or 3, you will be prompted to provide the following details, some of which are mandatory.
+
+  - **Application Name**: Enter the application name (should be the same as the one you entered during Infio tool setup).
+  - **SQL Server Name**: Enter the Hostname or IP address of the SQL Server instance. 
+  - **Username**: Enter your SQL Server username. 
+  - **Password**: Enter your SQL Server password.
+  - **Port**: Enter your SQL Server port number, you can press enter to keep default one which is `1433`.
+  - **Databases to Include**: Comma-separated list of databases to analyze, you can press enter to include all databases in the SQL Server.
+  - **Databases to Exclude**: Comma-separated list of databases to exclude from analysis, you can press enter to keep the default excluded databases only (master, model, msdb, tempdb).
+
+
+- If you choose mode 4, you will be prompted to provide only the following details.
+  - **Application Name**: Enter the application name (should be the same as the one you entered during Infio tool setup).
+  - **SQL Server Name**: Enter the Hostname or IP address of the SQL Server instance. 
+  - **Username**: Enter your SQL Server username. 
+  - **Password**: Enter your SQL Server password.
+  - **Port**: Enter your SQL Server port number, you can press enter to keep default one which is `1433`.
+
+  Example input:
+
+  ```plaintext
+  === Configuration ===
+  Enter Application Name (should be the same as the one you entered during Infio tool setup): db-migration-test
+  Enter SQL Server Name: ec2-12-34-567-890.compute-1.amazonaws.com
+  Enter SQL Server Username: admin
+  Enter SQL Server Password:
+  Enter SQL Server Port Number. Press enter to keep the default Port number (1433): 1234
+  Enter Databases to Include (comma-separated) Press enter to include all databases in the SQL Server: db1, db2
+  Enter Databases to Exclude (comma-separated) Press enter to keep the default excluded databases only (master, model, msdb, tempdb):
+  ```
+
+#### 4. Executing tools
+
+- After providing all the required SQL Server details, the plugin will execute the necessary tool(s) to generate the corresponding file(s) and  display their output locations.
+
+#### 5. Extended Events Scheduler (Online Mode Only)  
+
+If you select [**Online Mode**](#3-full-data-collection---online-mode), the INFIO Plugin will prompt you to schedule the start and stop times for the **Extended Events session** just after running DDL, DML and database object dependency tools. This allows for automated collection of real time extended events data during the specified interval, and generate the `.xel` file into SQL Server.    
+
+**Schedule Start Time:**  
 - The plugin will display the **current SQL Server time**.  
 - You will be prompted to enter the desired **start time** for the **Extended Events session**.  
 - **Input Format:** 24-hour format (`HH:MM`).  
 - **Validation:** The start time must be **later than the current SQL Server time**.  
 
-##### **📌 Schedule Stop Time:**  
+**Schedule Stop Time:**  
 - After setting the **start time**, you will be prompted to enter the **stop time**.  
 - **Input Format:** 24-hour format (`HH:MM`).  
 - **Validation:** The stop time must be **later than the start time**.  
 
-##### **📌 Example Input:**  
-```plaintext
-=== Extended Events Scheduler ===
+  **Example Input:**  
+  ```plaintext
+  === Extended Events Scheduler ===
 
-Please schedule the time for Extended Events to run today.  
-Please enter a value greater than the current SQL Server time, 14:30:00.  
-Enter the time in the format of hours, minutes, and seconds.  
-- Hours should be between 0 and 23 (24-hour format).  
-- Minutes and seconds should be between 0 and 59.  
+  Please schedule the time for Extended Events to run today.  
+  Please enter a value greater than the current SQL Server time, 14:30:00.  
+  Enter the time in the format of hours, minutes, and seconds.  
+  - Hours should be between 0 and 23 (24-hour format).  
+  - Minutes and seconds should be between 0 and 59.  
 
-Enter hour (0-23): 15  
-Enter minute (0-59): 0  
+  Enter hour (0-23): 15  
+  Enter minute (0-59): 0  
 
-At what time do you want the Extended Events session to stop today?  
-Enter the stop time in hours and minutes (24-hour format).  
+  At what time do you want the Extended Events session to stop today?  
+  Enter the stop time in hours and minutes (24-hour format).  
 
-Enter stop hour (0-23): 16  
-Enter stop minute (0-59): 0  
-```
+  Enter stop hour (0-23): 16  
+  Enter stop minute (0-59): 0  
+  ```
 
-Once the configuration is completed, the plugin will display updates in the terminal as each tool is executed. These updates include the following messages according to you have performed assessment mode:
-- "Running Object Dependency Tool..."
-- "Running DMS Assessor Tool..."
-- "Running DDL Tool..."
-- "Running Extended events Tool..."
-- "SQL file saved at: C:\Users\<user_name>\infio-plugin\<application_name>\source\database_dependency\sql_server_database_dependencies.sql"
+- Once your session has run as scheduled, you can download the .xel Extended Events session file and convert it into an .xml file using [mode 4](#4-extended-events-retrieval-mode).
 
----
+#### 6. **Extended Events XML File Retrieval Guide**  
 
-#### **Extended Events XML File Retrieval Guide**  
+The **INFIO Plugin** provides an mode to **retrieve and save Extended Events session data** as an XML file for further analysis. If you choose **Mode 4: Collect XML File from Extended Events Session**, the plugin will guide you through extracting and saving the extended event data in XML file. 
 
-The **INFIO Plugin** provides an option to **retrieve and save Extended Events session data** as an XML file for further analysis. If you choose **Option 4: Collect XML File from Extended Events Session**, the plugin will guide you through extracting and saving the event data in XML file.  
+> Note: Before running the Extended Events Retrieval Mode, ensure that the scheduled job on the SQL Server (configured in [mode 3](#3-full-data-collection---online-mode)) has been executed.
 
-##### **📌 Steps to Retrieve Extended Events XML File**  
-
-##### **Step 1: Enter Extended Events Session Name**  
-- The INFIO Plugin will prompt you to enter the **exact name** of the **Extended Events session** you previously created in option 3 for online mode.  
+- First it will prompt you to enter application name, SQL server name, SQL server username, SQL server password, and SQL server port number.
+- After that Plugin will prompt you to enter the **exact name** of the **Extended Events session** you previously created in [mode 3 for online mode](#3-full-data-collection---online-mode).  
 - The session name **must match exactly** as it exists in SQL Server (case-sensitive).  
 - If an invalid session name is entered, an error will be displayed.  
 
-```plaintext
-Please enter the exact name of the Extended Events session that you have created (case-sensitive, e.g., performance_session_2024): 
-```
+  ```plaintext
+  Please enter the exact name of the Extended Events session that you have created (case-sensitive, e.g., performance_session_2024): 
+  ```
 
-If the session does not exist, the plugin will display:
+- If the session does not exist, the plugin will display:
 
-```
-Error: The session '<session_name>' does not exist in SQL Server. Please enter the correct session name.
-```
+  ```
+  Error: The session '<session_name>' does not exist in SQL Server. Please enter the correct session name.
+  ```
 
-##### **Step 2: Saving XML file**
-The retrieved event data is converted into an XML file and saved locally.
-
-The plugin will display the following message:
-
-```
-Please wait for a while; this process might take some time to complete.
-✅ The Extended Events XML file has been successfully saved at the location: <source_directory>\extended_events\<session_name>.xml
-```
+- This process may take some time to complete, depending on the file size of `.xel` and duration of the Extended Events session run for.
+- The retrieved event data is converted into an XML file and saved locally.
 
 ---
 
-## Uploading Files to an S3 Bucket or INFIO EC2 instance's INFIO directory
+#### 7. Generated File Locations
+
+After running the necessary tools based on the selected mode, the plugin will store the generated files in their respective locations and display a prompt with the file paths.
+
+- Database Object dependency files will be stored at:
+`C:\Users\<user_name>\infio-plugin\<application_name>\source\database_dependency\sql_server_database_dependencies.sql`
+
+- DDL files will be stored at:
+`C:\Users\<user_name>\infio-plugin\<application_name>\source\ddl\<database_name+sql_server_name+sql_server_port>.sql`
+
+- DMS Assessor file will be stored at:
+`C:\Users\<user_name>\infio-plugin\<application_name>\source\dms\sql_server_output_files\<database_name>.html`
+
+- Extended events xml file will be stored at:
+`C:\Users\<user_name>\infio-plugin\<application_name>\source\extended_events\<session_name>.xml`
+
+> Note: Here, `user_name` refers to your Windows username, `application_name` is the name you provided during setup, `database_name` is the SQL Server database name, and `session_name` is the name of the Extended Events session.
+
+> Note: If you want to run the INFIO tool, you must upload or copy the generated files to either an S3 bucket or the infio directory on the INFIO EC2 instance. You can follow the steps outlined [here](#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-infio-directory).
+
+---
+
+#### Uploading Files to an S3 Bucket or INFIO EC2 instance's INFIO directory
 
 > Note: To run an assessment in the INFIO tool, users must upload the required files to either a designated S3 bucket or the INFIO EC2 instance's INFIO directory. Only one of these locations should be opted for file upload.
 
