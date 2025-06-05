@@ -100,11 +100,11 @@ To connect to your SQL Server instance, ensure the following:
   - For use case [collecting real time queries from the INFIO instance](#4-collecting-real-time-queries-from-the-infio-instance) only, make sure your INFIO EC2 instance's IP address and port are authorized to connect to the SQL Server instance.  
 
 - **Read-Only Access**:  
-  - The SQL Server user must have read-only access with the `db_datareader` role on all databases, including system databases to run INFIO-plugin.
+  - The SQL Server user should have only read-only access with the `db_datareader` role on all databases, including system databases to run INFIO-plugin.
   - This ensures only data retrieval operations are allowed, preventing changes to the database.
   
 - **SQL Agent Role**:
-  - In addition to `db_datareader`, SQL Server user must have the `SQLAgentUserRole`, `SQLAgentReaderRole` and `SQLAgentOperatorRole` roles assigned on the `msdb` system database. As these SQL agent roles to SQL Server user are needed to run extended event tool and generate extended events `.xel` file.  
+  - In addition to `db_datareader`, SQL Server user should have only `SQLAgentUserRole`, `SQLAgentReaderRole` and `SQLAgentOperatorRole` roles assigned on the `msdb` system database. As these SQL agent roles to SQL Server user are needed to run extended event tool and generate extended events `.xel` file.  
 
 #### 4. Server Role Permissions
 The following server roles are required by SQL Server user to run the INFIO Plugin:  
