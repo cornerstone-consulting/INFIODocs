@@ -47,7 +47,7 @@ The plugin is particularly useful in the following scenarios:
 - In cases where the INFIO instance has access to SQL Server and centralized monitoring is preferred, the plugin can securely fetch real-time client-side query activity from the INFIO instance, enabling efficient and centralized query monitoring.
 
 
-> Note: For the first three use cases, the INFIO Plugin must be executed from the any Windows machine or Windows box . This requires setting up the necessary environment and dependencies on the SQL Server side to support the plugin. In the fourth use case, the plugin executed from INFIO EC2 instance and it already has all the required prerequisites installed to support this functionality.
+> Note: For the first three use cases, the INFIO Plugin must be executed from the any Windows machine. This requires setting up the necessary environment and dependencies on the SQL Server side to support the plugin. In the fourth use case, the plugin executed from INFIO EC2 instance and it already has all the required prerequisites installed to support this functionality.
 
 ---
 
@@ -69,7 +69,7 @@ Before using the INFIO Plugin, ensure the following requirements are met:
 
 - This specifically applies to the use cases of [No Direct Connectivity of SQL Server to the INFIO Instance](#1-no-direct-connectivity-of-sql-server-to-the-infio-instance), [limited network bandwidth](#2-limited-network-bandwidth) and [real time sql query capture form SQL Server](#3-real-time-sql-query-capture-from-sql-server) only. 
 - If you are running the plugin from the **INFIO EC2 instance**, all required dependencies are **pre-installed** and you can skip installing **Python and mssql-scripter**.
-- If you are running the INFIO Plugin directly from a **SQL Server machine or any Windows machine or Windows box**, please make sure the dependencies below are installed. 
+- If you are running the INFIO Plugin directly from a **SQL Server machine or any Windows machine**, please make sure the dependencies below are installed. 
 
 - **Python version 3.8+** is required to execute the INFIO Plugin. You can download it from the official Python website: [Download Python](https://www.python.org/downloads/)
 - After installing Python, install `mssql-scripter` using pip in command prompt of SQL Server machine:
@@ -81,8 +81,11 @@ Before using the INFIO Plugin, ensure the following requirements are met:
 #### 2. Download input zip file and copy into infio-plugin directory
 
 - Again this applies specifically to use cases of [No Direct Connectivity of SQL Server to the INFIO Instance](#1-no-direct-connectivity-of-sql-server-to-the-infio-instance), [limited network bandwidth](#2-limited-network-bandwidth) and [real time sql query capture form sql query](#3-real-time-sql-query-capture-from-sql-server) only.
-- Download the input zip file from [here](https://github.com/cornerstone-consulting/INFIODocs/blob/main/input.zip).
+- If you are running the plugin from the **INFIO EC2 instance**,  you can skip the step of downloading the input ZIP file and placing it in the infio-plugin directory.
+- If you are running the INFIO Plugin directly from a **SQL Server machine or any Windows machine**, please make sure the dependencies below are placed.
+- Download the input zip file from [here](https://github.com/cornerstone-consulting/INFIODocs/blob/main/input.zip) and place it in the machine where you're running the INFIO Plugin — this could be the **SQL Server machine or any other Windows machine from which the INFIO Plugin is being executed**.
 - Extract the contents of the zip file and copy the extracted folder into the following path:
+> Note: Create the infio-plugin directory manually in the mentioned path below if it does not exist.
 ```bash
 C:\Users\administrator\infio-plugin
 ```
