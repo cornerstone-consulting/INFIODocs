@@ -143,6 +143,10 @@ To enable the user to create, modify, and delete **Extended Events** sessions to
 
 These permissions allow the INFIO Plugin to retrieve necessary information from the SQL Server without compromising security.
 
+#### 6. Enable SQL Server Agent
+
+Ensure that SQL Server Agent is running on the SQL Server instance before using the INFIO Plugin.
+
 ---
 
 ### Modes of operation
