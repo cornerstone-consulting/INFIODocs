@@ -87,11 +87,12 @@ Before using the INFIO Plugin, ensure the following requirements are met:
 - Extract the contents of the zip file and copy the extracted folder into the following path:
 > Note: Create the infio-plugin directory manually in the mentioned path below if it does not exist.
 ```bash
-C:\Users\administrator\infio-plugin
+C:\Users\<user_name>\infio-plugin
 ```
+> Note:  Here, `<user_name>` refers to  your logged-in Windows username (e.g, administrator).
 - After copying the input folder, verify that it is located at the following path:
 ```bash
-C:\Users\administrator\infio-plugin\input
+C:\Users\<user_name>\infio-plugin\input
 ```
 
 
@@ -136,7 +137,7 @@ To enable the user to create, modify, and delete **Extended Events** sessions to
 5. In the **Login Properties** window, click on **"Securables"** in the left pane.
 6. Click **"Search"** → Select **"Specific objects"** → Click **"OK"**.
 7. In the new window, select **"Server"** and click **"OK"**.
-8. In the **Permissions for infiro** list, find **"ALTER ANY EVENT SESSION"**.
+8. In the **Permissions** list, find **"ALTER ANY EVENT SESSION"**.
 9. Check the **"Grant"** box next to **"ALTER ANY EVENT SESSION"**.
 10. Click **"OK"** to apply the changes.
 
