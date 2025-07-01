@@ -1009,7 +1009,7 @@ You can choose one or multiple assessment types based on your requirements:
     - INFIO automatically gathers:
       - DMS Assessor input files.
       - Database Object Dependency input files.
-    - The INFIO plugin collects:
+    - Users must generate the following files from the SQL Server by running the INFIO plugin and upload the files:
       - Data Definition Language (DDL) Schema files.
       - Extended Events XML file.
     
@@ -1025,7 +1025,7 @@ You can choose one or multiple assessment types based on your requirements:
         - Data Definition Language(DDL) schema files.
         - DMS Assessor input files.
         - Database Object Dependency input files.
-      - The INFIO plugin collects:
+      - Users must generate the following files from the SQL Server by running the INFIO plugin and upload the file:
         - Extended Events XML file.
       
     > Note: If users prefer not to generate the Extended Events XML file using the INFIO plugin, they can instead follow the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md) to create a Profiler Events XML file and include it in the INFIO assessment. The same upload process described above should be followed to transfer the XML file to either the designated S3 bucket or the INFIO EC2 instance’s INFIO directory.
