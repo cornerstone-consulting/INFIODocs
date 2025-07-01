@@ -292,7 +292,7 @@ To get the most recent and accurate cost estimate for your AWS architecture, you
 |------------------------|------------------------------------------|------------------------|
 | **Amazon S3**         | Storage (10GB) & 500 get and put requests/month | $0.23                 |
 | **AWS Secrets Manager** | 5 secrets per month x 1 month x 0.40 USD per secret per month   | $2.00                 |
-| **AWS EC2**           | m6a.large, 125GB EBS - 1 instances x 0.1784 USD On Demand hourly cost x 730 hours in a month                  | $140.32  |
+| **AWS EC2**           | m6a.large, 200GB EBS - 1 instances x 0.1784 USD On Demand hourly cost x 730 hours in a month                  | $146.23  |
 | **AWS Key Management Service (KMS)** | 2 CMK x Number of symmetric requests (1000) | $2.00 |
 | **DMS**  | - | $0.00 | 
 
@@ -325,13 +325,6 @@ INFIO on AWS is available in **all** AWS regions **except** AWS GovCloud (US).
 |-----------------------|
 | **US-East (AWS GovCloud)** |
 | **US-West (AWS GovCloud)** |
-
-
-To configure the AWS Region on your INFIO EC2 instance, run the following command in the terminal:
-```bash
-setx AWS_REGION <your_aws_region>
-```
-Replace <your_aws_region> with the appropriate region code (e.g., us-east-1, eu-west-1, etc.).
 
 ---
 
@@ -618,110 +611,159 @@ The `--endpoint-url` parameter is **optional**. Utilize it only if you created a
 
 ### 6. Required SQL Server Database Permissions for Running the INFIO Tool
 
-> Note: These SQL Server Database permissions on all databases, including system databases, are required to run the INFIO tool. Without these permissions, the tool will not function properly.
+This guide provides an automated SQL script to configure all necessary permissions for the INFIO Plugin on your SQL Server instance. Instead of manually setting up permissions through multiple steps, you can use our single script that handles everything automatically.
 
-1. **SQL Server Credentials with permissions**  
-To connect to your SQL Server instance, ensure the following:  
+#### Prerequisites
+Before running the script:
 
-- **Access Credentials**:  
-  - Have valid access credentials (username and password) for your SQL Server instance.  
-  - Ensure that INFIO EC2 instance IP address is authorized to connect to SQL Server instance.  
+1. **SQL Server Access:** You must have administrative privileges on the SQL Server instance
+2. **SQL Server Agent:** Ensure SQL Server Agent is running on your SQL Server instance
+3. **Login Creation:** The SQL Server login must already exist (the script does not create logins)
 
-- **Read-Only Access**:  
-  - The SQL Server username must have read-only access with the db_datareader role on all databases, including system databases (mandatory), to successfully run the INFIO tool. Failure to meet this requirement will result in an error..
-  - These permissions ensure the user can only retrieve data without making any modifications to the database.
+#### Configuration Options
 
-2. **Required permissions for SQL Server user**  
-- **Server-Level Permissions**
-  
-  Following permissions must be granted at the server level to allow the user to connect to the SQL Server instance and view necessary metadata and server state: 
-    ```sql
-    GRANT CONNECT SQL TO [<UserName>];  
-    GRANT VIEW ANY DEFINITION TO [<UserName>];  
-    GRANT VIEW SERVER STATE TO [<UserName>];
-    ALTER SERVER ROLE [##MS_DatabaseConnector##] ADD MEMBER [<UserName>];
-    ALTER SERVER ROLE [##MS_DefinitionReader##] ADD MEMBER [<UserName>];
-    ALTER SERVER ROLE [##MS_PerformanceDefinitionReader##] ADD MEMBER [<UserName>];
-    ALTER SERVER ROLE [##MS_SecurityDefinitionReader##] ADD MEMBER [<UserName>];
-    ALTER SERVER ROLE [##MS_ServerPerformanceStateReader##] ADD MEMBER [<UserName>];
-    ALTER SERVER ROLE [##MS_ServerSecurityStateReader##] ADD MEMBER [<UserName>];
-    ALTER SERVER ROLE [##MS_ServerStateReader##] ADD MEMBER [<UserName>];
-    ```
-    > Note: Replace `UserName` with your actual SQL Server login name (the server-level login).
+1. **@LoginName (Required)**
+   - Replace `'<SQL_SERVER_USERNAME>'` with your actual SQL Server login name
+   - Example: 
+     ```sql
+     DECLARE @LoginName NVARCHAR(100) = 'sql_ro';
+     ```
 
-- **Database-Level Permissions (All Databases Including System)**
-  
-  Following permissions must be granted at the database level to enable the user to query relevant system objects and view database state:
+2. **@DatabaseList (Optional)**
+   - Option A: Leave empty (`''`) to grant permissions on ALL databases
+     ```sql
+     DECLARE @DatabaseList NVARCHAR(MAX) = '';  -- All databases
+     ```
+   - Option B: Specify specific databases as comma-separated list
+     ```sql
+     DECLARE @DatabaseList NVARCHAR(MAX) = 'MyDB1,MyDB2,MyDB3';
+     ```
 
-  - Add the user to each database
-  - Grant `db_datareader` role
-  - Apply required read-only permissions
-   ```sql
-    DECLARE @DBName NVARCHAR(200)
-    DECLARE @SQL NVARCHAR(MAX)
-    DECLARE @LoginName NVARCHAR(100) = '<USERNAME>'  -- Change USERNAME according to your username
+Copy and run the following script in SQL Server Management Studio (SSMS):
 
-    DECLARE db_cursor CURSOR FOR
-    SELECT name 
-    FROM sys.databases 
-    WHERE state_desc = 'ONLINE'
+```sql
+-- ==========================================
+-- CHANGE THESE TWO VALUES ONLY:
+-- ==========================================
 
-    OPEN db_cursor  
-    FETCH NEXT FROM db_cursor INTO @DBName  
+DECLARE @LoginName NVARCHAR(100) = '<SQL_SERVER_USERNAME>';  -- 🔄 Change to your username
+DECLARE @DatabaseList NVARCHAR(MAX) = '';   -- 🔄 Leave empty '' for ALL databases
 
-    WHILE @@FETCH_STATUS = 0  
-    BEGIN  
-        SET @SQL = '
-        USE [' + @DBName + '];
+-- ==========================================
+-- DO NOT MODIFY BELOW THIS LINE
+-- ==========================================
+DECLARE @SQL NVARCHAR(MAX);
+DECLARE @DBName NVARCHAR(200);
+-- Grant database-level permissions
+EXEC('GRANT VIEW DATABASE STATE TO [' + @LoginName + ']');
+EXEC('GRANT SELECT ON OBJECT::[sys].[sql_expression_dependencies] TO [' + @LoginName + ']');
+-- Grant server-level permissions
+EXEC('GRANT CONNECT SQL TO [' + @LoginName + ']');
+EXEC('GRANT VIEW ANY DEFINITION TO [' + @LoginName + ']');
+EXEC('GRANT VIEW SERVER STATE TO [' + @LoginName + ']');
+EXEC('GRANT ALTER ANY EVENT SESSION TO [' + @LoginName + ']');
+-- Create temp table for database list
+CREATE TABLE #DBList (DatabaseName NVARCHAR(200));
+-- Check if database list is empty
+IF LTRIM(RTRIM(ISNULL(@DatabaseList, ''))) = ''
+BEGIN
+    -- No list provided - get ALL databases
+    INSERT INTO #DBList (DatabaseName)
+    SELECT name FROM sys.databases WHERE state_desc = 'ONLINE';
+END
+ELSE
+BEGIN
+    -- Add master and msdb to the list
+    SET @DatabaseList = @DatabaseList + ',master,msdb';
+    
+    -- Parse comma-separated list into temp table
+    DECLARE @xml XML = N'<r><![CDATA[' + REPLACE(@DatabaseList, ',', ']]></r><r><![CDATA[') + ']]></r>';
+    INSERT INTO #DBList (DatabaseName)
+    SELECT LTRIM(RTRIM(r.value('.', 'NVARCHAR(200)')))
+    FROM @xml.nodes('//r') AS records(r);
+END
+-- Cursor to loop through specified databases only
+DECLARE db_cursor CURSOR FOR
+SELECT DISTINCT dl.DatabaseName 
+FROM #DBList dl
+INNER JOIN sys.databases sd ON dl.DatabaseName = sd.name
+WHERE sd.state_desc = 'ONLINE';
+OPEN db_cursor;
+FETCH NEXT FROM db_cursor INTO @DBName;
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    -- Build dynamic SQL for each database
+    SET @SQL = '
+    USE [' + @DBName + '];
+    -- ✅ Step 1: Create user if not exists
+    IF NOT EXISTS (
+        SELECT 1 FROM sys.database_principals 
+        WHERE name = ''' + @LoginName + '''
+    )
+    BEGIN
+        CREATE USER [' + @LoginName + '] FOR LOGIN [' + @LoginName + '];
+    END;
+    -- ✅ Step 2: Add to db_datareader role if not already a member
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM sys.database_role_members drm
+        JOIN sys.database_principals r ON drm.role_principal_id = r.principal_id
+        JOIN sys.database_principals m ON drm.member_principal_id = m.principal_id
+        WHERE r.name = ''db_datareader'' AND m.name = ''' + @LoginName + '''
+    )
+    BEGIN
+        EXEC sp_addrolemember ''db_datareader'', ''' + @LoginName + ''';
+    END;
+    ';
+    
+    EXEC sp_executesql @SQL;
+    FETCH NEXT FROM db_cursor INTO @DBName;
+END;
+-- Cleanup
+CLOSE db_cursor;
+DEALLOCATE db_cursor;
+DROP TABLE #DBList;
+-- Grant MSDB SQL Agent roles
+USE [msdb];
+IF EXISTS (SELECT 1 FROM sys.database_principals WHERE name = @LoginName)
+BEGIN
+    EXEC('ALTER ROLE [SQLAgentUserRole] ADD MEMBER [' + @LoginName + ']');
+    EXEC('ALTER ROLE [SQLAgentReaderRole] ADD MEMBER [' + @LoginName + ']');
+    EXEC('ALTER ROLE [SQLAgentOperatorRole] ADD MEMBER [' + @LoginName + ']');
+END;
+USE [master];
+PRINT 'Permissions granted successfully for user: ' + @LoginName;
+```
 
-        IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = ''' + @LoginName + ''')
-        BEGIN
-            CREATE USER [' + @LoginName + '] FOR LOGIN [' + @LoginName + '];
-        END;
+#### Server-Level Permissions
+The script automatically grants these server-level permissions:
 
-        IF NOT EXISTS (
-            SELECT 1 
-            FROM sys.database_role_members drm
-            JOIN sys.database_principals r ON drm.role_principal_id = r.principal_id
-            JOIN sys.database_principals m ON drm.member_principal_id = m.principal_id
-            WHERE r.name = ''db_datareader'' AND m.name = ''' + @LoginName + '''
-        )
-        BEGIN
-            EXEC sp_addrolemember ''db_datareader'', ''' + @LoginName + ''';
-        END;
-        '
+1. **CONNECT SQL** - Allows connection to the SQL Server instance
+2. **VIEW ANY DEFINITION** - Enables viewing of object definitions across the server
+3. **VIEW SERVER STATE** - Allows viewing server-wide configuration and performance data
+4. **ALTER ANY EVENT SESSION** - Permits creation and management of Extended Events sessions
+5. **VIEW DATABASE STATE** - Enables viewing database-level configuration and state
 
-        EXEC sp_executesql @SQL  
-        FETCH NEXT FROM db_cursor INTO @DBName  
-    END  
+#### Database-Level Permissions
+For each database (either all or specified), the script:
 
-    CLOSE db_cursor  
-    DEALLOCATE db_cursor;  
-  ```
-  > Note: Replace `USERNAME` with your actual SQL Server login name (the server-level login). 
+1. Creates a database user if it doesn't exist
+2. Adds the user to `db_datareader` role for read-only access
+3. Ensures system databases (master and msdb) are always included
 
-  To grant the specified permissions to a user in a single database, you can run the following SQL query: 
+#### SQL Agent Permissions
+The script grants these SQL Agent roles on the msdb database:
 
-    ```sql
-    USE [YourDatabaseName];  -- Replace with your actual database name
-    GO
+1. **SQLAgentUserRole** - Basic SQL Agent permissions
+2. **SQLAgentReaderRole** - Read SQL Agent job information
+3. **SQLAgentOperatorRole** - View and read SQL Agent job properties
 
-    -- Grant required permissions
-    ALTER ROLE [db_datareader] ADD MEMBER [<USERNAME>];
-    ```
+These roles are essential for the Extended Events tool to generate .xel files.
 
-    > Notes: Replace [YourDatabaseName] with your target DB name. Replace [USERNAME] with the database username (usually same as login).
-
-  Grants the user access to connect to the database, view its state, and query object dependencies—required.
-
-  ```sql
-  GRANT CONNECT TO [<UserName>];
-  GRANT VIEW DATABASE STATE TO [<UserName>];
-  GRANT SELECT ON OBJECT::[sys].[sql_expression_dependencies] TO [<UserName>];
-  ```
-  > Notes: Replace [USERNAME] with the database username (usually same as login).
-
-
+#### Security Considerations
+- ✅ **Read-Only Access:** The script ensures the user has only read permissions, preventing any data modifications
+- ✅ **No Elevation:** The user cannot elevate privileges or modify security settings
+- ✅ **Audit Trail:** All permission grants are logged in SQL Server's security logs
 
 
 #### 7. Update Environment Variables for Multiple Deployments of INFIO EC2 Instace (Optional):
@@ -945,17 +987,17 @@ You can choose one or multiple assessment types based on your requirements:
 
 **1. Offline Mode**
 
-- **Purpose**: Designed for scenarios where users need to manually generate and upload necessary files such as DMS assessor, DDL, and Object dependency files for assessment by running the INFIO plugin.
+- **Purpose**: Designed for scenarios where users need to manually generate and upload necessary files such as DMS assessor, DDL, Database Object dependency and Extended events XML files for assessment by running the INFIO plugin.
 - **Functionality**:
     - Users must generate the following files from the SQL Server by running the INFIO plugin:
-      - Data Definition Language (DDL) input files.
+      - Data Definition Language (DDL) schema files.
       - DMS Assessor input files.
-      - Object Dependency input files.
-      - For running INFIO Plugin, refer to the [INFIO Plugin Documentation](https://github.com/cornerstone-consulting/INFIODocs/blob/main/infio-plugin.md).
-    - Users are also required to have performed specific steps in SQL Server Management Studio (SSMS) to collect SQL Server Profiler Events from the source SQL Server. For generating profiler events XML file from SQL Server, refer to the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md).
+      - Database Object Dependency input files.
+      - Extended Events XML file. 
+    - For running INFIO Plugin, refer to the [INFIO Plugin Documentation](https://github.com/cornerstone-consulting/INFIODocs/blob/main/infio-plugin.md).
     - The generated files should be uploaded to either a designated S3 bucket or INFIO EC2 instance's INFIO directory. Follow the [file upload process](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-directory) to ensure all required files are uploaded correctly, as this is mandatory for running the assessment.
 
-    > Note: If users prefer not to manually create the SQL Server Profiler Events file, they can use the INFIO plugin to generate an Extended Events file. The same upload process mentioned above should be followed to transfer the file to either the designated S3 bucket or the INFIO EC2 instance's INFIO directory.
+    > Note: If users prefer not to generate the Extended Events XML file using the INFIO plugin, they can instead follow the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md) to create a Profiler Events XML file and include it in the INFIO assessment. The same upload process described above should be followed to transfer the XML file to either the designated S3 bucket or the INFIO EC2 instance’s INFIO directory.
       
 
 **2. Mixed Mode**
@@ -966,33 +1008,29 @@ You can choose one or multiple assessment types based on your requirements:
     - In this option, INFIO will automatically collect DMS Assessor and Object Dependency input data. However, users must manually collect Data Definition Language (DDL) files using INFIO plugin and Profiler Events from the source SQL Server.
     - INFIO automatically gathers:
       - DMS Assessor input files.
-      - Object Dependency input files.
+      - Database Object Dependency input files.
     - The INFIO plugin collects:
-      - Data Definition Language (DDL) input files.
-    - Users must manually generate:
-      - SQL Server Profiler events from SQL Server.
+      - Data Definition Language (DDL) Schema files.
+      - Extended Events XML file.
     
     - For running INFIO Plugin, refer to the [INFIO Plugin Documentation](https://github.com/cornerstone-consulting/INFIODocs/blob/main/infio-plugin.md).
-    - For collecting SQL Server Profiler Events into XML file, refer to the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md).
     - Once collected, users must upload the files to either a designated S3 bucket or the INFIO EC2 instance's INFIO directory. Follow the [file upload process here](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-directory) for detailed instructions.
 
-    > Note: If users prefer not to manually create the SQL Server Profiler Events file, they can use the INFIO plugin to generate an Extended Events file. The same upload process mentioned above should be followed to transfer the file to either the designated S3 bucket or the INFIO EC2 instance's INFIO directory.
-    
+    > Note: If users prefer not to generate the Extended Events XML file using the INFIO plugin, they can instead follow the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md) to create a Profiler Events XML file and include it in the INFIO assessment. The same upload process described above should be followed to transfer the XML file to either the designated S3 bucket or the INFIO EC2 instance’s INFIO directory.
 
   - **Option 2: All Files Collected by INFIO Tool**:
     - The INFIO plugin collects:
       - This option automates the collection of DDL, DMS Assessor, and Object Dependency input file. However, users must manually collect SQL Server Profiler Extended Events from the source SQL Server.
       - INFIO automatically gathers:
-        - Data Definition Language(DDL) input files.
+        - Data Definition Language(DDL) schema files.
         - DMS Assessor input files.
-        - Object Dependency input files.
-      - Users must manually generate:
-        - SQL Server Profiler events from SQL Server.
+        - Database Object Dependency input files.
+      - The INFIO plugin collects:
+        - Extended Events XML file.
+      
+    > Note: If users prefer not to generate the Extended Events XML file using the INFIO plugin, they can instead follow the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md) to create a Profiler Events XML file and include it in the INFIO assessment. The same upload process described above should be followed to transfer the XML file to either the designated S3 bucket or the INFIO EC2 instance’s INFIO directory.
     
-    - For collecting SQL Server Profiler Events into XML file, refer to the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md).
     - Once collected, users must upload the files to either a designated S3 bucket or the INFIO EC2 instance's INFIO directory. Follow the [file upload process here](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-directory) for detailed instuctions.
-
-    > Note: If users prefer not to manually create the SQL Server Profiler Events file, they can use the INFIO plugin to generate an Extended Events file. The same upload process mentioned above should be followed to transfer the file to either the designated S3 bucket or the INFIO EC2 instance's INFIO directory. For running INFIO Plugin, refer to the [INFIO Plugin Documentation](https://github.com/cornerstone-consulting/INFIODocs/blob/main/infio-plugin.md).
 
 
 **5. Review Database Configurations**
@@ -1063,6 +1101,11 @@ Once the assessment process is successfully completed, navigate to the left side
     ```
     Local path: C:\Users\Administrator\infio\applications\<application_name>\destination\reports\<application_name>.html/pdf
     ```
+
+  - A ZIP file containing the report will also be saved at the following location, which you can share with the Cornerstone technical team:
+    ```
+    Local path: C:\Users\Administrator\infio\applications\<application_name>\destination\<application_name>
+    ```
   > **Note**: In both locations, `<application_name>` represents the name of the application for which the report was generated.
 
   The consolidated mode report can be accessed at the following location:  
@@ -1103,7 +1146,7 @@ You can now use this CSV file for further assessment and reporting.
 For monitoring purposes, the logs contain entries for errors, application startup events, and other activity logs. These logs are organized by month and can be found in the following directory:
 
 ```bash
-Users/administrator/infio/logs/
+C:\Users\Administrator\infio\logs
 ```
 ![image](https://github.com/user-attachments/assets/5aa8fe3a-0fb4-40ed-9b76-4d051e6ac55e)
 
