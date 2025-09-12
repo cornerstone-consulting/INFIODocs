@@ -789,28 +789,28 @@ You should update the DMS instance profile name by using the same suffix as the 
 
 ### INFIO Assessment Tool Usage Guide
 
-1. Before running the INFIO Assessment Tool, you must complete the CloudFormation template steps outlined above to create the necessary INFIO resources and ensure the tool runs successfully.
-2. Navigate to the `Desktop:\INFIO Assessment Tool` folder located on the desktop of the INFIO EC2 instance.
-3. Inside the **INFIO Assessment Tool** folder, you will find three subfolders:
+1. Before proceeding with the INFIO Assessment Tool, ensure that you have completed the CloudFormation template deployment steps to create all necessary INFIO resources. This setup is required for the tool to function properly.
+2. Navigate to the desktop and locate the `INFIO Assessment Tool` folder.
+3. Open the folder to view the following subdirectories::
     - `aws-infra-setup`
     - `infio`
     - `infio-plugin`
-4. Open the `infio` folder. Inside this folder, locate and double click on the **start_infio batch file** to start the INFIO application. It will run the INFIO tool in Microsoft edge browser.
-5. If you encounter the error **"License validation failed. The app cannot be started,"** please contact **Cornerstone Support** for assistance with license validation at **info@cornerstone-consulting.io**. Make sure to provide your **INFIO EC2 instance ID** to the Cornerstone Support team for license validation.  
-6. Once the tool is launched, go to the `Home` page where INFIO will prompt you dashboard page. If your company name is not available in the list, you can enter the company name.
+4. Navigate to the `infio` subfolder, locate and double click on the **start_infio** batch file to launch the INFIO application. The INFIO tool will automatically open in Microsoft Edge browser.
+5. If you encounter the error **"License validation failed. The app cannot be started"** please contact **Cornerstone Support** for assistance with license validation at **info@cornerstone-consulting.io**. Make sure to provide your **INFIO EC2 instance ID** to the Cornerstone Support team for license validation. And wait for the Cornerstone Support team to validate your license before proceeding
+6. Once the app is launched, go to the `Home` page where INFIO will prompt you dashboard page.
+
+
+#### Navigation Overview
 
 **Left Navigation Panel**
-The sidebar contains the following options:  
-- **🏠 Home** - Redirects to the dashboard which provides overview of key metrics related to application assessments.  
-- **⚙️ Configure** - Allows users to set up configurations of various server details.  
-- **🔍 Discover** - Allows users to input applications details, associated servers, etc.  
+The INFIO application sidebar contains the following sections and options:  
+- **🏠 Dashboard** - Provides an overview of key metrics related to application assessments.  
+- **⚙️ Configure** - Allows users to set up configurations of various server details based on applications.  
+- **🔍 Discover** - Enables users to input application details, associated servers, and other discovery information.  
 - **📊 Assess** - Facilitates running assessments on discovered applications.  
-- **📄 Reports** - Allows users to generate database assessment reports for respective application and company.  
-  - Expandable submenu for detailed report views.  
-- **🚀 Deploy** - Deployment-related functionality.  
-- **🔄 Migrate** - Migration-related functionality.
-
-- To access deploy and migrate features, please contact cornerstone support team at **[info@cornerstone-consulting.io](mailto:info@cornerstone-consulting.io)** for more information and assistance.
+- **📄 Reports** - Allows users to generate database assessment reports for respective applications and companies.  
+- **🚀 Resource Deployment** - Manages AWS infrastructure provisioning and Babelfish deployment configurations
+- **🔄 Deployment & Migration** - Handles the complete migration workflow including database deployment, reconciliation, and data migration tasks. 
 
 #### Infio Dashboard Overview
 
