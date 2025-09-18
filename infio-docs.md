@@ -3,10 +3,11 @@
 # Table of Contents
 
 - [Solution Overview](#solution-overview)
-  - [Multi Assessment Approach](#multi-assessment-approach)
-    1. [SQL Server to Babelfish](#1-sql-server-to-babelfish-for-aurora-postgresql-assessment)
-    2. [SQL Server to Aurora PostgreSQL Assessment](#2-sql-server-to-aurora-postgresql-assessment)
-    3. [NET Application to .NET Core Migration Assessment](#3-net-application-to-net-core-migration-assessment)
+- [Multi Assessment Approach](#multi-assessment-approach)
+  1. [SQL Server to Babelfish](#1-sql-server-to-babelfish-for-aurora-postgresql-assessment)
+  2. [SQL Server to Aurora PostgreSQL Assessment](#2-sql-server-to-aurora-postgresql-assessment)
+  3. [NET Application to .NET Core Migration Assessment](#3-net-application-to-net-core-migration-assessment)
+- [INFIO Migration Covers](#infio-migration-covers)
 - [Purpose of This Document](#purpose-of-this-document)
 - [Target Audience](#target-audience)
 - [INFIO Assessments Report covers](#infio-assessments-report-covers)
@@ -44,6 +45,23 @@
     - [SQL Server to Aurora PostgreSQL](#2-sql-server-to-aurora-postgresql)
     - [.NET Assessment](#3-net-assessment)
   - [Generating the Summary Report](#generating-the-summary-report)
+  - [Migration Guide](#migration-guide)
+    - [Resource Deployment](#resource-deployment)
+      - [Wave Configuration](#wave-configuration)
+      - [Wave Server Configuration](#wave-server-configuration)
+      - [Wave Replication Instance Configuration](#wave-replication-instance-configuration)
+      - [Wave Replication Instance Info](#wave-replication-instance-info)
+      - [Wave DMS Endpoints Info](#wave-endpoints-info)
+      - [Wave DMS Tasks](#wave-dms-tasks)
+    - [Deployment & Migration](#deployment--migration)
+      - [Build](#babelfish-deployment---build)
+      - [Configure & Deploy Databases](#babelfish-deployment---configure--deploy-database)
+      - [Deploy](#babelfish-deployment---deploy)
+      - [Reconciliation](#babelfish-deployment---reconciliation)
+      - [Migration Tasks](#babelfish-deployment---dms-migration-task)
+      - [Deploy Table Elements](#babelfish-deployment---deploy-table-elements)
+      - [Deploy Object Dependency](#babelfish-deployment---deploy-table-objects)
+      - [Clean Target Server](#babelfish-deployment---clean-target-server)
   - [Export Server Metrics](#export-server-metrics)
 - [Monitoring](#monitoring)
 - [Recovery and Backup](#recovery-and-backup)
@@ -55,7 +73,11 @@
 ---
 ### Solution Overview
 
-INFIO is a specialized tool developed by Cornerstone Consulting Group to streamline and automate the database and application migration assessment process in AWS. It provides a comprehensive evaluation of migration feasibility, covering SQL Server to Babelfish for Aurora PostgreSQL, SQL Server to Aurora PostgreSQL, and .NET applications migrating to .NET Core. Unlike traditional assessment tools that focus primarily on code compatibility, INFIO takes a migration-centric approach, offering detailed insights into compatibility, conversion efforts, and potential challenges across databases and application stacks.
+INFIO is a specialized tool developed by Cornerstone Consulting Group to streamline and automate both the assessment & migration in AWS.
+
+On the assessment side, INFIO provides a comprehensive evaluation of migration feasibility, covering SQL Server to Babelfish for Aurora PostgreSQL, SQL Server to Aurora PostgreSQL, and .NET applications migrating to .NET Core. Unlike traditional assessment tools that focus primarily on code compatibility, INFIO takes a migration-centric approach, offering detailed insights into compatibility, conversion efforts, and potential challenges across databases and application stacks.
+
+On the migration side, INFIO integrates with AWS Database Migration Service (DMS) to automate and manage the data transfer process. It provisions replication instances, configures endpoints, and creates migration tasks to securely and efficiently move data from SQL Server to Babelfish-enabled Aurora PostgreSQL. This dual capability makes INFIO a single-pane solution for both planning and executing end-to-end database modernization initiatives.
 
 ### Multi Assessment Approach
 
@@ -93,6 +115,35 @@ Key aspects of the .NET assessment report includes:
 - Automated conversion of .NET project references to their .NET Core equivalent with updated package details
 
 The solution provides deep insights into the existing database environment while adhering to **AWS best practices** for cloud migration. It emphasizes **security**, **scalability**, **reliability**, and **cost optimization** throughout the process.
+
+---
+
+### INFIO Migration Covers
+
+INFIO structures the migration process into multiple stages to ensure accuracy, reliability, and completeness when moving workloads from SQL Server to Babelfish for Aurora PostgreSQL. Instead of treating migration as a single bulk operation, INFIO follows a controlled sequence:
+
+- **Schema Preparation (Build, Configure & Deploy databases)**
+  SQL Server schemas often contain unsupported features in Babelfish.
+  INFIO separates table structures from foreign keys, indexes, and other elements, then converts them into Babelfish-compatible syntax.
+  This ensures only compatible objects are deployed to the target upfront.
+
+- **Validation (Reconciliation)**
+  Before migrating data, INFIO verifies that the schema and tables on the target match the source.
+  Any mismatches or unsupported objects are flagged early, reducing risk during the migration run.
+
+- **Data Migration (DMS Migration Task)**
+  Once the schema is ready, INFIO uses AWS DMS tasks to transfer actual data from SQL Server to the Babelfish-enabled Aurora PostgreSQL instance.
+  This step ensures that large volumes of data are moved securely and efficiently, while you can track progress in real time.
+
+- **Post-Migration Enhancements (Deploy Table Elements & Objects)**
+  After core schema and data migration, INFIO deploys additional table elements (indexes, foreign keys, constraints) and dependent objects (procedures, functions, views).
+  This layered approach ensures full application compatibility and performance optimization.
+
+- **Reset & Rerun (Clean Target Server)**
+  If errors occur or you want to start fresh, INFIO allows you to clean the target server, drop previously migrated objects, and re-run the migration.
+
+In summary, INFIO created different steps because a smooth migration requires more than just data transfer. By separating schema build, validation, data load, and dependent object deployment into structured phases, INFIO reduces risks, improves accuracy, and delivers a complete, production-ready migration solution for SQL Server to Babelfish for Aurora PostgreSQL.
+
 
 ---
 
@@ -220,6 +271,7 @@ INFIO can be used to:
 
 - **Assess large-scale heterogeneous database & .NET application migrations**: Enable a single-pane-of-glass view for large-scale database workload migration assessments.
 - **Provide prebuilt automation and reporting**: Utilize role-based access via a single web interface designed specifically for migration assessments.
+- **Migrate heterogeneous databases at scale**: Simplify and automate the movement of data from SQL Server to Babelfish for Aurora PostgreSQL with built-in replication setup and monitoring.
 
 ---
 
@@ -247,7 +299,7 @@ This section describes key concepts and defines terminology specific to this sol
   - Optional if your INFIO EC2 is in a public subnet or has a NAT Gateway.
   - Required if your INFIO EC2 is in a private subnet (no internet access) and needs AWS service access.
 Without a VPC Endpoint, a private INFIO EC2 instance must use a NAT Gateway (extra cost) or be moved to a public subnet.
-- **DMS**: DMS is generating assessment report that it generates to help you convert your schema. This database migration assessment report summarizes all of the schema conversion tasks. It also details the action items for schema that can't be converted to the DB engine of your target DB instance of Aurora postgreSQL. 
+- **Data migration service (DMS)**: DMS is generating assessment report that it generates to help you convert your schema. This database migration assessment report summarizes all of the schema conversion tasks. It also details the action items for schema that can't be converted to the DB engine of your target DB instance of Aurora postgreSQL. In addition to assessment, DMS is also responsible for the actual data migration from SQL Server to Babelfish for Aurora PostgreSQL. Within INFIO, DMS is used to create the replication instance, endpoints, and migration tasks that execute the data movement.
 
 ---
 
@@ -272,7 +324,7 @@ Without a VPC Endpoint, a private INFIO EC2 instance must use a NAT Gateway (ext
 - **AWS Key Management Service (Supporting)**: Manages encryption keys used to protect data and resources.
 - **AWS CloudFormation (Supporting)**: Accelerates AWS resource provisioning with infrastructure as code.
 - **VPC Endpoints (Optional & Supporting)**: Provide secure, private connectivity between your VPC and AWS services.
-- **AWS DMS(Supporting)**: Provides assessment report for schema conversion and useful for DMS data migration for SQL server to Babelfish for aurora postgreSQL. 
+- **AWS DMS(Supporting)**: Provides assessment report for schema conversion for SQL server to Aurora postgreSQL. In addition with assessment, DMS provides replication instance, endpoints and migration tasks to migrate data from Source SQL server to Babelfish for Aurora postgreSQL. 
 
 ---
 
@@ -1123,6 +1175,8 @@ Once the report generation process is successfully completed, navigate to the le
 
 #### Resource Deployment
 
+##### Wave Configuration
+
 This guide walks you through to configure AWS Database Migration Service (DMS) resources to migrate data from a SQL Server database to a Babelfish-enabled Aurora PostgreSQL instance. The key step is creating a replication instance, which runs migration tasks and connects both source and target databases. On the Resource Deployment page, click Create New Wave to start a migration setup. Each wave groups migration tasks for one or more databases.
 
 For creating a new wave, click on New Wave configuration and provide the following details:
@@ -1168,21 +1222,25 @@ After that configuring source and target databases with replication instance, pr
  
 By configuring these resources properly, you ensure that the replication instance has secure network access, high availability, and sufficient compute/storage capacity to handle your migration tasks effectively. However, at this stage you have only defined the necessary resources—the actual creation of the replication instance, DMS tasks, and endpoints is still pending.
 
+---
+
 For actual resource creation of the replication instance, endpoints, and DMS tasks, follow the steps below:
 
-**Wave Server Configuration**
+##### Wave Server Configuration
 
 After saving the wave configuration, a new wave is created. Use the See Configuration dropdown to review its details. Within this view, you will find multiple tabs. The Server Configuration and Replication Instance Configuration tabs display the settings you have already defined.
 
 ![wave server configuration](images/wave_server_configuration.PNG)
 
+---
 
-**Wave Replication instance configuration**
+##### Wave Replication Instance Configuration
 
 ![wave instance configuration](images/wave_replication_instance_config.PNG)
 
+---
 
-**Wave Replication instance Info**
+##### Wave Replication Instance Info
 
 Next, open the Replication Instance Info tab. Here you can check whether the replication instance has been created.
 
@@ -1194,7 +1252,9 @@ To track the progress, click Fetch AWS Resources status in the same page. Once t
 
 If you select more than 50 databases during wave configuration, INFIO will provision multiple replication instances. This is because migrating over 50 databases requires more than 100 endpoints (one source and one target per database), which cannot be supported by a single replication instance.
 
-**Wave Endpoints Info**
+---
+
+##### Wave Endpoints Info
 
 Next, open the Endpoints tab. In this section, you can create the endpoints for both the source and target databases, and test the connectivity required for migration.
 
@@ -1206,7 +1266,9 @@ During endpoint creation, the dashboard table will display the status as In Prog
 
 After the endpoints are created, you can test the connectivity between the source and target database endpoints to ensure that the network settings are configured correctly before starting the migration.
 
-**Wave DMS tasks** 
+---
+
+##### Wave DMS tasks
 
 Next, open the DMS Tasks tab. A DMS task defines how the migration will be executed—it is responsible for moving data from the source to the target database.
 
@@ -1225,9 +1287,9 @@ After completing these steps, the resource deployment process is finished. You c
 
 After completing resource deployment, the next step is to deploy and migrate data into the Babelfish-enabled Aurora PostgreSQL instance. The Deployment & Migration page provides a step-by-step workflow to handle schema deployment, reconciliation, and data migration.
 
-By following below sequence, you ensure a smooth migration of schema, data, foreign keys and dependent objects from SQL Server to Babelfish for Aurora PostgreSQL.
+By following the below sequences, you ensure a smooth migration of schema, data, foreign keys and dependent objects from SQL Server to Babelfish for Aurora PostgreSQL.
 
-**Babelfish Deployment - Build**
+##### Babelfish Deployment - Build
 
 During the Build phase, you prepare the database objects for deployment to the Babelfish-enabled Aurora PostgreSQL instance. Follow these steps:
 
@@ -1239,7 +1301,9 @@ During the Build phase, you prepare the database objects for deployment to the B
 
 ![babelfish build](images/babelfish_build.png)
 
-**Babelfish Deployment - Configure & Deploy database**
+---
+
+##### Babelfish Deployment - Configure & Deploy database
 
 This step prepares the target Babelfish server for migration. It ignores the SQL server unsupported features and create the databases on target Babelfish server. 
 
@@ -1247,7 +1311,9 @@ This step prepares the target Babelfish server for migration. It ignores the SQL
 
 Click on Trigger Configure and Deploy Database to begin the schema deployment.
 
-**Babelfish Deployment - Deploy**
+---
+
+##### Babelfish Deployment - Deploy
 
 In the Deploy tab, you can initiate schema deployment. This process creates Babelfish-compatible table structures and schema objects on the target database after validating connectivity.
 
@@ -1255,15 +1321,21 @@ In the Deploy tab, you can initiate schema deployment. This process creates Babe
 
 Click on Trigger Deploy to begin the schema deployment.
 
-**Babelfish Deployment - Reconciliation** 
+---
 
-Reconciliation ensures that the deployed tables and schema on the target server matches the schema from the source SQL Server. Any mismatches or unsupported tables/objects are flagged for review.
+##### Babelfish Deployment - Reconciliation
+
+Reconciliation ensures that the deployed tables and schema on the target server matches from the source SQL Server. Any mismatches or unsupported tables/schema are flagged for review.
 
 ![babelfish reconciliation](images/babelfish_reconcilation.jpg)
 
-To perform reconciliation, click Trigger Reconciliation to compares the source and target server.
+To perform reconciliation, click Trigger Reconciliation button to compares the source and target server.
 
-**Babelfish Deployment - DMS Migration task**
+---
+
+##### Babelfish Deployment - DMS Migration task
+
+Before initiating a migration task, ensure that the reconciliation step has succeeded and all tables and schemas are correctly deployed on the target server.
 
 This step uses AWS DMS tasks to migrate actual data. The tasks move data from the source endpoints to the target endpoints defined earlier. You can track the progress in real time, with task status showing as In Progress and later Completed upon success.
 
@@ -1273,7 +1345,9 @@ To start migration tasks, click Trigger Migration task to start migrate your act
 
 ![babelfish dms tasks info](images/babelfish_dms_task_info.png)
 
-**Babelfish Deployment - Deploy table elements**
+---
+
+##### Babelfish Deployment - Deploy table elements
 
 After schema and data migration, you can deploy additional table elements such as indexes, foreign keys, and constraints that were not migrated automatically by DMS. This ensures full functionality on the target database.
 
@@ -1281,7 +1355,9 @@ After schema and data migration, you can deploy additional table elements such a
 
 To deploy table elements on target server, click Trigger Deploy Table Elements button.
 
-**Babelfish Deployment - Deploy table objects**
+---
+
+##### Babelfish Deployment - Deploy table objects
 
 Finally, this step handles the deployment of dependent objects like stored procedures, functions, and views, ensuring application compatibility with the Babelfish target database.
 
@@ -1289,8 +1365,9 @@ Finally, this step handles the deployment of dependent objects like stored proce
 
 Click on Trigger Deploy Object Dependency to begin the object dependency deployment.
 
+---
 
-**Babelfish Deployment - Clean target server**
+##### Babelfish Deployment - Clean target server
 
 This is useful when you want to perform a fresh migration run or remove previously deployed objects due to some errors. The Clean Target Server option allows you to reset the target environment by dropping all target databases associated with the selected wave.
 
@@ -1299,6 +1376,7 @@ This is useful when you want to perform a fresh migration run or remove previous
 Click on Trigger Clean Target Server to drop all databases from target server.
 
 By following this sequence, you ensure a smooth migration of schema, data, and dependent objects from SQL Server to Babelfish for Aurora PostgreSQL.
+
 ---
 
 ### Monitoring
