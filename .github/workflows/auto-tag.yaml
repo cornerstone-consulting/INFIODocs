@@ -1,62 +1,50 @@
 name: Auto Tag
 on:
   push:
-    branches: ["*"]
- 
+    branches-ignore:
+      - main
+
 permissions:
   contents: write
- 
+
 jobs:
   tag:
     runs-on: ubuntu-latest
- 
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: true
- 
-      - name: Get latest tag
-        id: get_tag
+
+      - name: Extract version from branch name
+        id: extract_version
         run: |
-          git fetch --tags
-          TAG=$(git tag --sort=-v:refname | head -n 1)
-          if [ -z "$TAG" ]; then TAG="v0.0.0"; fi
-          echo "current_tag=$TAG" >> $GITHUB_OUTPUT
- 
-      - name: Determine bump type from commit messages
-        id: bump_type
-        run: |
-          commits=$(git log -1 --pretty=%B)
-          bump="patch"
-          if echo "$commits" | grep -q "BREAKING CHANGE"; then
-            bump="major"
-          elif echo "$commits" | grep -q "feat:"; then
-            bump="minor"
-          elif echo "$commits" | grep -q "fix:"; then
-            bump="patch"
+          branch_name="${GITHUB_REF##*/}"
+          echo "Branch name: $branch_name"
+          version=$(echo "$branch_name" | grep -oP 'v[0-9]+\.[0-9]+')
+          if [ -z "$version" ]; then
+            echo "Branch name does not contain version. Skipping..."
+            exit 1
           fi
-          echo "bump=$bump" >> $GITHUB_OUTPUT
- 
-      - name: Bump version
-        id: bump_version
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Delete existing tag (if any)
         run: |
-          current_tag="${{ steps.get_tag.outputs.current_tag }}"
-          bump_type="${{ steps.bump_type.outputs.bump }}"
-          version=${current_tag#v}
-          IFS='.' read -r major minor patch <<< "$version"
-          case "$bump_type" in
-            major) major=$((major+1)); minor=0; patch=0;;
-            minor) minor=$((minor+1)); patch=0;;
-            *)     patch=$((patch+1));;
-          esac
-          new_tag="v$major.$minor.$patch"
-          echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
- 
-      - name: Push new tag
+          version="${{ steps.extract_version.outputs.version }}"
+          if git ls-remote --tags origin | grep -q "refs/tags/$version"; then
+            echo "Tag $version exists. Deleting..."
+            git push --delete origin "$version" || true
+            git tag -d "$version" || true
+          else
+            echo "No existing tag $version found."
+          fi
+
+      - name: Create and push new tag
         run: |
+          version="${{ steps.extract_version.outputs.version }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "${{ steps.bump_version.outputs.new_tag }}"
-          git push origin "${{ steps.bump_version.outputs.new_tag }}"
+          git tag "$version"
+          git push origin "$version"
