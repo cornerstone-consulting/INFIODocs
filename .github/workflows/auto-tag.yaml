@@ -1,6 +1,7 @@
 name: Auto Tag
 on:
   push:
+    # all branches except main branch
     branches-ignore:
       - main
 
@@ -18,6 +19,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
+      # Extract version number from branch name 
       - name: Extract version from branch name
         id: extract_version
         run: |
@@ -30,6 +32,7 @@ jobs:
           fi
           echo "version=$version" >> $GITHUB_OUTPUT
 
+      # Delete existing tag if it exists on remote
       - name: Delete existing tag (if any)
         run: |
           version="${{ steps.extract_version.outputs.version }}"
@@ -41,6 +44,7 @@ jobs:
             echo "No existing tag $version found."
           fi
 
+      # Create and push new tag
       - name: Create and push new tag
         run: |
           version="${{ steps.extract_version.outputs.version }}"
