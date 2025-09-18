@@ -62,7 +62,6 @@
       - [Deploy Table Elements](#babelfish-deployment---deploy-table-elements)
       - [Deploy Object Dependency](#babelfish-deployment---deploy-table-objects)
       - [Clean Target Server](#babelfish-deployment---clean-target-server)
-  - [Export Server Metrics](#export-server-metrics)
 - [Monitoring](#monitoring)
 - [Recovery and Backup](#recovery-and-backup)
 - [Managing Licenses](#managing-licenses)
@@ -344,9 +343,9 @@ To get the most recent and accurate cost estimate for your AWS architecture, you
 |------------------------|------------------------------------------|------------------------|
 | **Amazon S3**         | Storage (10GB) & 500 get and put requests/month | $0.23                 |
 | **AWS Secrets Manager** | 5 secrets per month x 1 month x 0.40 USD per secret per month   | $2.00                 |
-| **AWS EC2**           | m6a.large, 200GB EBS - 1 instances x 0.1784 USD On Demand hourly cost x 730 hours in a month                  | $146.23  |
+| **AWS EC2**           | m6a.large, 250GB EBS - 1 instances x 0.1784 USD On Demand hourly cost x 730 hours in a month                  | $150.23  |
 | **AWS Key Management Service (KMS)** | 2 CMK x Number of symmetric requests (1000) | $2.00 |
-| **DMS**  | - | $0.00 | 
+| **DMS**  | Depends on replication instance type (chosen by user), number of replication instances, migration duration, data transfer and tasks created. Pricing will vary based on workload. Use the [AWS Pricing Calculator](https://calculator.aws/) for an accurate estimate. | Varies | 
 
 
 ---
@@ -416,6 +415,7 @@ The template is **intelligent and reusable**, and it adjusts automatically based
 
 - If you're deploying INFIO INstance from INFIO AMI for the very first time in your AWS account:
 - It will create all required resources from scratch, including:
+  - S3 bucket
   - IAM Role
   - EC2 Instance Profile
   - EC2 Security Group
@@ -1191,15 +1191,11 @@ For creating a new wave, click on New Wave configuration and provide the followi
 
 4. Replication Instance Class – Pick an instance size that matches your workload. Larger workloads require more CPU and memory for efficient migration.
 
-5. Storage – Allocate storage based on expected migration volume.
+5. Storage – Allocate storage based on expected migration volume. Note: replication instance storage can only be increased, not decreased, plan capacity carefully.
 
-6. Availability Zone – Select an AZ for the replication instance.
+6. Availability Zone – Select an AZ for the replication instance. To avoid additional transfer costs, place it in the same AZ as your Aurora PostgreSQL cluster; otherwise, cross-AZ charges will apply.
 
-7. Security group - Select the security group that allows:
-  - Inbound access from source SQL Server (port 1433)
-  - Outbound access to target Aurora PostgreSQL (port 5432)
-  - Outbound access to Babelfish endpoint (port 1433)
-
+7. Security Group – Use the security group already attached to INFIO’s EC2 instance (infio-ec2-dms-sg). Ensure outbound rules allow traffic on the Babelfish port (default: 1433). If Babelfish is configured on a different port, update the rule accordingly.
 
 After that configuring source and target databases with replication instance, provide following the details.
 
@@ -1215,9 +1211,9 @@ After that configuring source and target databases with replication instance, pr
 8. Configure Target Database for SQL Server to Babelfish Deployment for Aurora postgreSQL -
    - Target DB Server Name - Enter your Aurora PostgreSQL server hostname.
    - Port - Enter the port number (default is 5432 for PostgreSQL).
-   - Target Secret - Select from available secrets using the dropdown or manage secrets using the ➕, ✏️, and 🗑️ buttons to add, edit, or delete secrets within the secrets manager. These secrets will be used for target postgreSQL server authentication.
-   - Babelfish port - Enter the port number for Babelfish server (default is 1433 for Babelfish).
-   - Babelfish Secret - Select from available secrets using the dropdown or manage secrets using the ➕, ✏️, and 🗑️ buttons to add, edit, or delete secrets within the secrets manager. These secrets will be used for target Babelfish server authentication.
+   - Target Secret (Aurora Postgres User) - Choose the target secret from the list. The Target Secret stores the credentials of the native PostgreSQL user that is created during the Aurora PostgreSQL cluster setup. This secret is primarily used during the resource creation phase of the migration. It provides the authentication needed to create and configure resources such as replication instances and endpoints. It enables AWS DMS and INFIO to establish secure connectivity at the PostgreSQL engine level. In short, the Target Secret is the foundation for setting up the migration infrastructure.
+    - Babelfish Secret (Babelfish User) - Choose the babelfish secret from the list. The Babelfish Secret contains the credentials of the Babelfish user, created inside the Babelfish TDS layer that emulates SQL Server. This secret becomes critical during the data migration phase. It allows DMS tasks to securely connect to the Babelfish endpoint. It is used for transferring data from SQL Server into the Babelfish-enabled Aurora PostgreSQL instance. In short, the Babelfish Secret ensures secure execution of the actual data migration process.
+    - Babelfish Port - Enter the port number (default is 1433 for Babelfish).
 9. Click Submit Configuration to save both application and database configurations or Cancel to discard changes.
  
 By configuring these resources properly, you ensure that the replication instance has secure network access, high availability, and sufficient compute/storage capacity to handle your migration tasks effectively. However, at this stage you have only defined the necessary resources—the actual creation of the replication instance, DMS tasks, and endpoints is still pending.
@@ -1331,6 +1327,9 @@ Reconciliation ensures that the deployed tables and schema on the target server 
 
 To perform reconciliation, click Trigger Reconciliation button to compares the source and target server.
 
+If any mismatches are detected or certain tables or schemas are missing from the target server, INFIO will flag them for review. The detailed error log file can be found at the following location:
+`User/Administrator/infio/migration/<wave_name>/<server_name>/<database_name>/ddl_scripts/babelfish_compatible/<deployment_errors_{db_name}>`.
+
 ---
 
 ##### Babelfish Deployment - DMS Migration task
@@ -1349,7 +1348,7 @@ To start migration tasks, click Trigger Migration task to start migrate your act
 
 ##### Babelfish Deployment - Deploy table elements
 
-After schema and data migration, you can deploy additional table elements such as indexes, foreign keys, and constraints that were not migrated automatically by DMS. This ensures full functionality on the target database.
+After schema and data migration, you can deploy additional table elements such as indexes, foreign keys, and constraints that were not migrated while running DMS tasks. This ensures full functionality on the target database.
 
 ![babelfish deploy table elements](images/babelfish_deploy_table_elements.png)
 
