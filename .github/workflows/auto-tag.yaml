@@ -1,0 +1,54 @@
+name: Auto Tag
+on:
+  push:
+    # all branches except main branch
+    branches-ignore:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      # Extract version number from branch name 
+      - name: Extract version from branch name
+        id: extract_version
+        run: |
+          branch_name="${GITHUB_REF##*/}"
+          echo "Branch name: $branch_name"
+          version=$(echo "$branch_name" | grep -oP 'v[0-9]+\.[0-9]+')
+          if [ -z "$version" ]; then
+            echo "Branch name does not contain version. Skipping..."
+            exit 1
+          fi
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      # Delete existing tag if it exists on remote
+      - name: Delete existing tag (if any)
+        run: |
+          version="${{ steps.extract_version.outputs.version }}"
+          if git ls-remote --tags origin | grep -q "refs/tags/$version"; then
+            echo "Tag $version exists. Deleting..."
+            git push --delete origin "$version" || true
+            git tag -d "$version" || true
+          else
+            echo "No existing tag $version found."
+          fi
+
+      # Create and push new tag
+      - name: Create and push new tag
+        run: |
+          version="${{ steps.extract_version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$version"
+          git push origin "$version"
