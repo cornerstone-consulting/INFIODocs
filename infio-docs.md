@@ -3,10 +3,11 @@
 # Table of Contents
 
 - [Solution Overview](#solution-overview)
-  - [Multi Assessment Approach](#multi-assessment-approach)
-    1. [SQL Server to Babelfish](#1-sql-server-to-babelfish-for-aurora-postgresql-assessment)
-    2. [SQL Server to Aurora PostgreSQL Assessment](#2-sql-server-to-aurora-postgresql-assessment)
-    3. [NET Application to .NET Core Migration Assessment](#3-net-application-to-net-core-migration-assessment)
+- [Multi Assessment Approach](#multi-assessment-approach)
+  1. [SQL Server to Babelfish](#1-sql-server-to-babelfish-for-aurora-postgresql-assessment)
+  2. [SQL Server to Aurora PostgreSQL Assessment](#2-sql-server-to-aurora-postgresql-assessment)
+  3. [NET Application to .NET Core Migration Assessment](#3-net-application-to-net-core-migration-assessment)
+- [INFIO Migration Covers](#infio-migration-covers)
 - [Purpose of This Document](#purpose-of-this-document)
 - [Target Audience](#target-audience)
 - [INFIO Assessments Report covers](#infio-assessments-report-covers)
@@ -44,7 +45,23 @@
     - [SQL Server to Aurora PostgreSQL](#2-sql-server-to-aurora-postgresql)
     - [.NET Assessment](#3-net-assessment)
   - [Generating the Summary Report](#generating-the-summary-report)
-  - [Export Server Metrics](#export-server-metrics)
+  - [Migration Guide](#migration-guide)
+    - [Resource Deployment](#resource-deployment)
+      - [Wave Configuration](#wave-configuration)
+      - [Wave Server Configuration](#wave-server-configuration)
+      - [Wave Replication Instance Configuration](#wave-replication-instance-configuration)
+      - [Wave Replication Instance Info](#wave-replication-instance-info)
+      - [Wave DMS Endpoints Info](#wave-endpoints-info)
+      - [Wave DMS Tasks](#wave-dms-tasks)
+    - [Deployment & Migration](#deployment--migration)
+      - [Build](#babelfish-deployment---build)
+      - [Configure & Deploy Databases](#babelfish-deployment---configure--deploy-database)
+      - [Deploy](#babelfish-deployment---deploy)
+      - [Reconciliation](#babelfish-deployment---reconciliation)
+      - [Migration Tasks](#babelfish-deployment---dms-migration-task)
+      - [Deploy Table Elements](#babelfish-deployment---deploy-table-elements)
+      - [Deploy Object Dependency](#babelfish-deployment---deploy-table-objects)
+      - [Clean Target Server](#babelfish-deployment---clean-target-server)
 - [Monitoring](#monitoring)
 - [Recovery and Backup](#recovery-and-backup)
 - [Managing Licenses](#managing-licenses)
@@ -55,7 +72,11 @@
 ---
 ### Solution Overview
 
-INFIO is a specialized tool developed by Cornerstone Consulting Group to streamline and automate the database and application migration assessment process in AWS. It provides a comprehensive evaluation of migration feasibility, covering SQL Server to Babelfish for Aurora PostgreSQL, SQL Server to Aurora PostgreSQL, and .NET applications migrating to .NET Core. Unlike traditional assessment tools that focus primarily on code compatibility, INFIO takes a migration-centric approach, offering detailed insights into compatibility, conversion efforts, and potential challenges across databases and application stacks.
+INFIO is a specialized tool developed by Cornerstone Consulting Group to streamline and automate both the assessment & migration in AWS.
+
+On the assessment side, INFIO provides a comprehensive evaluation of migration feasibility, covering SQL Server to Babelfish for Aurora PostgreSQL, SQL Server to Aurora PostgreSQL, and .NET applications migrating to .NET Core. Unlike traditional assessment tools that focus primarily on code compatibility, INFIO takes a migration-centric approach, offering detailed insights into compatibility, conversion efforts, and potential challenges across databases and application stacks.
+
+On the migration side, INFIO integrates with AWS Database Migration Service (DMS) to automate and manage the data transfer process. It provisions replication instances, configures endpoints, and creates migration tasks to securely and efficiently move data from SQL Server to Babelfish-enabled Aurora PostgreSQL. This dual capability makes INFIO a single-pane solution for both planning and executing end-to-end database modernization initiatives.
 
 ### Multi Assessment Approach
 
@@ -93,6 +114,35 @@ Key aspects of the .NET assessment report includes:
 - Automated conversion of .NET project references to their .NET Core equivalent with updated package details
 
 The solution provides deep insights into the existing database environment while adhering to **AWS best practices** for cloud migration. It emphasizes **security**, **scalability**, **reliability**, and **cost optimization** throughout the process.
+
+---
+
+### INFIO Migration Covers
+
+INFIO structures the migration process into multiple stages to ensure accuracy, reliability, and completeness when moving workloads from SQL Server to Babelfish for Aurora PostgreSQL. Instead of treating migration as a single bulk operation, INFIO follows a controlled sequence:
+
+- **Schema Preparation (Build, Configure & Deploy databases)**
+  SQL Server schemas often contain unsupported features in Babelfish.
+  INFIO separates table structures from foreign keys, indexes, and other elements, then converts them into Babelfish-compatible syntax.
+  This ensures only compatible objects are deployed to the target upfront.
+
+- **Validation (Reconciliation)**
+  Before migrating data, INFIO verifies that the schema and tables on the target match the source.
+  Any mismatches or unsupported objects are flagged early, reducing risk during the migration run.
+
+- **Data Migration (DMS Migration Task)**
+  Once the schema is ready, INFIO uses AWS DMS tasks to transfer actual data from SQL Server to the Babelfish-enabled Aurora PostgreSQL instance.
+  This step ensures that large volumes of data are moved securely and efficiently, while you can track progress in real time.
+
+- **Post-Migration Enhancements (Deploy Table Elements & Objects)**
+  After core schema and data migration, INFIO deploys additional table elements (indexes, foreign keys, constraints) and dependent objects (procedures, functions, views).
+  This layered approach ensures full application compatibility and performance optimization.
+
+- **Reset & Rerun (Clean Target Server)**
+  If errors occur or you want to start fresh, INFIO allows you to clean the target server, drop previously migrated objects, and re-run the migration.
+
+In summary, INFIO created different steps because a smooth migration requires more than just data transfer. By separating schema build, validation, data load, and dependent object deployment into structured phases, INFIO reduces risks, improves accuracy, and delivers a complete, production-ready migration solution for SQL Server to Babelfish for Aurora PostgreSQL.
+
 
 ---
 
@@ -220,6 +270,7 @@ INFIO can be used to:
 
 - **Assess large-scale heterogeneous database & .NET application migrations**: Enable a single-pane-of-glass view for large-scale database workload migration assessments.
 - **Provide prebuilt automation and reporting**: Utilize role-based access via a single web interface designed specifically for migration assessments.
+- **Migrate heterogeneous databases at scale**: Simplify and automate the movement of data from SQL Server to Babelfish for Aurora PostgreSQL with built-in replication setup and monitoring.
 
 ---
 
@@ -247,7 +298,7 @@ This section describes key concepts and defines terminology specific to this sol
   - Optional if your INFIO EC2 is in a public subnet or has a NAT Gateway.
   - Required if your INFIO EC2 is in a private subnet (no internet access) and needs AWS service access.
 Without a VPC Endpoint, a private INFIO EC2 instance must use a NAT Gateway (extra cost) or be moved to a public subnet.
-- **DMS**: DMS is generating assessment report that it generates to help you convert your schema. This database migration assessment report summarizes all of the schema conversion tasks. It also details the action items for schema that can't be converted to the DB engine of your target DB instance of Aurora postgreSQL. 
+- **Data migration service (DMS)**: DMS is generating assessment report that it generates to help you convert your schema. This database migration assessment report summarizes all of the schema conversion tasks. It also details the action items for schema that can't be converted to the DB engine of your target DB instance of Aurora postgreSQL. In addition to assessment, DMS is also responsible for the actual data migration from SQL Server to Babelfish for Aurora PostgreSQL. Within INFIO, DMS is used to create the replication instance, endpoints, and migration tasks that execute the data movement.
 
 ---
 
@@ -272,7 +323,7 @@ Without a VPC Endpoint, a private INFIO EC2 instance must use a NAT Gateway (ext
 - **AWS Key Management Service (Supporting)**: Manages encryption keys used to protect data and resources.
 - **AWS CloudFormation (Supporting)**: Accelerates AWS resource provisioning with infrastructure as code.
 - **VPC Endpoints (Optional & Supporting)**: Provide secure, private connectivity between your VPC and AWS services.
-- **AWS DMS(Supporting)**: Provides assessment report for schema conversion. 
+- **AWS DMS(Supporting)**: Provides assessment report for schema conversion for SQL server to Aurora postgreSQL. In addition with assessment, DMS provides replication instance, endpoints and migration tasks to migrate data from Source SQL server to Babelfish for Aurora postgreSQL. 
 
 ---
 
@@ -292,9 +343,9 @@ To get the most recent and accurate cost estimate for your AWS architecture, you
 |------------------------|------------------------------------------|------------------------|
 | **Amazon S3**         | Storage (10GB) & 500 get and put requests/month | $0.23                 |
 | **AWS Secrets Manager** | 5 secrets per month x 1 month x 0.40 USD per secret per month   | $2.00                 |
-| **AWS EC2**           | m6a.large, 200GB EBS - 1 instances x 0.1784 USD On Demand hourly cost x 730 hours in a month                  | $146.23  |
+| **AWS EC2**           | m6a.large, 250GB EBS - 1 instances x 0.1784 USD On Demand hourly cost x 730 hours in a month                  | $150.23  |
 | **AWS Key Management Service (KMS)** | 2 CMK x Number of symmetric requests (1000) | $2.00 |
-| **DMS**  | - | $0.00 | 
+| **DMS**  | Depends on replication instance type (chosen by user), number of replication instances, migration duration, data transfer and tasks created. Pricing will vary based on workload. Use the [AWS Pricing Calculator](https://calculator.aws/) for an accurate estimate. | Varies | 
 
 
 ---
@@ -364,6 +415,7 @@ The template is **intelligent and reusable**, and it adjusts automatically based
 
 - If you're deploying INFIO INstance from INFIO AMI for the very first time in your AWS account:
 - It will create all required resources from scratch, including:
+  - S3 bucket
   - IAM Role
   - EC2 Instance Profile
   - EC2 Security Group
@@ -789,112 +841,107 @@ You should update the DMS instance profile name by using the same suffix as the 
 
 ### INFIO Assessment Tool Usage Guide
 
-1. Before running the INFIO Assessment Tool, you must complete the CloudFormation template steps outlined above to create the necessary INFIO resources and ensure the tool runs successfully.
-2. Navigate to the `Desktop:\INFIO Assessment Tool` folder located on the desktop of the INFIO EC2 instance.
-3. Inside the **INFIO Assessment Tool** folder, you will find three subfolders:
+1. Before proceeding with the INFIO Assessment Tool, ensure that you have completed the CloudFormation template deployment steps to create all necessary INFIO resources. This setup is required for the tool to function properly.
+2. Navigate to the desktop and locate the `INFIO Assessment Tool` folder.
+3. Open the folder to view the following subdirectories::
     - `aws-infra-setup`
     - `infio`
     - `infio-plugin`
-4. Open the `infio` folder. Inside this folder, locate and double click on the **start_infio batch file** to start the INFIO application. It will run the INFIO tool in Microsoft edge browser.
-5. If you encounter the error **"License validation failed. The app cannot be started,"** please contact **Cornerstone Support** for assistance with license validation at **info@cornerstone-consulting.io**. Make sure to provide your **INFIO EC2 instance ID** to the Cornerstone Support team for license validation.  
-6. Once the tool is launched, go to the `Home` page where INFIO will prompt you dashboard page. If your company name is not available in the list, you can enter the company name.
+4. Navigate to the `infio` subfolder, locate and double click on the **start_infio** batch file to launch the INFIO application. The INFIO tool will automatically open in Microsoft Edge browser.
+5. If you encounter the error **"License validation failed. The app cannot be started"** please contact **Cornerstone Support** for assistance with license validation at **info@cornerstone-consulting.io**. Make sure to provide your **INFIO EC2 instance ID** to the Cornerstone Support team for license validation. And wait for the Cornerstone Support team to validate your license before proceeding
+6. Once the app is launched, go to the `Home` page where INFIO will prompt you dashboard page.
+
+
+#### Navigation Overview
 
 **Left Navigation Panel**
-The sidebar contains the following options:  
-- **🏠 Home** - Redirects to the dashboard which provides overview of key metrics related to application assessments.  
-- **⚙️ Configure** - Allows users to set up configurations of various server details.  
-- **🔍 Discover** - Allows users to input applications details, associated servers, etc.  
+The INFIO application sidebar contains the following sections and options:  
+- **🏠 Dashboard** - Provides an overview of key metrics related to application assessments.  
+- **⚙️ Configure** - Allows users to set up configurations of various server details based on applications.  
+- **🔍 Discover** - Enables users to input application details, associated servers, and other discovery information.  
 - **📊 Assess** - Facilitates running assessments on discovered applications.  
-- **📄 Reports** - Allows users to generate database assessment reports for respective application and company.  
-  - Expandable submenu for detailed report views.  
-- **🚀 Deploy** - Deployment-related functionality.  
-- **🔄 Migrate** - Migration-related functionality.
-
-- To access deploy and migrate features, please contact cornerstone support team at **[info@cornerstone-consulting.io](mailto:info@cornerstone-consulting.io)** for more information and assistance.
+- **📄 Reports** - Allows users to generate database assessment reports for respective applications and companies.  
+- **🚀 Resource Deployment** - Manages AWS infrastructure provisioning and Babelfish deployment configurations
+- **🔄 Deployment & Migration** - Handles the complete migration workflow including database deployment, reconciliation, and data migration tasks. 
 
 #### Infio Dashboard Overview
 
-![application-discovery](images/home(dashboard).PNG)
+![application-dashboard](images/dashboard.PNG)
 
-The INFIO Assessment Dashboard provides a comprehensive view of the assessment status of applications and databases. It helps users track the progress of their database and application compatibility assessments, ensuring a smooth migration process.
+The INFIO Assessment Dashboard provides users with a consolidated view of the migration readiness of both databases and applications. It helps track the progress of assessments, ensuring a structured evaluation for a smooth SQL Server to PostgreSQL/Babelfish migration journey.
 
-The database assessment includes compatibility checks with Babelfish and Aurora PostgreSQL, while the application assessment focuses on .NET compatibility. The dashboard ensures a structured evaluation process, enabling smooth database and application migration.
+**Key Highlights of the Dashboard:**
 
-**Assessment Status:**
-The assessment status section provides a summary of the overall assessment progress, including:
-1. Number of Applications Submitted
-2. Application Server Discovery Completed
-3. Application Compatibility Assessment Completed
-4. Application Compatibility Report Generated
+1. Assessment Status Summary
+At the top of the dashboard, a summary section provides an overview of the overall progress. The following metrics are displayed:
 
-**Database Code Assessment:**
-The database code assessment evaluates the compatibility of the database with Babelfish and Aurora PostgreSQL.
-1. Database Server Discovery: Confirms the discovery of the database server.
-2. Babelfish Compatibility Assessment: Evaluates compatiblity of SQL server with Babelfish.
-3. Babelfish Compatibility Report: Generates a report for SQL server to Babelfish for Aurora PostgreSQL compatibility.
-4. Aurora PostgreSQL Compatibility Assessment: Evaluates compatibility with Aurora PostgreSQL.
-5. Aurora PostgreSQL Compatibility Report: Generates a report for Aurora PostgreSQL compatibility.
+    - Applications Submitted – Total number of applications configured for assessment.
+    - Discovery Completed – Number of successful database server discoveries.
+    - Assessments Completed – Number of database and application assessments successfully completed.
+    - Reports Generated – Number of assessment reports generated for databases and applications.
 
-**Application Code Assessment:**
-The application code assessment evaluates the compatibility of the .NET applications with .NET core.
-1. .NET Compatibility Assessment: Confirms whether .NET application is compatible with .NET core.
-2. .NET Compatibility Report: Generates a report on the .NET compatibility assessment.  
+  This overview helps users quickly understand the status of all ongoing assessments.
 
-After dashboard page, you need to go to the configure page setup.
+2. Database Code Assessment
+The Database Code Assessment section evaluates the compatibility of SQL Server databases with Babelfish for Aurora PostgreSQL and Aurora PostgreSQL directly.
+Each checkpoint is visually represented with status indicators such as Completed, Pending, or In Progress, ensuring that assessment progress can be monitored in detail.
+
+3. Application Code Assessment:
+The Application Code Assessment section evaluates the compatibility of .NET applications for migration to modern .NET frameworks.  
+
+  After reviewing the dashboard, users can proceed to the Configure page to set up database connections, define application details, and adjust configurations required for initiating new assessments.
 
 ---
 
-### Configuration Page Setup
+### Configuration Setup
 
-On the configuration page, you need to click on the `create new config` button, where you will be prompted to provide information for various components.
+Configurations in INFIO can be created for new applications or updated for existing ones. Each configuration records essential details such as company information, application metadata, database connections, and authentication secrets. This structured approach ensures that both application and database assessments are properly aligned for migration activities.
 
-For more reference you can see snapshot of configure application page.
-![configure-application](images/configure%20-%20application%20configure.png)
+For more reference see snapshot of configure application page.
+![configuration-application](images/configuartion-application.PNG)
 
 Follow these steps to configure your application:
 
-**Configure Application:**
-1. Add New Company or Choose an Existing Company if you already created company.
-2. If you choose the Add New Company option, enter the Company Name in the provided field.
-3. Enter the Application Name, ensuring it does not exceed 16 characters.
-4. Provide the .NET Application Project Repository if you are evaluating .NET portability. This step is required only for .NET applications to .NET core portability.
-5. If the Private Repository checkbox is selected, you must provide and select the appropriate Repository Secret for authentication.
-6. Configure Secret Configurations for authentication of private repository:
-- Click the ➕ (Add) button to add a new secret.
-- Click the ✏️ (Edit) button to modify an existing secret.
-- Click the 🗑️ (Delete) button to remove a secret.
-7. If the Private Repository checkbox is not selected, you do not need to provide a Repository Secret for authentication. The repository will be considered public, and the system will proceed without requiring additional credentials.
-8. From the dropdown menu, choose the target .NET Core you wish to use for compatibility assessment.
+1. To add new configuration, click on new configuration.  
+1. Select **Add New Company** or **Choose an Existing Company** if you have already created a company. 
+2. If you choose the Add New Company option, enter your Company Name in the provided field. 
+3. Enter your Application Name, ensuring it follows the naming requirements: maximum 16 characters, must begin with a letter, must not end with a hyphen, and cannot contain two consecutive hyphens. Valid characters include: a-z, 0-9, and hyphens (-).
+4. Provide your .NET Application Project Repository URL if you are evaluating .NET portability. This step is required only for .NET applications when you are assessing .NET Core portability. 
+5. If you check the Private Repository checkbox, select the appropriate Repository Secret from the dropdown for authentication. 
+6. Configure authentication secrets for private repositories: 
+   - Click the ➕ (Add) button to add a new authentication secret. 
+   - Click the ✏️ (Edit) button to modify an existing authentication secret. 
+   - Click the 🗑️ (Delete) button to remove an authentication secret. 
+7. If you leave the Private Repository checkbox unchecked, you do not need to provide a Repository Secret for authentication. The system will treat the repository as public and proceed without requiring additional credentials. 
+8. Select your target .NET Core version from the dropdown menu to specify which version you want to use for compatibility assessment.
 
 **Configure Database:**
 
 Follow these steps to configure database based on the provided Configure Database snapshot.
 
-![configure-database](images/configure%20-%20application%20configure.png)
+![configure-database](images/configuration-database.PNG)
 
-Follow these steps to configure your database:
+**Configure Database:**
+1. Click **Add Server** to configure a new database server for database assessment.
+2. Fill in the following details for **Source Database**:
+   - **Source DB Server Name**: Enter your database server hostname, which must be a SQL Server instance.
+   - **Port**: Enter the port number (default is 1433 for SQL Server).
+   - **Source Secret**: Select from available secrets using the dropdown or manage secrets using the ➕, ✏️, and 🗑️ buttons to add, edit, or delete secrets within the secrets manager. These secrets will be used for SQL Server authentication.
+   - **Workload Type**: Select **PRODUCTION** or **NON-PRODUCTION** from the dropdown.
+   - **Refresh**: After adding or editing the secret, click the **Refresh** button to fetch all databases from your SQL Server, including system databases. This populates the list of available databases for inclusion or exclusion in the assessment.
+   - **Database to Include**: Select specific database names from the populated list or leave empty to consider all databases from the SQL Server. Examples shown include AdventureWorks2022, Northwind, pubs, and intest.
+   - **Database to Exclude**: Select databases you want to exclude from the assessment or leave empty to automatically exclude default system databases (msdb, master, tempdb, and model).
+3. Configure **Target Database** (applies only when evaluating SQL Server to Aurora PostgreSQL assessment):
+   - **Target DB Server Name**: Enter your Aurora PostgreSQL server hostname.
+   - **Port**: Enter the port number (default is 5432 for PostgreSQL).
+   - **Target Secret**: Select from available secrets using the dropdown or manage secrets using the ➕, ✏️, and 🗑️ buttons to add, edit, or delete secrets within the secrets manager. These secrets will be used for target server authentication.
+4. Click **Submit Configuration** to save both application and database configurations or **Cancel** to discard changes.
 
-1. Click Add Server to configure a new database for database assessment.
-2. Fill in the following details:
-   - Source DB Server Name: Enter the database host name.
-   - Port: Default is `1433` or you can enter your custom port number.
-   - Source Secret: Choose from available secrets or you can add, edit, and delete existing secrets from drop down.
-   - Workload Type: Select PRODUCTION or NON-PRODUCTION.
-   - Database to Include: After entering the Source DB Server Name, click the Refresh button located just below the Secret Configurations section. This will load all the databases available on your source database server. Alternatively, you can leave this field empty to include all databases.
-   - Database to Exclude: Select the databases you want to exclude. If left empty, the default system databases (master, model, msdb, tempdb) will be excluded automatically.
-3. Click on Secret Configurations to:
-   - Add (+) a new secret. When you add a secret, ensure that secret name should start with "infio" keyword.
-   - Edit (✏️) an existing secret.
-   - Delete (🗑️) a secret.
-4. To assess SQL Server to Aurora PostgreSQL portability, provide the Aurora PostgreSQL Database Server Name, Port Number, and the Secret Name for target database authentication. You can also add, edit, or delete secret configurations as needed.
-5. Click Submit to save the configuration of application and database both or Cancel to discard changes.
-
-
-> Note: Users can **add up to five configurations** by clicking the Add Server button, enabling multiple server configurations.
+**Note**: You can add up to five server configurations by clicking the **Add Server** button multiple times to enable assessment of multiple database servers.
 
 Once the configuration is saved, you can see the all the information that you have entered at the top of the page: 
 
-![view-configure](images/view%20configure.PNG)
+![view-configure](images/configuration.PNG)
 
 After that on the left sidebar, click on **Discover** to access the **Application Discovery** page.
 
@@ -903,17 +950,17 @@ After that on the left sidebar, click on **Discover** to access the **Applicatio
 ### Application Discovery
 
 **1. Application Name (Dropdown)**
-- Click the refresh button and after that click on the dropdown.
+- Click the **Refresh** button and then click on the dropdown.
 - Select the name of the application you want to configure.
 - If the application name is not available, ensure it has been added in the configuration settings.
 
 **2. Select Servers (Dropdown)**
-- Click the refresh button and after that and click on the dropdown to view available servers.
+- Click the **Refresh** button and then click on the dropdown to view available servers.
 - Choose the servers associated with your application.
 - Ensure that the required servers have been added in the **Configure** section before proceeding.
 
 **3. Is your application a third-party or Commercial Off-the-Shelf (COTS) Solution? (Dropdown)**
-- Select **Yes** if your application is a third-party or off-the-shelf solution. If yes, please verify with the vendor that it supports Babelfish before proceeding.
+- Select **Yes** if your application is a third-party or off-the-shelf solution. If yes, verify with the vendor that it supports Babelfish before proceeding.
 - Select **No** if the application is custom-built or proprietary.
 
 **4. Is there any additional information you would like to provide about your application? (Text Box)**
@@ -922,18 +969,19 @@ After that on the left sidebar, click on **Discover** to access the **Applicatio
 
 ![application-discovery](images/application-discovery.png)
 
-After filling in all the fields, click on **Discover Server Info** at the bottom of the page to proceed.
-This will trigger the system to fetch **Server & Environment Metrics** related to the selection.
+- After filling in all the fields, click **Discover Server Info** at the bottom of the page to proceed.
+- This will trigger the system to fetch **Server & Environment Metrics** related to your selection.
 
-**Fill in the Server & Environment Metrics**
+### Server & Environment Metrics
 
-- Click on **Discover Server Info** to fetch server and environment details automatically.
+![server-details](images/server-details.PNG)
+
+**Fill in the Server & Environment Metrics:**
+- Click **Discover Server Info** to fetch server and environment details automatically.
 - If any data is incorrect, update it manually and click **Update Server Info**.
 - Ensure that the required configurations are set before proceeding.
 
-![update server info](images/update%20server%20info.PNG)
-
-**SQL Server Instance Count**
+**1. SQL Server Instance Count**
 - Enter the number of **SQL Server Instances** in the respective fields for:
   - **Production**
   - **Non-Production**
@@ -952,9 +1000,10 @@ This will trigger the system to fetch **Server & Environment Metrics** related t
 - Enter the total **FSx-SAZ, FSx-MAZ, or Other storage** (in GB).
 
 **5. Save the Changes**
-- After entering all the required details, click on the **Update Server Info** button to save the changes.
+- After entering all the required details, click **Update Server Info** to save the changes.
 
-After that on the left sidebar, click on **Assess** under the "Discover" section to access the **Assessment** page.
+**Next Steps:**
+After completing the server metrics configuration, click **Assess** under the "Discover" section in the left sidebar to access the **Assessment** page.
 
 ---
 
@@ -971,7 +1020,7 @@ You can choose one or multiple assessment types based on your requirements:
 
 #### 1. SQL Server to Babelfish Assessment
 
-![sql to babelfish assessment](images/assessment%20-%20sql%20to%20babelfish.PNG)
+![sql to babelfish assessment](images/sql_to_babelfish.PNG)
 
 **1. Select the Target State**
 - Ensure that the checkbox **"SQL Server to Babelfish"** is selected.
@@ -987,7 +1036,7 @@ You can choose one or multiple assessment types based on your requirements:
 
 **1. Offline Mode**
 
-- **Purpose**: Designed for scenarios where users need to manually generate and upload necessary files such as DMS assessor, DDL, Database Object dependency and Extended events XML files for assessment by running the INFIO plugin.
+- **Purpose**: This option is designed for scenarios where users must manually generate and upload the required files—such as DMS Assessor reports, DDL scripts, Database Object Dependency files, and Extended Events XML—by running the INFIO plugin for assessment.
 - **Functionality**:
     - Users must generate the following files from the SQL Server by running the INFIO plugin:
       - Data Definition Language (DDL) schema files.
@@ -995,14 +1044,16 @@ You can choose one or multiple assessment types based on your requirements:
       - Database Object Dependency input files.
       - Extended Events XML file. 
     - For running INFIO Plugin, refer to the [INFIO Plugin Documentation](https://github.com/cornerstone-consulting/INFIODocs/blob/main/infio-plugin.md).
-    - The generated files should be uploaded to either a designated S3 bucket or INFIO EC2 instance's INFIO directory. Follow the [file upload process](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-directory) to ensure all required files are uploaded correctly, as this is mandatory for running the assessment.
+    - The generated files should be uploaded to either a designated S3 bucket to ensure all required files are uploaded correctly, as this is mandatory for running the assessment.
 
     > Note: If users prefer not to generate the Extended Events XML file using the INFIO plugin, they can instead follow the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md) to create a Profiler Events XML file and include it in the INFIO assessment. The same upload process described above should be followed to transfer the XML file to either the designated S3 bucket or the INFIO EC2 instance’s INFIO directory.
       
 
 **2. Mixed Mode**
 
-- **Purpose**:  Designed for users who want to leverage both automatic and manual capabilities for assessment in INFIO. Mixed Mode provides two options that allow users to partially automate the collection of assessment data while still requiring manual steps for certain components.
+![SQL Server to Babelfish assessment - mixed mode](images/sql_to_babelfish_assessment_mixed_mode.PNG)
+
+- **Purpose**:  Designed for users who want combine automation with manual steps in two ways—either splitting file collection between the INFIO Tool and INFIO Plugin, or automating most files with the INFIO Tool while manually generating only the Extended Events file.
 - **Functionality**:
   - **Option 1: Split Collection of files between INFIO Plugin and INFIO Tool**:
     - In this option, INFIO will automatically collect DMS Assessor and Object Dependency input data. However, users must manually collect Data Definition Language (DDL) files using INFIO plugin and Profiler Events from the source SQL Server.
@@ -1014,11 +1065,11 @@ You can choose one or multiple assessment types based on your requirements:
       - Extended Events XML file.
     
     - For running INFIO Plugin, refer to the [INFIO Plugin Documentation](https://github.com/cornerstone-consulting/INFIODocs/blob/main/infio-plugin.md).
-    - Once collected, users must upload the files to either a designated S3 bucket or the INFIO EC2 instance's INFIO directory. Follow the [file upload process here](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-directory) for detailed instructions.
+    - Once collected, users must upload the files to either a designated S3 bucket for further assessment.
 
     > Note: If users prefer not to generate the Extended Events XML file using the INFIO plugin, they can instead follow the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md) to create a Profiler Events XML file and include it in the INFIO assessment. The same upload process described above should be followed to transfer the XML file to either the designated S3 bucket or the INFIO EC2 instance’s INFIO directory.
 
-  - **Option 2: All Files Collected by INFIO Tool**:
+  - **Option 2: All Files Collected by INFIO Tool**:    
     - The INFIO plugin collects:
       - This option automates the collection of DDL, DMS Assessor, and Object Dependency input file. However, users must manually collect SQL Server Profiler Extended Events from the source SQL Server.
       - INFIO automatically gathers:
@@ -1030,8 +1081,7 @@ You can choose one or multiple assessment types based on your requirements:
       
     > Note: If users prefer not to generate the Extended Events XML file using the INFIO plugin, they can instead follow the [SQL Server Profiler Events Guide](https://github.com/cornerstone-consulting/INFIODocs/blob/main/profiler-events-guide.md) to create a Profiler Events XML file and include it in the INFIO assessment. The same upload process described above should be followed to transfer the XML file to either the designated S3 bucket or the INFIO EC2 instance’s INFIO directory.
     
-    - Once collected, users must upload the files to either a designated S3 bucket or the INFIO EC2 instance's INFIO directory. Follow the [file upload process here](infio-plugin.md/#uploading-files-to-an-s3-bucket-or-infio-ec2-instances-directory) for detailed instuctions.
-
+    - Once collected, users must upload the files to either a designated S3 bucket.
 
 **5. Review Database Configurations**
 - Verify the displayed details:
@@ -1042,7 +1092,7 @@ You can choose one or multiple assessment types based on your requirements:
 
 #### 2. SQL Server to Aurora PostgreSQL
 
-![SQL Server to Aurora PostgreSQL assessment](images/assessment%20-%20sql%20to%20aurora.PNG)
+![SQL Server to Aurora PostgreSQL assessment](images/sql_to_postgresql.PNG)
 
 1. Ensure that the checkbox "SQL Server to Aurora PostgreSQL" is selected.
 
@@ -1057,7 +1107,7 @@ You can choose one or multiple assessment types based on your requirements:
 
 #### 3. .NET Assessment
 
-![.NET Assessment](images/assessment%20-%20net%20assessment.PNG)
+![.NET Assessment](images/dotnet-assessment.PNG)
 
 1. Ensure that the checkbox ".NET Assessment" is selected.
 
@@ -1073,14 +1123,14 @@ Once the assessment process is successfully completed, navigate to the left side
 
 #### Generating the Assessment Report
 
-![individual report](images/report.PNG)
+![individual report](images/report_genenration.PNG)
 
 **Step 1: Select the Target State(s)**
   - Choose one or multiple assessment options by checking the respective boxes:
     - SQL Server to Babelfish
     - SQL Server to Aurora PostgreSQL
     - .NET Assessment
-    You can select a single option or multiple options. If multiple options are selected, reports for all chosen assessments will be generated.
+    You can select a single option or multiple options. If multiple options are selected, reports for all chosen assessments will be generated. To generate the report, you must need to run the assessment first, then only you can generate the report.
 
 **Step 2: Select Report Generation Mode**
   - `Individual`: An individual report provides a comprehensive analysis of the feasibility and compatibility for each selected assessment for single application that you have selected. This report helps users understand potential migration challenges, highlights areas that require manual intervention, and offers insights to ensure a smooth transition.  
@@ -1118,26 +1168,213 @@ Once the assessment process is successfully completed, navigate to the left side
   - You can download the summary report from the S3 bucket or INFIO EC2 instance.
   - Review the individual or consolidated summary reports of your applications of respective company.
 
+Once the report generation process is successfully completed, navigate to the left sidebar, click on **resource deployment** just under migration, to migrate data from SQL server to Babelfish server.
+
+---
+### Migration Guide
+
+#### Resource Deployment
+
+##### Wave Configuration
+
+This guide walks you through to configure AWS Database Migration Service (DMS) resources to migrate data from a SQL Server database to a Babelfish-enabled Aurora PostgreSQL instance. The key step is creating a replication instance, which runs migration tasks and connects both source and target databases. On the Resource Deployment page, click Create New Wave to start a migration setup. Each wave groups migration tasks for one or more databases.
+
+For creating a new wave, click on New Wave configuration and provide the following details:
+
+![wave configuration](images/wave_configuration.PNG)
+
+1. Wave Name – Enter a descriptive name (e.g., wave-01). This helps you identify and manage migrations easily.
+
+2. VPC – Select the VPC where the replication instance will run. This ensures the instance can securely communicate with both source and target databases.
+
+3. Subnets – Choose subnet from Availability Zones (AZs). This provides redundancy and high availability for the replication instance. Choose at least two subnets with different Availability Zones (AZs).
+
+4. Replication Instance Class – Pick an instance size that matches your workload. Larger workloads require more CPU and memory for efficient migration.
+
+5. Storage – Allocate storage based on expected migration volume. Note: replication instance storage can only be increased, not decreased, plan capacity carefully.
+
+6. Availability Zone – Select an AZ for the replication instance. To avoid additional transfer costs, place it in the same AZ as your Aurora PostgreSQL cluster; otherwise, cross-AZ charges will apply.
+
+7. Security Group – Use the security group already attached to INFIO’s EC2 instance (infio-ec2-dms-sg). Ensure outbound rules allow traffic on the Babelfish port (default: 1433). If Babelfish is configured on a different port, update the rule accordingly.
+
+After that configuring source and target databases with replication instance, provide following the details.
+
+![wave database configuration](images/wave_db_configure.PNG)
+
+1. Source DB Server Name - Enter your database server hostname, which must be a SQL Server instance.
+2. Port - Enter the port number (default is 1433 for SQL Server).
+3. Source Secret - Select from available secrets using the dropdown or manage secrets using the ➕, ✏️, and 🗑️ buttons to add, edit, or delete secrets within the secrets manager. These secrets will be used for SQL Server authentication.
+4. Workload Type - Select PRODUCTION or NON-PRODUCTION from the dropdown.
+5. Refresh button - After adding or editing the secret, click the Refresh button to fetch all databases from your SQL Server, including system databases. This populates the list of available databases for inclusion or exclusion in the migration.
+6. Database to Include - Select specific database names from the populated list or leave empty to consider all databases from the SQL Server.
+7. Database to Exclude - Select databases you want to exclude from the migration or leave empty to automatically exclude default system databases (msdb, master, tempdb, and model).
+8. Configure Target Database for SQL Server to Babelfish Deployment for Aurora postgreSQL -
+   - Target DB Server Name - Enter your Aurora PostgreSQL server hostname.
+   - Port - Enter the port number (default is 5432 for PostgreSQL).
+   - Target Secret (Aurora Postgres User) - Choose the target secret from the list. The Target Secret stores the credentials of the native PostgreSQL user that is created during the Aurora PostgreSQL cluster setup. This secret is primarily used during the resource creation phase of the migration. It provides the authentication needed to create and configure resources such as replication instances and endpoints. It enables AWS DMS and INFIO to establish secure connectivity at the PostgreSQL engine level. In short, the Target Secret is the foundation for setting up the migration infrastructure.
+    - Babelfish Secret (Babelfish User) - Choose the babelfish secret from the list. The Babelfish Secret contains the credentials of the Babelfish user, created inside the Babelfish TDS layer that emulates SQL Server. This secret becomes critical during the data migration phase. It allows DMS tasks to securely connect to the Babelfish endpoint. It is used for transferring data from SQL Server into the Babelfish-enabled Aurora PostgreSQL instance. In short, the Babelfish Secret ensures secure execution of the actual data migration process.
+    - Babelfish Port - Enter the port number (default is 1433 for Babelfish).
+9. Click Submit Configuration to save both application and database configurations or Cancel to discard changes.
+ 
+By configuring these resources properly, you ensure that the replication instance has secure network access, high availability, and sufficient compute/storage capacity to handle your migration tasks effectively. However, at this stage you have only defined the necessary resources—the actual creation of the replication instance, DMS tasks, and endpoints is still pending.
+
 ---
 
-#### Export Server Metrics
+For actual resource creation of the replication instance, endpoints, and DMS tasks, follow the steps below:
 
-Server Metrics provide detailed insights into the SQL Server instance running in your environment. It includes information about enabled/disabled features such as:  SQL Server Analysis Services (SSAS), SQL Server Integration Services (SSIS), SQL Server Reporting Services (SSRS), Microsoft Distributed Transaction Coordinator (MSDTC), and etc.  
+##### Wave Server Configuration
 
-These metrics help in assessing the server configuration and determining compatibility for migration.  
+After saving the wave configuration, a new wave is created. Use the See Configuration dropdown to review its details. Within this view, you will find multiple tabs. The Server Configuration and Replication Instance Configuration tabs display the settings you have already defined.
 
-**Steps to Export Server Metrics** 
+![wave server configuration](images/wave_server_configuration.PNG)
 
-1. Navigate to the **Server Metrics** section from the left sidebar.  
-2. Select the **Application** for which you want to export the metrics.  
-3. Click on the **Server Metrics** button to fetch the server details automatically.  
-4. Once the data is displayed, click on the **Export Server Metrics** button.  
-5. A success message will confirm that the metrics have been exported as a CSV file.  
-6. The exported file path will be displayed on the screen, as shown below:  
+---
 
-![Export Server Metrics](images/Export%20Server%20metrics.PNG)  
+##### Wave Replication Instance Configuration
 
-You can now use this CSV file for further assessment and reporting.  
+![wave instance configuration](images/wave_replication_instance_config.PNG)
+
+---
+
+##### Wave Replication Instance Info
+
+Next, open the Replication Instance Info tab. Here you can check whether the replication instance has been created.
+
+If the replication instance is not yet created, click Build Replication Instance. This action deploys the instance in your AWS account.
+
+![wave replication instance info](images/wave_replication_instance_info.PNG)
+
+To track the progress, click Fetch AWS Resources status in the same page. Once the creation is complete, the replication instance status will update to completed. In this view, you can also see the number of endpoints already available for the replication instance, as well as the additional endpoints that can be created and associated with it.
+
+If you select more than 50 databases during wave configuration, INFIO will provision multiple replication instances. This is because migrating over 50 databases requires more than 100 endpoints (one source and one target per database), which cannot be supported by a single replication instance.
+
+---
+
+##### Wave Endpoints Info
+
+Next, open the Endpoints tab. In this section, you can create the endpoints for both the source and target databases, and test the connectivity required for migration.
+
+![wave replication instance info](images/wave_endpoints.PNG)
+
+For example, if you select four databases to migrate while doing configuration of wave, INFIO will automatically create eight endpoints in the DMS service within your AWS account—four for the source databases and four for the corresponding target databases.
+
+During endpoint creation, the dashboard table will display the status as In Progress. Once the process is complete, the status will update to completed.
+
+After the endpoints are created, you can test the connectivity between the source and target database endpoints to ensure that the network settings are configured correctly before starting the migration.
+
+---
+
+##### Wave DMS tasks
+
+Next, open the DMS Tasks tab. A DMS task defines how the migration will be executed—it is responsible for moving data from the source to the target database.
+
+![wave dms tasks](images/wave_dms_tasks.PNG)
+
+Before creating tasks, ensure that both source and target endpoints exist and their connectivity has been successfully tested. Once ready, click Build Tasks to create the DMS tasks.
+
+During creation, the dashboard will show the status as In Progress, and once complete, the status will update to Completed. To verify the status of task creation, click Fetch AWS Resources Status.
+
+
+After completing these steps, the resource deployment process is finished. You can now proceed with migrating data to the target database.
+
+---
+
+#### Deployment & Migration 
+
+After completing resource deployment, the next step is to deploy and migrate data into the Babelfish-enabled Aurora PostgreSQL instance. The Deployment & Migration page provides a step-by-step workflow to handle schema deployment, reconciliation, and data migration.
+
+By following the below sequences, you ensure a smooth migration of schema, data, foreign keys and dependent objects from SQL Server to Babelfish for Aurora PostgreSQL.
+
+##### Babelfish Deployment - Build
+
+During the Build phase, you prepare the database objects for deployment to the Babelfish-enabled Aurora PostgreSQL instance. Follow these steps:
+
+1. Select the Wave Name and Server ID – Identify the specific wave and server you want to build for.
+
+2. Review Configuration Details – Confirm settings such as the assigned VPC and replication instance class to ensure resources are correctly aligned.
+
+3. Trigger Build – Click Trigger Build to extract the DDLs from the source SQL Server. The process separates table structures from elements like foreign keys and indexes, then converts them into Babelfish-compatible syntax.
+
+![babelfish build](images/babelfish_build.png)
+
+---
+
+##### Babelfish Deployment - Configure & Deploy database
+
+This step prepares the target Babelfish server for migration. It ignores the SQL server unsupported features and create the databases on target Babelfish server. 
+
+![babelfish deploy db](images/babelfish_deploy_db.png)
+
+Click on Trigger Configure and Deploy Database to begin the schema deployment.
+
+---
+
+##### Babelfish Deployment - Deploy
+
+In the Deploy tab, you can initiate schema deployment. This process creates Babelfish-compatible table structures and schema objects on the target database after validating connectivity.
+
+![babelfish deploy](images/babelfish_deploy.jpg)
+
+Click on Trigger Deploy to begin the schema deployment.
+
+---
+
+##### Babelfish Deployment - Reconciliation
+
+Reconciliation ensures that the deployed tables and schema on the target server matches from the source SQL Server. Any mismatches or unsupported tables/schema are flagged for review.
+
+![babelfish reconciliation](images/babelfish_reconcilation.jpg)
+
+To perform reconciliation, click Trigger Reconciliation button to compares the source and target server.
+
+If any mismatches are detected or certain tables or schemas are missing from the target server, INFIO will flag them for review. The detailed error log file can be found at the following location:
+`User/Administrator/infio/migration/<wave_name>/<server_name>/<database_name>/ddl_scripts/babelfish_compatible/<deployment_errors_{db_name}>`.
+
+---
+
+##### Babelfish Deployment - DMS Migration task
+
+Before initiating a migration task, ensure that the reconciliation step has succeeded and all tables and schemas are correctly deployed on the target server.
+
+This step uses AWS DMS tasks to migrate actual data. The tasks move data from the source endpoints to the target endpoints defined earlier. You can track the progress in real time, with task status showing as In Progress and later Completed upon success.
+
+![babelfish migration task](images/babelfish_migration_task.png)
+
+To start migration tasks, click Trigger Migration task to start migrate your actual data.
+
+![babelfish dms tasks info](images/babelfish_dms_task_info.png)
+
+---
+
+##### Babelfish Deployment - Deploy table elements
+
+After schema and data migration, you can deploy additional table elements such as indexes, foreign keys, and constraints that were not migrated while running DMS tasks. This ensures full functionality on the target database.
+
+![babelfish deploy table elements](images/babelfish_deploy_table_elements.png)
+
+To deploy table elements on target server, click Trigger Deploy Table Elements button.
+
+---
+
+##### Babelfish Deployment - Deploy table objects
+
+Finally, this step handles the deployment of dependent objects like stored procedures, functions, and views, ensuring application compatibility with the Babelfish target database.
+
+![babelfish deploy object dependency](images/babelfish_deploy_object_dependency.png)
+
+Click on Trigger Deploy Object Dependency to begin the object dependency deployment.
+
+---
+
+##### Babelfish Deployment - Clean target server
+
+This is useful when you want to perform a fresh migration run or remove previously deployed objects due to some errors. The Clean Target Server option allows you to reset the target environment by dropping all target databases associated with the selected wave.
+
+![babelfish clean target server](images/babelfish_cleanup_target_server.png)
+
+Click on Trigger Clean Target Server to drop all databases from target server.
+
+By following this sequence, you ensure a smooth migration of schema, data, and dependent objects from SQL Server to Babelfish for Aurora PostgreSQL.
 
 ---
 
