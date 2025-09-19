@@ -13,4 +13,4 @@
 
 ## INFIO Security Best Practices
 
-- For detailed documentation, check [INFIO Security Best Practices](INFIO-security-best-practices.md).  
+- For detailed documentation, check [INFIO Security Best Practices](INFIO-security-best-practices.md).
